@@ -25,20 +25,21 @@ const FIELDS: Field[] = [
   { key: 'weight_kg_target', label: 'weight target', unit: 'kg' },
 ];
 
+type FormState = Record<Field['key'], string>;
+
 const Goals = () => {
   const qc = useQueryClient();
   const goals = useQuery({ queryKey: ['goals'], queryFn: () => api.goals.get() });
-  const [form, setForm] = useState<Record<Field['key'], string>>({} as Record<Field['key'], string>);
+  const [form, setForm] = useState<FormState>({} as FormState);
 
   useEffect(() => {
-    if (goals.data) {
-      const next: Record<Field['key'], string> = {} as Record<Field['key'], string>;
-      for (const f of FIELDS) {
-        const v = goals.data[f.key];
-        next[f.key] = v == null ? '' : String(v);
-      }
-      setForm(next);
+    if (!goals.data) return;
+    const next = {} as FormState;
+    for (const f of FIELDS) {
+      const v = goals.data[f.key];
+      next[f.key] = v == null ? '' : String(v);
     }
+    setForm(next);
   }, [goals.data]);
 
   const save = useMutation({
@@ -51,11 +52,12 @@ const Goals = () => {
     const body: Partial<Record<Field['key'], number | null>> = {};
     for (const f of FIELDS) {
       const raw = form[f.key];
-      if (raw === '') body[f.key] = null;
-      else {
-        const n = Number(raw);
-        body[f.key] = Number.isFinite(n) ? n : null;
+      if (raw === '') {
+        body[f.key] = null;
+        continue;
       }
+      const n = Number(raw);
+      body[f.key] = Number.isFinite(n) ? n : null;
     }
     save.mutate(body);
   };
@@ -69,7 +71,7 @@ const Goals = () => {
           <CardTitle>Daily targets</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={submit} className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FIELDS.map((f) => (
               <div key={f.key} className="space-y-1.5">
                 <Label htmlFor={f.key}>{f.label}</Label>
@@ -81,7 +83,7 @@ const Goals = () => {
                     value={form[f.key] ?? ''}
                     onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
                   />
-                  <span className="text-xs text-muted-foreground">{f.unit}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{f.unit}</span>
                 </div>
               </div>
             ))}

@@ -12,7 +12,6 @@ import { Empty } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
-import { cn } from '@/lib/cn';
 import { fmtNum, fmtTime, todayIso } from '@/lib/format';
 
 const HYDRATION_STEPS = [250, 500, 750];
@@ -84,20 +83,12 @@ const ProgressBar = ({
   );
 };
 
-const MealBadge = ({ meal_type }: { meal_type: string }) => (
-  <Badge variant="muted" className="font-normal capitalize">
-    {meal_type}
-  </Badge>
-);
-
-const formatDateLong = (iso: string): string => {
-  const d = new Date(`${iso}T12:00:00Z`);
-  return d.toLocaleDateString(undefined, {
+const formatDateLong = (iso: string): string =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   });
-};
 
 const Today = () => {
   const qc = useQueryClient();
@@ -262,18 +253,18 @@ const Today = () => {
         </div>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
-            <div className="space-y-1">
-              <CardTitle className="flex items-center gap-2">
-                <Droplets className="h-4 w-4 text-primary" />
-                Hydration
-              </CardTitle>
-              <p className="text-xs text-muted-foreground">
-                Quick add — common pours or a custom amount.
-              </p>
-            </div>
-            <HydrationQuickAdd />
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2">
+              <Droplets className="h-4 w-4 text-primary" />
+              Hydration
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Quick add — common pours or a custom amount.
+            </p>
           </CardHeader>
+          <CardContent>
+            <HydrationQuickAdd />
+          </CardContent>
         </Card>
 
         <Card>
@@ -304,40 +295,42 @@ const Today = () => {
                 {intake.data.map((e) => (
                   <li
                     key={e.id}
-                    className={cn(
-                      'group flex items-center justify-between gap-3 rounded-md px-2 py-2.5 text-sm transition-colors hover:bg-surface-2',
-                    )}
+                    className="group rounded-md px-2 py-2.5 text-sm transition-colors hover:bg-surface-2"
                   >
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                        {fmtTime(e.ts)}
-                      </span>
-                      <MealBadge meal_type={e.meal_type} />
-                      <span className="truncate text-foreground">
-                        {e.custom_name ??
-                          (e.ref_kind === 'food'
-                            ? `food · ${fmtNum(e.grams, 0)} g`
-                            : e.ref_kind === 'batch'
-                              ? `batch · ${fmtNum(e.grams, 0)} g`
-                              : `recipe · ${fmtNum(e.servings, 1)} svg`)}
-                      </span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <span className="font-mono text-xs tabular-nums text-muted-foreground shrink-0">
+                          {fmtTime(e.ts)}
+                        </span>
+                        <Badge variant="muted" className="font-normal capitalize">
+                          {e.meal_type}
+                        </Badge>
+                        <span className="truncate text-foreground">
+                          {e.custom_name ??
+                            (e.ref_kind === 'food'
+                              ? `food · ${fmtNum(e.grams, 0)} g`
+                              : e.ref_kind === 'batch'
+                                ? `batch · ${fmtNum(e.grams, 0)} g`
+                                : `recipe · ${fmtNum(e.servings, 1)} svg`)}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="-mr-1 h-7 w-7 shrink-0 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+                        disabled={removeIntake.isPending}
+                        onClick={() => removeIntake.mutate(e.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-3 text-xs tabular-nums text-muted-foreground">
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 pl-[3.25rem] text-xs tabular-nums text-muted-foreground">
                       <span className="font-medium text-foreground">
                         {fmtNum(e.kcal, 0)} kcal
                       </span>
                       <span>P {fmtNum(e.protein_g, 1)}</span>
                       <span>C {fmtNum(e.carb_g, 1)}</span>
                       <span>F {fmtNum(e.fat_g, 1)}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
-                        disabled={removeIntake.isPending}
-                        onClick={() => removeIntake.mutate(e.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
                     </div>
                   </li>
                 ))}

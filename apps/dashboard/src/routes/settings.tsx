@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { Key, RefreshCw, Trash2 } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { Activity, Key, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
+import { type FormEvent, type ReactNode, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { clearToken, getToken, setToken } from '@/lib/auth';
+import { cn } from '@/lib/cn';
 
 const TokenSection = () => {
   const [value, setValue] = useState(getToken() ?? '');
@@ -30,7 +32,7 @@ const TokenSection = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={submit} className="flex items-end gap-2">
+        <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <div className="flex-1 space-y-1.5">
             <Label htmlFor="token">token</Label>
             <Input
@@ -42,17 +44,21 @@ const TokenSection = () => {
               onChange={(e) => setValue(e.target.value)}
             />
           </div>
-          <Button type="submit">Save & reload</Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              clearToken();
-              window.location.reload();
-            }}
-          >
-            <Trash2 className="h-3.5 w-3.5" /> Clear
-          </Button>
+          <div className="flex gap-2">
+            <Button type="submit" className="flex-1 sm:flex-none">
+              Save & reload
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                clearToken();
+                window.location.reload();
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Clear
+            </Button>
+          </div>
         </form>
         <p className="mt-3 text-xs text-muted-foreground">
           Stored in your browser&apos;s localStorage only. Sent as
@@ -64,40 +70,88 @@ const TokenSection = () => {
   );
 };
 
+const ProbeRow = ({ label, value }: { label: string; value: ReactNode }) => (
+  <li className="flex items-center justify-between gap-3 border-t border-border/60 py-2 first:border-t-0">
+    <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+    <span className="truncate text-right text-sm tabular-nums">{value}</span>
+  </li>
+);
+
 const ServerSection = () => {
-  const probe = useQuery({ queryKey: ['health'], queryFn: () => api.health() });
+  const probe = useQuery({
+    queryKey: ['health'],
+    queryFn: () => api.health(),
+    refetchInterval: 60_000,
+  });
+  const ok = !probe.isError && !!probe.data && probe.data.ok;
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <RefreshCw className="h-4 w-4" /> Server
-        </CardTitle>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-4 w-4" /> Server probe
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Badge variant={ok ? 'ok' : 'bad'} className="capitalize">
+              <span className="relative mr-1 inline-flex h-1.5 w-1.5">
+                <span
+                  className={cn(
+                    'absolute inline-flex h-full w-full rounded-full opacity-70',
+                    ok ? 'bg-ok animate-ping' : 'bg-bad',
+                  )}
+                />
+                <span
+                  className={cn(
+                    'relative inline-flex h-1.5 w-1.5 rounded-full',
+                    ok ? 'bg-ok' : 'bg-bad',
+                  )}
+                />
+              </span>
+              {probe.isLoading ? 'checking' : ok ? 'connected' : 'offline'}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={probe.isFetching}
+              onClick={() => probe.refetch()}
+            >
+              <RefreshCw className={cn('h-3.5 w-3.5', probe.isFetching && 'animate-spin')} />
+              <span className="sr-only sm:not-sr-only">Refresh</span>
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {probe.isLoading ? (
           <Spinner />
+        ) : probe.isError ? (
+          <p className="text-sm text-muted-foreground">
+            Unreachable. Is health-mcp running on{' '}
+            <code className="rounded bg-muted px-1 py-0.5">localhost:7777</code>?
+          </p>
         ) : probe.data ? (
-          <ul className="space-y-1.5 text-sm">
-            <li className="flex justify-between">
-              <span className="text-muted-foreground">version</span>
-              <span className="font-mono">{probe.data.version}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="text-muted-foreground">db</span>
-              <span>{probe.data.db}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="text-muted-foreground">tz</span>
-              <span>{probe.data.tz}</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="text-muted-foreground">auth required</span>
-              <span>{probe.data.auth_required ? 'yes' : 'no'}</span>
-            </li>
+          <ul className="space-y-0">
+            <ProbeRow label="version" value={<span className="font-mono">{probe.data.version}</span>} />
+            <ProbeRow
+              label="database"
+              value={
+                <span className={cn('capitalize', probe.data.db === 'up' ? 'text-ok' : 'text-bad')}>
+                  {probe.data.db}
+                </span>
+              }
+            />
+            <ProbeRow label="timezone" value={probe.data.tz} />
+            <ProbeRow
+              label="auth required"
+              value={
+                <span className="inline-flex items-center gap-1.5">
+                  {probe.data.auth_required ? <ShieldCheck className="h-3.5 w-3.5 text-ok" /> : null}
+                  {probe.data.auth_required ? 'yes' : 'no'}
+                </span>
+              }
+            />
           </ul>
-        ) : (
-          <span className="text-sm text-muted-foreground">unreachable</span>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -106,7 +160,7 @@ const ServerSection = () => {
 const Settings = () => (
   <>
     <PageHeader title="Settings" description="Local-only configuration." />
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 lg:grid-cols-2">
       <TokenSection />
       <ServerSection />
     </div>

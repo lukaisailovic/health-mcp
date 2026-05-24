@@ -13,17 +13,16 @@ const Ring = ({
   macro,
   size,
   stroke,
-  variant,
+  valueClass,
 }: {
   macro: Macro;
   size: number;
   stroke: number;
-  variant: 'hero' | 'small';
+  valueClass: string;
 }) => {
   const ratio = pct(macro.current, macro.goal);
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  const dashOffset = circumference * (1 - ratio);
   const valueDigits = macro.label === 'kcal' ? 0 : 1;
   return (
     <div className="flex flex-col items-center gap-2">
@@ -51,7 +50,7 @@ const Ring = ({
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={circumference}
-            strokeDashoffset={dashOffset}
+            strokeDashoffset={circumference * (1 - ratio)}
             stroke={`url(#ring-${macro.label})`}
             style={{
               transition: 'stroke-dashoffset 480ms cubic-bezier(0.22, 1, 0.36, 1)',
@@ -60,13 +59,7 @@ const Ring = ({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-          <span
-            className={
-              variant === 'hero'
-                ? 'text-2xl font-semibold tabular-nums'
-                : 'text-base font-semibold tabular-nums'
-            }
-          >
+          <span className={valueClass}>
             <AnimatedNumber value={fmtNum(macro.current, valueDigits)} />
           </span>
           {macro.goal !== null ? (
@@ -84,16 +77,20 @@ const Ring = ({
   );
 };
 
+const HERO_VALUE_CLASS = 'text-2xl font-semibold tabular-nums';
+const SMALL_VALUE_CLASS = 'text-base font-semibold tabular-nums';
+
 export const MacroRings = ({ macros }: { macros: Macro[] }) => {
   if (macros.length === 0) return null;
-  const kcal = macros[0]!;
-  const rest = macros.slice(1);
+  const [kcal, ...rest] = macros;
   return (
-    <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
-      <Ring macro={kcal} size={156} stroke={12} variant="hero" />
-      <div className="grid flex-1 grid-cols-3 gap-4 sm:gap-6">
+    <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
+      <Ring macro={kcal!} size={148} stroke={12} valueClass={HERO_VALUE_CLASS} />
+      <div className="grid w-full flex-1 grid-cols-3 gap-2 sm:gap-6">
         {rest.map((m) => (
-          <Ring key={m.label} macro={m} size={96} stroke={8} variant="small" />
+          <div key={m.label} className="flex justify-center">
+            <Ring macro={m} size={84} stroke={7} valueClass={SMALL_VALUE_CLASS} />
+          </div>
         ))}
       </div>
     </div>

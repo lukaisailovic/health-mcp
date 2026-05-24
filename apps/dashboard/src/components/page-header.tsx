@@ -9,9 +9,9 @@ export const PageHeader = ({
   description?: ReactNode;
   actions?: ReactNode;
 }) => (
-  <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <header className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
     <div className="space-y-1">
-      <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-foreground">
+      <h1 className="text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-[26px]">
         {title}
       </h1>
       {description ? (

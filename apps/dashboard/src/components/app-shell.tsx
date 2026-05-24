@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
 import {
   Activity,
@@ -8,14 +8,16 @@ import {
   ChefHat,
   CookingPot,
   History,
+  Menu,
   Salad,
   Settings,
   Sparkles,
   Target,
   Watch,
+  X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { api } from '@/lib/api';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/cn';
 
 type NavItem = { to: string; label: string; icon: LucideIcon };
@@ -39,130 +41,183 @@ const NAV_SIGNALS: NavItem[] = [
   { to: '/goals', label: 'Goals', icon: Target },
 ];
 
+const NAV_SETTINGS: NavItem = { to: '/settings', label: 'Settings', icon: Settings };
+
+const ALL_NAV: NavItem[] = [...NAV_PRIMARY, ...NAV_LIBRARY, ...NAV_SIGNALS, NAV_SETTINGS];
+
+const isActivePath = (path: string, to: string): boolean =>
+  path === to || (to !== '/today' && path.startsWith(to));
+
+const NavLink = ({
+  item,
+  active,
+  onNavigate,
+}: {
+  item: NavItem;
+  active: boolean;
+  onNavigate?: () => void;
+}) => (
+  <Link
+    to={item.to}
+    data-active={active}
+    onClick={onNavigate}
+    className={cn(
+      'nav-item flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground sm:py-1.5',
+      active && 'text-foreground',
+    )}
+  >
+    <item.icon
+      className={cn(
+        'h-4 w-4 shrink-0 transition-colors',
+        active ? 'text-primary' : 'text-muted-foreground',
+      )}
+    />
+    <span>{item.label}</span>
+  </Link>
+);
+
 const NavGroup = ({
   label,
   items,
   path,
+  onNavigate,
 }: {
   label: string;
   items: NavItem[];
   path: string;
+  onNavigate?: () => void;
 }) => (
   <div className="flex flex-col gap-0.5">
     <div className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
       {label}
     </div>
-    {items.map(({ to, label: l, icon: Icon }) => {
-      const active = path === to || (to !== '/today' && path.startsWith(to));
-      return (
-        <Link
-          key={to}
-          to={to}
-          data-active={active}
-          className={cn(
-            'nav-item flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground',
-            active && 'text-foreground',
-          )}
-        >
-          <Icon
-            className={cn(
-              'h-4 w-4 shrink-0 transition-colors',
-              active ? 'text-primary' : 'text-muted-foreground',
-            )}
-          />
-          <span>{l}</span>
-        </Link>
-      );
-    })}
+    {items.map((item) => (
+      <NavLink
+        key={item.to}
+        item={item}
+        active={isActivePath(path, item.to)}
+        onNavigate={onNavigate}
+      />
+    ))}
   </div>
 );
 
-const ServerStatus = () => {
-  const probe = useQuery({
-    queryKey: ['health'],
-    queryFn: () => api.health(),
-    staleTime: 30_000,
-    refetchInterval: 60_000,
-  });
-  const ok = !probe.isError && !!probe.data;
-  return (
-    <div className="flex items-center gap-2 rounded-lg border bg-surface px-3 py-2 text-xs">
-      <span className="relative inline-flex h-2 w-2">
-        <span
-          className={cn(
-            'absolute inline-flex h-full w-full rounded-full opacity-60',
-            ok ? 'bg-ok animate-ping' : 'bg-bad',
-          )}
-        />
-        <span
-          className={cn(
-            'relative inline-flex h-2 w-2 rounded-full',
-            ok ? 'bg-ok' : 'bg-bad',
-          )}
-        />
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="font-medium text-foreground">
-          {ok ? 'Connected' : 'Offline'}
-        </div>
-        <div className="truncate font-mono text-[10px] text-muted-foreground">
-          {probe.data?.version ?? 'health-mcp'} · {probe.data?.tz ?? '—'}
-        </div>
-      </div>
+const Brand = ({ onNavigate }: { onNavigate?: () => void }) => (
+  <Link
+    to="/today"
+    onClick={onNavigate}
+    className="group flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface/60"
+  >
+    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-primary to-ok shadow-soft">
+      <Activity className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
     </div>
+    <div className="flex flex-col leading-none">
+      <span className="text-sm font-semibold tracking-tight">health-mcp</span>
+      <span className="mt-0.5 text-[10px] text-muted-foreground">
+        your data, your model
+      </span>
+    </div>
+  </Link>
+);
+
+const NavSections = ({ path, onNavigate }: { path: string; onNavigate?: () => void }) => (
+  <>
+    <NavGroup label="Daily" items={NAV_PRIMARY} path={path} onNavigate={onNavigate} />
+    <NavGroup label="Library" items={NAV_LIBRARY} path={path} onNavigate={onNavigate} />
+    <NavGroup label="Signals" items={NAV_SIGNALS} path={path} onNavigate={onNavigate} />
+  </>
+);
+
+const SettingsLink = ({ path, onNavigate }: { path: string; onNavigate?: () => void }) => {
+  const active = path.startsWith('/settings');
+  return (
+    <Link
+      to="/settings"
+      data-active={active}
+      onClick={onNavigate}
+      className={cn(
+        'nav-item flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground sm:py-1.5',
+        active && 'text-foreground',
+      )}
+    >
+      <Settings
+        className={cn(
+          'h-4 w-4 shrink-0',
+          active ? 'text-primary' : 'text-muted-foreground',
+        )}
+      />
+      <span>Settings</span>
+    </Link>
+  );
+};
+
+const currentSectionLabel = (path: string): string =>
+  ALL_NAV.find((n) => isActivePath(path, n.to))?.label ?? 'health-mcp';
+
+const MobileNav = ({ path }: { path: string }) => {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    setOpen(false);
+  }, [path]);
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+      <DialogPrimitive.Trigger
+        aria-label="Open navigation"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Menu className="h-5 w-5" />
+      </DialogPrimitive.Trigger>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="t-modal-overlay fixed inset-0 z-50 bg-black/55 backdrop-blur-sm" />
+        <DialogPrimitive.Content
+          className="t-drawer fixed inset-y-0 left-0 z-50 flex h-full w-[82%] max-w-[300px] flex-col gap-1 bg-card px-3 py-4 shadow-lift ring-1 ring-foreground/5"
+        >
+          <div className="flex items-center justify-between">
+            <Brand onNavigate={() => setOpen(false)} />
+            <DialogPrimitive.Close
+              aria-label="Close navigation"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </DialogPrimitive.Close>
+          </div>
+          <nav className="mt-2 flex flex-1 flex-col gap-1 overflow-y-auto">
+            <NavSections path={path} onNavigate={() => setOpen(false)} />
+          </nav>
+          <SettingsLink path={path} onNavigate={() => setOpen(false)} />
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 };
 
 export const AppShell = () => {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const sectionLabel = currentSectionLabel(path);
   return (
-    <div className="grid min-h-screen grid-cols-[244px_1fr]">
-      <aside className="sticky top-0 flex h-screen flex-col gap-1 px-3 py-4 backdrop-blur-sm">
-        <Link
-          to="/today"
-          className="group flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface/60"
-        >
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-primary to-ok shadow-soft">
-            <Activity className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className="text-sm font-semibold tracking-tight">health-mcp</span>
-            <span className="mt-0.5 text-[10px] text-muted-foreground">
-              your data, your model
-            </span>
-          </div>
-        </Link>
-
+    <div className="min-h-screen lg:grid lg:grid-cols-[244px_1fr]">
+      <aside className="sticky top-0 hidden h-screen flex-col gap-1 px-3 py-4 backdrop-blur-sm lg:flex">
+        <Brand />
         <nav className="mt-3 flex flex-1 flex-col gap-1 overflow-y-auto">
-          <NavGroup label="Daily" items={NAV_PRIMARY} path={path} />
-          <NavGroup label="Library" items={NAV_LIBRARY} path={path} />
-          <NavGroup label="Signals" items={NAV_SIGNALS} path={path} />
+          <NavSections path={path} />
         </nav>
-
-        <div className="flex flex-col gap-2">
-          <Link
-            to="/settings"
-            data-active={path.startsWith('/settings')}
-            className={cn(
-              'nav-item flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground',
-              path.startsWith('/settings') && 'text-foreground',
-            )}
-          >
-            <Settings
-              className={cn(
-                'h-4 w-4 shrink-0',
-                path.startsWith('/settings') ? 'text-primary' : 'text-muted-foreground',
-              )}
-            />
-            <span>Settings</span>
-          </Link>
-          <ServerStatus />
-        </div>
+        <SettingsLink path={path} />
       </aside>
-      <main className="overflow-auto">
+      <main className="flex min-h-screen flex-col overflow-x-hidden">
+        <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-border/60 bg-background/85 px-3 py-2 backdrop-blur lg:hidden">
+          <MobileNav path={path} />
+          <span className="truncate text-sm font-semibold tracking-tight">{sectionLabel}</span>
+          <Link
+            to="/today"
+            aria-label="Home"
+            className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-primary to-ok shadow-soft"
+          >
+            <Activity className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
+          </Link>
+        </header>
         <div
           key={path}
-          className="route-enter mx-auto w-full max-w-6xl px-6 py-8 sm:px-8"
+          className="route-enter mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
         >
           <Outlet />
         </div>

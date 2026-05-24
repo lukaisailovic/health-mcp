@@ -33,7 +33,7 @@ const Log = () => {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="h-9 w-44"
+            className="h-9 w-full sm:w-44"
           />
         }
       />
@@ -47,13 +47,13 @@ const Log = () => {
           ) : !intake.data?.length ? (
             <Empty icon={History} title="No entries" description="Nothing logged on this date." />
           ) : (
-            <ul className="divide-y">
+            <ul className="divide-y divide-border/60">
               {intake.data.map((e) => (
-                <li key={e.id} className="grid grid-cols-[80px_1fr_auto] items-center gap-3 py-3">
-                  <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                <li key={e.id} className="flex items-start gap-3 py-3">
+                  <span className="mt-0.5 w-14 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
                     {fmtTime(e.ts)}
                   </span>
-                  <div className="min-w-0 space-y-0.5">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <Badge variant="muted" className="font-normal capitalize">
                         {e.meal_type}
@@ -62,7 +62,7 @@ const Log = () => {
                         {e.custom_name ?? `${e.ref_kind} · ${fmtNum(e.grams ?? e.servings, 1)}`}
                       </span>
                     </div>
-                    <div className="flex gap-4 text-xs tabular-nums text-muted-foreground">
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums text-muted-foreground">
                       <span>{fmtNum(e.kcal, 0)} kcal</span>
                       <span>P {fmtNum(e.protein_g, 1)} g</span>
                       <span>C {fmtNum(e.carb_g, 1)} g</span>
@@ -73,6 +73,7 @@ const Log = () => {
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="-mr-1 h-7 w-7 shrink-0"
                     disabled={remove.isPending}
                     onClick={() => remove.mutate(e.id)}
                   >
