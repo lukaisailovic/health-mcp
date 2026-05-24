@@ -1,18 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { useMemo, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { type SeriesPoint, TrendArea } from '@/components/ui/chart';
 import { Empty } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
@@ -23,65 +14,97 @@ const RANGES = [
   { label: '7d', days: 7 },
   { label: '30d', days: 30 },
   { label: '90d', days: 90 },
-];
+] as const;
+
+const summarize = (data: SeriesPoint[]): { latest: number | null; avg: number | null } => {
+  const vals = data.map((d) => d.value).filter((v): v is number => v !== null);
+  if (vals.length === 0) return { latest: null, avg: null };
+  return {
+    latest: vals[vals.length - 1] ?? null,
+    avg: vals.reduce((a, b) => a + b, 0) / vals.length,
+  };
+};
 
 const ChartCard = ({
+  id,
   title,
   data,
-  field,
   color,
   unit,
+  height = 200,
 }: {
+  id: string;
   title: string;
-  data: Array<{ date: string; value: number | null }>;
-  field?: string;
+  data: SeriesPoint[];
   color: string;
   unit?: string;
+  height?: number;
+}) => {
+  const { latest, avg } = useMemo(() => summarize(data), [data]);
+  return (
+    <Card className="transition-shadow hover:shadow-lift">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="space-y-0.5">
+          <CardTitle className="capitalize">{title}</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            avg{' '}
+            <span className="font-medium text-foreground tabular-nums">
+              {avg !== null ? `${fmtNum(avg, 1)}${unit ? ` ${unit}` : ''}` : '—'}
+            </span>
+          </p>
+        </div>
+        <div className="text-right">
+          <div
+            className="text-xl font-semibold leading-none tabular-nums tracking-tight"
+            style={{ color }}
+          >
+            {latest !== null ? fmtNum(latest, 1) : '—'}
+          </div>
+          {unit ? (
+            <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              {unit}
+            </div>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        {data.length === 0 ? (
+          <Empty title="No data" description="Nothing logged in this range." />
+        ) : (
+          <TrendArea id={id} data={data} color={color} unit={unit} title={title} height={height} />
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+const RangeToggle = ({
+  days,
+  onChange,
+}: {
+  days: number;
+  onChange: (n: number) => void;
 }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>
-        {title}
-        {field ? <span className="ml-1 text-xs font-normal text-muted-foreground">{field}</span> : null}
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      {data.length === 0 ? (
-        <Empty title="No data" />
-      ) : (
-        <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-            <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              fontSize={10}
-              stroke="hsl(var(--muted-foreground))"
-              tickFormatter={(v: string) => v.slice(5)}
-            />
-            <YAxis fontSize={10} stroke="hsl(var(--muted-foreground))" width={36} />
-            <Tooltip
-              contentStyle={{
-                background: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-              labelStyle={{ color: 'hsl(var(--foreground))' }}
-              formatter={(v: number) => [`${fmtNum(v, 1)}${unit ? ` ${unit}` : ''}`, title]}
-            />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke={color}
-              strokeWidth={2}
-              dot={false}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      )}
-    </CardContent>
-  </Card>
+  <div className="inline-flex rounded-lg border bg-surface p-0.5 shadow-soft">
+    {RANGES.map((r) => {
+      const active = days === r.days;
+      return (
+        <button
+          key={r.label}
+          type="button"
+          onClick={() => onChange(r.days)}
+          className={cn(
+            'inline-flex h-7 items-center justify-center rounded-md px-3 text-xs font-medium transition-all',
+            active
+              ? 'bg-card text-foreground shadow-soft ring-1 ring-foreground/5 dark:ring-white/5'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          {r.label}
+        </button>
+      );
+    })}
+  </div>
 );
 
 const Trends = () => {
@@ -95,7 +118,8 @@ const Trends = () => {
   });
   const weight = useQuery({
     queryKey: ['weight', 'range', start, end],
-    queryFn: () => api.weight.list({ start: `${start}T00:00:00Z`, end: `${end}T23:59:59Z`, limit: 365 }),
+    queryFn: () =>
+      api.weight.list({ start: `${start}T00:00:00Z`, end: `${end}T23:59:59Z`, limit: 365 }),
   });
   const readiness = useQuery({
     queryKey: ['readiness', start, end],
@@ -103,7 +127,8 @@ const Trends = () => {
   });
   const sleep = useQuery({
     queryKey: ['sleep', start, end],
-    queryFn: () => api.wearables.sleep({ start: `${start}T00:00:00Z`, end: `${end}T23:59:59Z` }),
+    queryFn: () =>
+      api.wearables.sleep({ start: `${start}T00:00:00Z`, end: `${end}T23:59:59Z` }),
   });
 
   const daysData = range.data?.days ?? [];
@@ -128,34 +153,33 @@ const Trends = () => {
     <>
       <PageHeader
         title="Trends"
-        description={`Last ${days} days · ${start} → ${end}`}
-        actions={
-          <div className="inline-flex rounded-md border bg-card p-0.5">
-            {RANGES.map((r) => (
-              <Button
-                key={r.label}
-                size="sm"
-                variant={days === r.days ? 'default' : 'ghost'}
-                className={cn('h-7 px-3 text-xs', days === r.days && 'shadow-sm')}
-                onClick={() => setDays(r.days)}
-              >
-                {r.label}
-              </Button>
-            ))}
-          </div>
+        description={
+          <span>
+            Last <span className="font-medium text-foreground">{days}</span> days ·{' '}
+            <span className="font-mono text-xs">{start}</span> →{' '}
+            <span className="font-mono text-xs">{end}</span>
+          </span>
         }
+        actions={<RangeToggle days={days} onChange={setDays} />}
       />
       {range.isLoading ? (
-        <Spinner />
+        <div className="grid place-items-center py-20">
+          <Spinner className="h-5 w-5" />
+        </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          <ChartCard title="kcal" data={kcal} color="hsl(var(--primary))" />
-          <ChartCard title="protein" data={protein} color="hsl(var(--ok))" unit="g" />
-          <ChartCard title="carbs" data={carbs} color="hsl(var(--warn))" unit="g" />
-          <ChartCard title="fat" data={fat} color="hsl(var(--bad))" unit="g" />
-          <ChartCard title="weight" data={weights} color="hsl(var(--primary))" unit="kg" />
-          <ChartCard title="recovery" data={recoveries} color="hsl(var(--ok))" />
-          <ChartCard title="sleep score" data={sleeps} color="hsl(var(--primary))" />
+          <ChartCard id="kcal" title="kcal" data={kcal} color="hsl(var(--primary))" />
+          <ChartCard id="protein" title="protein" data={protein} color="hsl(var(--ok))" unit="g" />
+          <ChartCard id="carbs" title="carbs" data={carbs} color="hsl(var(--warn))" unit="g" />
+          <ChartCard id="fat" title="fat" data={fat} color="hsl(var(--bad))" unit="g" />
+          <ChartCard id="weight" title="weight" data={weights} color="hsl(var(--primary))" unit="kg" />
+          <ChartCard id="recovery" title="recovery" data={recoveries} color="hsl(var(--ok))" />
+          <ChartCard
+            id="sleep"
+            title="sleep score"
+            data={sleeps}
+            color="hsl(var(--primary))"
+          />
         </div>
       )}
     </>

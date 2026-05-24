@@ -5,7 +5,10 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('rounded-lg border bg-card text-card-foreground shadow-sm', className)}
+      className={cn(
+        'card-highlight relative overflow-hidden rounded-xl bg-card text-card-foreground shadow-soft ring-1 ring-foreground/5 dark:ring-white/5',
+        className,
+      )}
       {...props}
     />
   ),
@@ -14,7 +17,7 @@ Card.displayName = 'Card';
 
 export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex flex-col space-y-1.5 p-5', className)} {...props} />
+    <div ref={ref} className={cn('flex flex-col space-y-1.5 px-5 pb-3 pt-5', className)} {...props} />
   ),
 );
 CardHeader.displayName = 'CardHeader';
@@ -23,7 +26,10 @@ export const CardTitle = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElemen
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-base font-semibold leading-none tracking-tight', className)}
+      className={cn(
+        'text-sm font-semibold leading-none tracking-tight text-foreground',
+        className,
+      )}
       {...props}
     />
   ),
@@ -39,14 +45,14 @@ CardDescription.displayName = 'CardDescription';
 
 export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-5 pt-0', className)} {...props} />
+    <div ref={ref} className={cn('px-5 pb-5', className)} {...props} />
   ),
 );
 CardContent.displayName = 'CardContent';
 
 export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex items-center p-5 pt-0', className)} {...props} />
+    <div ref={ref} className={cn('flex items-center px-5 pb-5', className)} {...props} />
   ),
 );
 CardFooter.displayName = 'CardFooter';

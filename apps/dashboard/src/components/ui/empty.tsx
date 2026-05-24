@@ -13,14 +13,20 @@ export type EmptyProps = {
 export const Empty = ({ icon: Icon, title, description, action, className }: EmptyProps) => (
   <div
     className={cn(
-      'flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-10 text-center',
+      'flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border-strong/60 bg-surface-2/50 py-10 text-center',
       className,
     )}
   >
-    {Icon ? <Icon className="h-8 w-8 text-muted-foreground" /> : null}
+    {Icon ? (
+      <div className="grid h-10 w-10 place-items-center rounded-full bg-muted text-muted-foreground">
+        <Icon className="h-4 w-4" />
+      </div>
+    ) : null}
     <div className="space-y-1">
-      <p className="text-sm font-medium">{title}</p>
-      {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
+      <p className="text-sm font-medium text-foreground">{title}</p>
+      {description ? (
+        <p className="max-w-sm text-xs text-muted-foreground">{description}</p>
+      ) : null}
     </div>
     {action}
   </div>

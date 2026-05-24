@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { Activity, Droplets, Heart, Moon, Scale, Trash2, Undo2 } from 'lucide-react';
+import { Activity, Droplets, Flame, Heart, Moon, Scale, Trash2, Undo2 } from 'lucide-react';
 import { useState } from 'react';
 import { MacroRings } from '@/components/macro-rings';
 import { PageHeader } from '@/components/page-header';
@@ -12,6 +12,7 @@ import { Empty } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
+import { cn } from '@/lib/cn';
 import { fmtNum, fmtTime, todayIso } from '@/lib/format';
 
 const HYDRATION_STEPS = [250, 500, 750];
@@ -63,11 +64,40 @@ const HydrationQuickAdd = () => {
   );
 };
 
+const ProgressBar = ({
+  value,
+  goal,
+  color,
+}: {
+  value: number;
+  goal: number | null;
+  color: string;
+}) => {
+  const ratio = goal && goal > 0 ? Math.min(1, value / goal) : 0;
+  return (
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+      <div
+        className="h-full rounded-full transition-[width] duration-500"
+        style={{ width: `${ratio * 100}%`, background: color }}
+      />
+    </div>
+  );
+};
+
 const MealBadge = ({ meal_type }: { meal_type: string }) => (
   <Badge variant="muted" className="font-normal capitalize">
     {meal_type}
   </Badge>
 );
+
+const formatDateLong = (iso: string): string => {
+  const d = new Date(`${iso}T12:00:00Z`);
+  return d.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+};
 
 const Today = () => {
   const qc = useQueryClient();
@@ -141,12 +171,22 @@ const Today = () => {
   const r = recovery.data?.[0];
   const sl = sleep.data?.[0];
   const w = weight.data?.[0];
+  const recoveryTone =
+    r?.score == null ? 'default' : r.score >= 67 ? 'ok' : r.score >= 34 ? 'warn' : 'bad';
+  const sleepTone =
+    sl?.score == null ? 'default' : sl.score >= 70 ? 'ok' : sl.score >= 50 ? 'warn' : 'bad';
 
   return (
     <>
       <PageHeader
         title="Today"
-        description={s.date}
+        description={
+          <span className="flex items-center gap-2">
+            <span>{formatDateLong(s.date)}</span>
+            <span className="text-muted-foreground/50">·</span>
+            <span className="font-mono text-xs">{s.date}</span>
+          </span>
+        }
         actions={
           <Button
             variant="ghost"
@@ -159,64 +199,98 @@ const Today = () => {
         }
       />
 
-      <div className="grid gap-6">
+      <div className="grid gap-5">
         <Card>
-          <CardHeader>
-            <CardTitle>Macros vs goals</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2">
+                <Flame className="h-4 w-4 text-primary" />
+                Macros vs goals
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Live totals from today's intake — tap a ring to break it down.
+              </p>
+            </div>
+            <Badge variant="muted">
+              {fmtNum(s.totals.entry_count, 0)} {s.totals.entry_count === 1 ? 'entry' : 'entries'}
+            </Badge>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-3">
             <MacroRings macros={macros} />
           </CardContent>
         </Card>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             icon={Droplets}
+            tone="primary"
             label="hydration"
             value={`${fmtNum(s.totals.hydration_ml)} ml`}
-            hint={s.goals.hydration_ml ? `goal ${fmtNum(s.goals.hydration_ml)} ml` : null}
+            hint={
+              s.goals.hydration_ml ? (
+                <span className="flex flex-col gap-1">
+                  <span>goal {fmtNum(s.goals.hydration_ml)} ml</span>
+                  <ProgressBar
+                    value={s.totals.hydration_ml}
+                    goal={s.goals.hydration_ml}
+                    color="hsl(var(--primary))"
+                  />
+                </span>
+              ) : null
+            }
           />
           <StatCard
             icon={Moon}
+            tone={sleepTone}
             label="sleep score"
-            value={sl?.score ?? '—'}
-            hint={sl ? `${fmtNum((sl.duration_s ?? 0) / 3600, 1)} h` : 'no data'}
+            value={sl?.score != null ? String(sl.score) : '—'}
+            hint={sl ? `${fmtNum((sl.duration_s ?? 0) / 3600, 1)} h asleep` : 'no data'}
           />
           <StatCard
             icon={Heart}
+            tone={recoveryTone}
             label="recovery"
-            value={r?.score ?? '—'}
+            value={r?.score != null ? String(r.score) : '—'}
             hint={r?.hrv_rmssd ? `HRV ${fmtNum(r.hrv_rmssd, 0)} ms` : 'no data'}
-            tone={r?.score ? (r.score >= 67 ? 'ok' : r.score >= 34 ? 'warn' : 'bad') : 'default'}
           />
           <StatCard
             icon={Scale}
             label="weight"
             value={w ? `${fmtNum(w.kg, 1)} kg` : '—'}
-            hint={w?.body_fat_pct != null ? `${fmtNum(w.body_fat_pct, 1)}% body fat` : null}
+            hint={w?.body_fat_pct != null ? `${fmtNum(w.body_fat_pct, 1)}% body fat` : 'no entry'}
           />
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Hydration</span>
-              <HydrationQuickAdd />
-            </CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2">
+                <Droplets className="h-4 w-4 text-primary" />
+                Hydration
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Quick add — common pours or a custom amount.
+              </p>
+            </div>
+            <HydrationQuickAdd />
           </CardHeader>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Meals</span>
-              <span className="text-xs font-normal text-muted-foreground">
-                {fmtNum(s.totals.entry_count, 0)} entries · avg confidence{' '}
-                {s.totals.avg_confidence === null ? '—' : fmtNum(s.totals.avg_confidence, 2)}
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle>Meals</CardTitle>
+              <span className="text-xs text-muted-foreground">
+                avg confidence{' '}
+                <span className="font-medium text-foreground">
+                  {s.totals.avg_confidence === null
+                    ? '—'
+                    : fmtNum(s.totals.avg_confidence, 2)}
+                </span>
               </span>
-            </CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             {intake.isLoading ? (
               <Spinner />
             ) : !intake.data?.length ? (
@@ -226,18 +300,20 @@ const Today = () => {
                 description="Ask your agent to log via MCP, or use Foods / Recipes to add manually."
               />
             ) : (
-              <ul className="divide-y">
+              <ul className="-mx-2 divide-y divide-border/60">
                 {intake.data.map((e) => (
                   <li
                     key={e.id}
-                    className="flex items-center justify-between gap-3 py-2.5 text-sm"
+                    className={cn(
+                      'group flex items-center justify-between gap-3 rounded-md px-2 py-2.5 text-sm transition-colors hover:bg-surface-2',
+                    )}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className="font-mono text-xs tabular-nums text-muted-foreground">
                         {fmtTime(e.ts)}
                       </span>
                       <MealBadge meal_type={e.meal_type} />
-                      <span className="truncate">
+                      <span className="truncate text-foreground">
                         {e.custom_name ??
                           (e.ref_kind === 'food'
                             ? `food · ${fmtNum(e.grams, 0)} g`
@@ -246,15 +322,17 @@ const Today = () => {
                               : `recipe · ${fmtNum(e.servings, 1)} svg`)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-xs tabular-nums text-muted-foreground">
-                      <span>{fmtNum(e.kcal, 0)} kcal</span>
+                    <div className="flex items-center gap-3 text-xs tabular-nums text-muted-foreground">
+                      <span className="font-medium text-foreground">
+                        {fmtNum(e.kcal, 0)} kcal
+                      </span>
                       <span>P {fmtNum(e.protein_g, 1)}</span>
                       <span>C {fmtNum(e.carb_g, 1)}</span>
                       <span>F {fmtNum(e.fat_g, 1)}</span>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
                         disabled={removeIntake.isPending}
                         onClick={() => removeIntake.mutate(e.id)}
                       >
