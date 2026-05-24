@@ -49,7 +49,7 @@ export type LabPanel = {
   created_at: string;
 };
 
-const resolveBiomarker = (ctx: Ctx, key: string): Biomarker => {
+export const resolveBiomarker = (ctx: Ctx, key: string): Biomarker => {
   const findOne = (sql: string, param: string): Biomarker | undefined =>
     ctx.db.prepare(sql).get(param) as Biomarker | undefined;
   const byId = findOne('SELECT * FROM biomarkers WHERE id = ?', key);

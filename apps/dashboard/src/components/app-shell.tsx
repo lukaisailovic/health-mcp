@@ -9,6 +9,7 @@ import {
   History,
   Salad,
   Settings,
+  Sparkles,
   Target,
   Watch,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ const NAV: NavItem[] = [
   { to: '/today', label: 'Today', icon: CalendarCheck },
   { to: '/log', label: 'Log', icon: History },
   { to: '/trends', label: 'Trends', icon: BarChart3 },
+  { to: '/insights', label: 'Insights', icon: Sparkles },
   { to: '/foods', label: 'Foods', icon: Salad },
   { to: '/recipes', label: 'Recipes', icon: ChefHat },
   { to: '/batches', label: 'Batches', icon: CookingPot },

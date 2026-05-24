@@ -10,6 +10,7 @@ import { openDb } from './db/client.js';
 import { runMigrations } from './db/migrations.js';
 import { runDoctor } from './doctor.js';
 import { runExport } from './export.js';
+import { runImportUsda } from './import-usda.js';
 import { createHonoApp } from './http.js';
 import { createLogger } from './logger.js';
 import { HealthMcpServer } from './mcp/server.js';
@@ -73,6 +74,19 @@ const main = async () => {
       process.exit(2);
     }
     runExport({ db, outPath: out, includeRaw: config.exportIncludeRaw });
+    db.close();
+    return;
+  }
+
+  if (config.subcommand === 'import-usda') {
+    const path = config.subcommandArgs[0];
+    if (!path) {
+      process.stderr.write('import-usda: requires JSON file path\n');
+      process.exit(2);
+    }
+    if (config.autoMigrate) runMigrations(db, logger);
+    const result = runImportUsda({ db, logger, path });
+    process.stdout.write(`${JSON.stringify(result)}\n`);
     db.close();
     return;
   }

@@ -215,6 +215,26 @@ export const api = {
     deleteResult: (id: string) => del<{ id: string }>(`/api/lab-results/${encodeURIComponent(id)}`),
   },
 
+  correlate: {
+    metrics: () => get<Array<{ source: string; fields: string[] }>>('/api/correlate/metrics'),
+    run: (body: {
+      a: { source: string; field: string; agg: string; filter?: Record<string, string> };
+      b: { source: string; field: string; agg: string; filter?: Record<string, string> };
+      range: { start: string; end: string };
+      bucket?: 'day' | 'week' | 'month';
+      lag_buckets?: number;
+      method?: 'pearson' | 'spearman';
+    }) =>
+      post<{
+        method: 'pearson' | 'spearman';
+        bucket: 'day' | 'week' | 'month';
+        lag_buckets: number;
+        n: number;
+        r: number | null;
+        pairs: Array<{ bucket: string; a: number; b: number }>;
+      }>('/api/correlate', body),
+  },
+
   wearables: {
     providers: () => get<WearableProviderInfoDto[]>('/api/wearables/providers'),
     status: () => get<WearableStatusDto[]>('/api/wearables/status'),

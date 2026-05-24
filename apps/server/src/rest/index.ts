@@ -16,6 +16,7 @@ import {
   setOptimalRange,
   updateBiomarker,
 } from '../services/biomarkers.js';
+import { correlate, listCorrelateMetrics } from '../services/correlate.js';
 import {
   createCustomFood,
   deleteCustomFood,
@@ -213,6 +214,11 @@ export const mountRestRoutes = (app: Hono, ctx: WearableServiceCtx): void => {
         bucket: c.req.query('bucket') as 'day' | 'week' | undefined,
       }),
     ),
+  );
+
+  app.get('/api/correlate/metrics', (c) => wrap(c, () => listCorrelateMetrics()));
+  app.post('/api/correlate', (c) =>
+    wrap(c, async () => correlate(ctx, await parseBody(c))),
   );
 
   // Recipes / batches

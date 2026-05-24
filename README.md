@@ -165,6 +165,9 @@ search_biomarker, get_biomarker, create_custom_biomarker, update_biomarker, set_
 log_lab_panel, log_lab_result, list_lab_results, latest_biomarkers, biomarker_trend
 list_lab_panels, get_lab_panel, delete_lab_result, delete_lab_panel
 
+# insights  (hidden until ≥7 days intake AND ≥1 wearable_daily OR ≥3 lab_results)
+correlate, list_correlate_metrics
+
 # wearables  (most hidden until a provider is linked)
 wearables_list_providers, wearables_status,
 wearable_connect_url, wearable_disconnect, sync_wearables,
@@ -220,7 +223,7 @@ The test suite runs file-backed SQLite in tmpdirs with the same pragmas as produ
 | P3 | shipped | Recipes, cooked batches with depletion, remembered meals. `log_intake` accepts `recipe_serving` + `batch` refs. |
 | P4 | shipped | Wearables abstraction, provider registry, file-backed auth store (mode 0600 + atomic writes + per-provider mutex), signed-state OAuth callback with single-use nonce, Whoop provider (rate-limited client, refresh rotation, raw + normalized sync). |
 | P5 | shipped | Dashboard SPA (Vite + TanStack Router + TanStack Query + shadcn primitives + Recharts), served from the same Hono app at `/` with SPA fallback. Auto-opens the browser on HTTP boot. |
-| P6 | not started | USDA bulk import, lab PDF (agent-side), `correlate` tool, optional wearable webhooks. |
+| P6 | shipped | `correlate` tool + `list_correlate_metrics` companion (capability-gated), Pearson/Spearman over Day/Week/Month buckets with `forward_fill` for sparse series and signed `lag_buckets`. USDA bulk JSON import subcommand (`health-mcp import-usda <dump.json>`). Lab PDF stays agent-side by design. Dashboard exposes correlate via an Insights page. |
 | P7+ | not started | Oura, Fitbit, Polar, Garmin, Apple Health (file_import). |
 
 See `PLAN.md` for the design rationale and detailed breakdown.
