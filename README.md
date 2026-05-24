@@ -1,0 +1,226 @@
+# health-mcp
+
+Personal nutrition + wearables + biomarker tracker, exposed as an MCP server so any agent (Claude, etc.) can read and write the data.
+
+Designed for single-user, self-hosted use. SQLite-backed. Local-first. No AI provider dependency — the calling agent does estimation; this server is the system of record and insight layer.
+
+> **Status: P0–P4 shipped.** Nutrition, biomarkers, recipes, batches, remembered meals, wearables abstraction + Whoop provider, plus the MCP HTTP + stdio transports and a REST mirror. Dashboard (P5) is not built yet.
+
+## What works today
+
+- **Nutrition** — foods (manual + USDA + Open Food Facts), recipes, cooked batches with depletion across days, intake entries, hydration, weight, body measurements, daily macro goals.
+- **Biomarkers** — ~60 seeded biomarkers with LOINC codes and curated ranges, lab panels + results over time, three-range model (lab-supplied / per-marker default / curated optimal), unit conversion for the common dual-unit markers, trend + latest-value queries.
+- **Recipes & batches** — recipes scale to per-serving macros, batches deplete as you log intake against them, atomic batch updates inside `log_intake`.
+- **Remembered meals** — label re-loggable meals (canonical text for agent re-estimation, or pre-resolved items).
+- **Wearables** — provider-agnostic abstraction with a Whoop OAuth2 provider (raw + normalized tables, refresh-token rotation, per-provider mutex, signed-state callback).
+- **Two surfaces, one service layer** — MCP Streamable-HTTP at `/mcp`, MCP stdio mode behind `--stdio`, REST at `/api/*` (used by the eventual dashboard).
+- **Capability-gated tools** — Whoop and wearable tools are hidden until a provider is linked; remembered-meal read tools are hidden until at least one is saved. Keeps the agent's tool surface small.
+
+## Quick start
+
+The server isn't published to npm yet. Run from source:
+
+```bash
+pnpm install
+cd apps/server
+
+# HTTP server with default config (loopback, no auth, port 7777)
+pnpm dev
+
+# As an MCP stdio server (for direct Claude Desktop integration, etc.)
+pnpm dev -- --stdio
+
+# Override port + require bearer auth
+HEALTH_MCP_TOKEN=$(openssl rand -hex 32) pnpm dev -- --port 8080
+```
+
+Subcommands:
+
+```bash
+pnpm dev -- migrate              # run pending migrations and exit
+pnpm dev -- doctor               # self-check (DB pragmas, file modes, token)
+pnpm dev -- export /tmp/x.jsonl  # dump full DB; raw_json redacted unless --include-raw
+```
+
+Wire into an MCP client (Claude Desktop):
+
+```json
+{
+  "command": "node",
+  "args": ["--import", "tsx", "/path/to/health-mcp/apps/server/src/index.ts", "--stdio"]
+}
+```
+
+Once published, the same will work via `npx`:
+
+```bash
+npx @lukaisailovic/health-mcp --stdio
+```
+
+## Configuration
+
+CLI flag > env var > config file > default.
+
+| Option | Env | Flag | Default |
+|---|---|---|---|
+| Transport | `HEALTH_MCP_STDIO` | `--stdio` | HTTP |
+| Port | `HEALTH_MCP_PORT` | `--port` | `7777` |
+| Bind host | `HEALTH_MCP_HOST` | `--host` | `127.0.0.1` |
+| SQLite path | `HEALTH_MCP_DB` | `--db` | `~/.health-mcp/data.db` |
+| Bearer token | `HEALTH_MCP_TOKEN` | `--token` | unset (loopback-only) |
+| Dashboard | `HEALTH_MCP_DASHBOARD` | `--no-dashboard` | enabled (not yet built) |
+| Timezone | `HEALTH_MCP_TZ` | `--tz` | system TZ |
+| USDA API key | `HEALTH_MCP_USDA_API_KEY` | — | unset (local-only search) |
+| Whoop client id | `HEALTH_MCP_WHOOP_CLIENT_ID` | — | — |
+| Whoop client secret | `HEALTH_MCP_WHOOP_CLIENT_SECRET` | — | — |
+| Wearable redirect | `HEALTH_MCP_WEARABLE_REDIRECT_BASE` | — | `http://{host}:{port}/auth/wearable/callback` |
+| Whoop sync cron | `HEALTH_MCP_WHOOP_SYNC_CRON` | — | `*/30 * * * *` |
+| Log level | `HEALTH_MCP_LOG_LEVEL` | `--log-level` | `info` |
+| Config file | `HEALTH_MCP_CONFIG` | `--config` | — |
+
+`--no-auto-migrate`, `--allow-insecure-db`, `--allow-insecure-auth` are also available for operator workflows.
+
+Security defaults that you'll notice on first run:
+
+- Binding off-loopback without `HEALTH_MCP_TOKEN` is refused.
+- Tokens shorter than 32 chars or with very low entropy are refused.
+- `data.db` and `auth.json` are created with mode `0600`, parent dir `0700`. Existing files with looser modes refuse to open unless `--allow-insecure-*` is set.
+- Wearable refresh tokens live in `~/.health-mcp/auth.json` — separate from `data.db` so the DB can be exported without leaking credentials.
+
+## Usage examples
+
+Once running, the dashboard is not yet built, but every behavior is reachable via REST or MCP. A few REST examples:
+
+```bash
+# health probe
+curl http://127.0.0.1:7777/health
+
+# create a custom food
+curl -X POST http://127.0.0.1:7777/api/foods \
+  -H 'content-type: application/json' \
+  -d '{"name":"Egg","nutrients_per_100g":{"kcal_per_100g":155,"protein_g_per_100g":13,"carb_g_per_100g":1.1,"fat_g_per_100g":11}}'
+
+# log intake (food id from above)
+curl -X POST http://127.0.0.1:7777/api/intake \
+  -H 'content-type: application/json' \
+  -d '{"items":[{"ref":"food","food_id":"<id>","grams":150}]}'
+
+# daily summary
+curl http://127.0.0.1:7777/api/summary/daily
+
+# search biomarkers
+curl 'http://127.0.0.1:7777/api/biomarkers?query=glucose'
+
+# log a lab panel
+curl -X POST http://127.0.0.1:7777/api/lab-panels \
+  -H 'content-type: application/json' \
+  -d '{"lab_name":"Quest","drawn_at":"2026-05-01T08:00:00Z","fasting":true,"results":[
+        {"biomarker":"Glucose","value_numeric":92},
+        {"biomarker":"HDL Cholesterol","value_numeric":60}
+      ]}'
+
+# trend for one biomarker
+curl 'http://127.0.0.1:7777/api/biomarkers/Glucose/trend'
+```
+
+When `HEALTH_MCP_TOKEN` is set, every `/api/*` and `/mcp` call must carry `Authorization: Bearer <token>`. `/health`, `/version`, and `/auth/wearable/callback` are unauthenticated.
+
+For MCP, the Streamable-HTTP transport is at `/mcp` and follows the standard SDK flow (`initialize` → `notifications/initialized` → `tools/list` / `tools/call`). The stdio mode (`--stdio`) speaks the same protocol over stdin/stdout for embedding in Claude Desktop / Inspector.
+
+## Tools available
+
+```
+ping, discover_capabilities
+
+# food
+search_food, lookup_barcode, get_food
+create_custom_food, update_custom_food, delete_custom_food
+
+# intake
+log_intake, update_intake, delete_intake, list_intake, undo_last_intake
+
+# recipes + batches
+create_recipe, update_recipe, delete_recipe, list_recipes, get_recipe
+create_batch, list_batches, get_batch, archive_batch, delete_batch
+
+# remembered meals  (read tools hidden until you save one)
+remember_meal, list_remembered_meals, get_remembered_meal,
+update_remembered_meal, forget_meal, log_remembered_meal
+
+# simple logs
+log_hydration, list_hydration, delete_hydration
+log_weight,    list_weight,    delete_weight
+log_measurement, list_measurements, delete_measurement
+get_goals, set_goals
+
+# summaries
+daily_summary, weekly_summary, range_summary
+
+# biomarkers + labs
+search_biomarker, get_biomarker, create_custom_biomarker, update_biomarker, set_optimal_range
+log_lab_panel, log_lab_result, list_lab_results, latest_biomarkers, biomarker_trend
+list_lab_panels, get_lab_panel, delete_lab_result, delete_lab_panel
+
+# wearables  (most hidden until a provider is linked)
+wearables_list_providers, wearables_status,
+wearable_connect_url, wearable_disconnect, sync_wearables,
+wearable_sleep, wearable_activity, wearable_readiness, wearable_daily, wearable_metric_minutes,
+set_activity_type_map
+
+# Whoop-specific (hidden until linked)
+whoop_recovery, whoop_cycles, whoop_sleep_raw, whoop_workouts_raw,
+whoop_profile, whoop_body_measurement
+```
+
+Call `discover_capabilities` to get the live catalog with current enable status grouped by area.
+
+## Architecture (one paragraph)
+
+A single Hono app mounts the MCP Streamable-HTTP transport at `/mcp` (via a raw Node http-server handler so the SDK gets native req/res), REST routes at `/api/*`, the wearable OAuth callback at `/auth/wearable/callback`, and (later) the static dashboard at `/`. Storage is SQLite via better-sqlite3 with WAL + `foreign_keys = ON`. Migrations are checked-in SQL (no Drizzle migration tooling needed). Wearable data flows through a `WearableProvider` interface that writes both per-vendor raw mirrors (`whoop_*`) and normalized cross-vendor tables (`wearable_sleep`, `wearable_activity`, ...) in one transaction per page. Whoop refresh-token rotation is serialized through a per-provider mutex so concurrent 401s can't double-spend. Service layer (`src/services/*.ts`) is the single source of business logic — MCP tools and REST routes are thin wrappers.
+
+## Tech
+
+Node ≥20 · pnpm · TypeScript (ESM, strict) · Hono · `@modelcontextprotocol/sdk` (v1) · better-sqlite3 · Zod · croner · Vitest · Biome.
+
+Dashboard (P5, not yet built): TanStack Router + Query · Tailwind · [Spell UI](https://spell.sh) + shadcn/ui · Recharts.
+
+## Development
+
+```bash
+pnpm install
+pnpm typecheck   # workspace-wide
+pnpm test        # 37 tests across services + integration
+pnpm build       # tsc compile of shared + server
+pnpm lint        # biome
+pnpm lint:fix    # biome auto-fix
+
+# server (HTTP) from source
+cd apps/server && pnpm dev
+
+# server (stdio) from source
+cd apps/server && pnpm dev -- --stdio
+
+# inspect the MCP server during development
+cd apps/server && pnpm inspect
+```
+
+The test suite runs file-backed SQLite in tmpdirs with the same pragmas as production, plus an integration test that exercises the REST surface through `app.fetch`.
+
+## Roadmap
+
+| Phase | Status | Scope |
+|---|---|---|
+| P0 | shipped | Workspace, TS, Biome, Vitest, config/CLI, DB client + migrations, MCP Streamable-HTTP + stdio transports, `/health`+`/version`, `ping` tool. |
+| P1 | shipped | Nutrition: foods (USDA + OFF + manual), intake (food/custom), hydration, weight, measurements, goals, daily/weekly/range summaries. |
+| P2 | shipped | Biomarkers: ~60-marker seed, lab panels + results, unit conversion, latest + trend + out-of-range filters. |
+| P3 | shipped | Recipes, cooked batches with depletion, remembered meals. `log_intake` accepts `recipe_serving` + `batch` refs. |
+| P4 | shipped | Wearables abstraction, provider registry, file-backed auth store (mode 0600 + atomic writes + per-provider mutex), signed-state OAuth callback with single-use nonce, Whoop provider (rate-limited client, refresh rotation, raw + normalized sync). |
+| P5 | not started | Dashboard SPA (TanStack Router + Spell + Recharts). |
+| P6 | not started | USDA bulk import, lab PDF (agent-side), `correlate` tool, optional wearable webhooks. |
+| P7+ | not started | Oura, Fitbit, Polar, Garmin, Apple Health (file_import). |
+
+See `PLAN.md` for the design rationale and detailed breakdown.
+
+## License
+
+Personal project. License TBD.

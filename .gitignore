@@ -1,0 +1,12 @@
+PLAN.md
+node_modules/
+dist/
+build/
+.DS_Store
+*.log
+.health-mcp/
+coverage/
+.env
+.env.*
+!.env.example
+apps/server/public/
