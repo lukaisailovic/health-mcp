@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { bearerAuth } from './auth.js';
 import type { Config } from './config.js';
+import { mountDashboard, resolvePublicDir } from './dashboard.js';
 import type { Logger } from './logger.js';
 import { mountRestRoutes } from './rest/index.js';
 import type { WearableServiceCtx } from './services/wearables.js';
@@ -36,5 +37,15 @@ export const createHonoApp = (opts: {
   }
 
   mountRestRoutes(app, opts.ctx);
+
+  if (opts.config.dashboard) {
+    const publicDir = resolvePublicDir(opts.config.publicDir);
+    if (publicDir) {
+      mountDashboard(app, { publicDir, logger: opts.logger });
+    } else {
+      opts.logger.warn('dashboard enabled but no public/ build found; serving API only');
+    }
+  }
+
   return app;
 };

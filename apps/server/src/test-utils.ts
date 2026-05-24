@@ -28,6 +28,8 @@ export const makeTestCtx = (overrides: Partial<Config> = {}): TestCtx => {
     authDir: dir,
     token: null,
     dashboard: false,
+    publicDir: null,
+    openBrowser: false,
     tz: 'UTC',
     usdaApiKey: null,
     whoopClientId: null,

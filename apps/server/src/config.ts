@@ -13,6 +13,8 @@ export type Config = {
   authDir: string;
   token: string | null;
   dashboard: boolean;
+  publicDir: string | null;
+  openBrowser: boolean;
   tz: string;
   usdaApiKey: string | null;
   whoopClientId: string | null;
@@ -72,6 +74,9 @@ export const parseConfig = (argv: string[] = process.argv.slice(2)): Config => {
       db: { type: 'string' },
       token: { type: 'string' },
       'no-dashboard': { type: 'boolean' },
+      'public-dir': { type: 'string' },
+      open: { type: 'boolean' },
+      'no-open': { type: 'boolean' },
       tz: { type: 'string' },
       'log-level': { type: 'string' },
       config: { type: 'string' },
@@ -159,6 +164,23 @@ export const parseConfig = (argv: string[] = process.argv.slice(2)): Config => {
     resolveString(undefined, 'WEARABLE_REDIRECT_BASE', 'wearable_redirect_base') ??
     `http://${host === '0.0.0.0' ? '127.0.0.1' : host}:${port}/auth/wearable/callback`;
 
+  const publicDir = resolveString(
+    parsed.values['public-dir'] as string | undefined,
+    'PUBLIC_DIR',
+    'public_dir',
+  );
+
+  const openBrowser = resolveOpen({
+    flagOpen: parsed.values.open as boolean | undefined,
+    flagNoOpen: parsed.values['no-open'] as boolean | undefined,
+    env: parseBool(process.env[`${ENV_PREFIX}OPEN`]),
+    file: fileVal<boolean>('open'),
+    stdio: Boolean(stdio),
+    dashboard,
+    subcommand,
+    ttyOut: Boolean(process.stdout.isTTY),
+  });
+
   return {
     stdio: Boolean(stdio),
     port,
@@ -167,6 +189,8 @@ export const parseConfig = (argv: string[] = process.argv.slice(2)): Config => {
     authDir: dataDir,
     token,
     dashboard,
+    publicDir,
+    openBrowser,
     tz,
     usdaApiKey: resolveString(undefined, 'USDA_API_KEY', 'usda_api_key'),
     whoopClientId: resolveString(undefined, 'WHOOP_CLIENT_ID', 'whoop_client_id'),
@@ -183,6 +207,24 @@ export const parseConfig = (argv: string[] = process.argv.slice(2)): Config => {
     retz: Boolean(parsed.values.retz),
     exportIncludeRaw: Boolean(parsed.values['include-raw']),
   };
+};
+
+const resolveOpen = (input: {
+  flagOpen: boolean | undefined;
+  flagNoOpen: boolean | undefined;
+  env: boolean | null;
+  file: boolean | null;
+  stdio: boolean;
+  dashboard: boolean;
+  subcommand: Config['subcommand'];
+  ttyOut: boolean;
+}): boolean => {
+  if (input.flagNoOpen) return false;
+  if (input.flagOpen) return true;
+  if (input.env !== null) return input.env;
+  if (input.file !== null) return input.file;
+  if (input.stdio || !input.dashboard || input.subcommand !== 'serve' || !input.ttyOut) return false;
+  return true;
 };
 
 const isLoopback = (host: string): boolean => {
@@ -221,7 +263,10 @@ Options:
   --host <addr>            bind host (default 127.0.0.1)
   --db <path>              SQLite path (default ~/.health-mcp/data.db)
   --token <secret>         require Bearer auth (HTTP mode only)
-  --no-dashboard           disable static dashboard
+  --no-dashboard           disable the static dashboard
+  --public-dir <path>      override location of dashboard build (defaults to packaged ./public)
+  --open                   open dashboard in default browser on start
+  --no-open                never open the browser
   --tz <iana>              timezone for date buckets
   --log-level <lvl>        debug|info|warn|error
   --config <path>          JSON config file

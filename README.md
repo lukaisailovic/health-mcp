@@ -4,7 +4,7 @@ Personal nutrition + wearables + biomarker tracker, exposed as an MCP server so 
 
 Designed for single-user, self-hosted use. SQLite-backed. Local-first. No AI provider dependency — the calling agent does estimation; this server is the system of record and insight layer.
 
-> **Status: P0–P4 shipped.** Nutrition, biomarkers, recipes, batches, remembered meals, wearables abstraction + Whoop provider, plus the MCP HTTP + stdio transports and a REST mirror. Dashboard (P5) is not built yet.
+> **Status: P0–P5 shipped.** Nutrition, biomarkers, recipes, batches, remembered meals, wearables abstraction + Whoop provider, MCP HTTP + stdio transports, REST mirror, and a React dashboard SPA served from the same server.
 
 ## What works today
 
@@ -22,27 +22,30 @@ The server isn't published to npm yet. Run from source:
 
 ```bash
 pnpm install
-cd apps/server
+pnpm build           # builds shared types, dashboard, and the server
+pnpm start           # runs the compiled server with the bundled dashboard
 
-# HTTP server with default config (loopback, no auth, port 7777)
-pnpm dev
-
-# As an MCP stdio server (for direct Claude Desktop integration, etc.)
-pnpm dev -- --stdio
-
-# Override port + require bearer auth
-HEALTH_MCP_TOKEN=$(openssl rand -hex 32) pnpm dev -- --port 8080
+# OR run everything in watch mode (server + dashboard dev with HMR + shared tsc --watch)
+pnpm dev             # → server on :7777, dashboard dev on :5173 (auto-proxies /api/* to :7777)
 ```
 
-Subcommands:
+The default HTTP mode auto-opens the dashboard in your browser at `http://127.0.0.1:7777`.
+Pass `--no-open` to keep it from launching, or `--no-dashboard` to skip serving the SPA entirely.
 
 ```bash
-pnpm dev -- migrate              # run pending migrations and exit
-pnpm dev -- doctor               # self-check (DB pragmas, file modes, token)
-pnpm dev -- export /tmp/x.jsonl  # dump full DB; raw_json redacted unless --include-raw
+pnpm start -- --stdio                           # MCP stdio for Claude Desktop / Inspector
+HEALTH_MCP_TOKEN=$(openssl rand -hex 32) pnpm start -- --port 8080
 ```
 
-Wire into an MCP client (Claude Desktop):
+Subcommands run against the compiled server:
+
+```bash
+pnpm start -- migrate              # run pending migrations and exit
+pnpm start -- doctor               # self-check (DB pragmas, file modes, token)
+pnpm start -- export /tmp/x.jsonl  # dump full DB; raw_json redacted unless --include-raw
+```
+
+Wire into an MCP client (Claude Desktop), in stdio mode:
 
 ```json
 {
@@ -51,10 +54,11 @@ Wire into an MCP client (Claude Desktop):
 }
 ```
 
-Once published, the same will work via `npx`:
+Once published, the same will work via `npx` (HTTP + dashboard is the default):
 
 ```bash
-npx @lukaisailovic/health-mcp --stdio
+npx @lukaisailovic/health-mcp           # HTTP server + dashboard, opens browser
+npx @lukaisailovic/health-mcp --stdio   # MCP stdio for Claude Desktop
 ```
 
 ## Configuration
@@ -215,7 +219,7 @@ The test suite runs file-backed SQLite in tmpdirs with the same pragmas as produ
 | P2 | shipped | Biomarkers: ~60-marker seed, lab panels + results, unit conversion, latest + trend + out-of-range filters. |
 | P3 | shipped | Recipes, cooked batches with depletion, remembered meals. `log_intake` accepts `recipe_serving` + `batch` refs. |
 | P4 | shipped | Wearables abstraction, provider registry, file-backed auth store (mode 0600 + atomic writes + per-provider mutex), signed-state OAuth callback with single-use nonce, Whoop provider (rate-limited client, refresh rotation, raw + normalized sync). |
-| P5 | not started | Dashboard SPA (TanStack Router + Spell + Recharts). |
+| P5 | shipped | Dashboard SPA (Vite + TanStack Router + TanStack Query + shadcn primitives + Recharts), served from the same Hono app at `/` with SPA fallback. Auto-opens the browser on HTTP boot. |
 | P6 | not started | USDA bulk import, lab PDF (agent-side), `correlate` tool, optional wearable webhooks. |
 | P7+ | not started | Oura, Fitbit, Polar, Garmin, Apple Health (file_import). |
 

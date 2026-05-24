@@ -10,3 +10,5 @@ coverage/
 .env.*
 !.env.example
 apps/server/public/
+apps/dashboard/src/routeTree.gen.ts
+packages/shared/dist/

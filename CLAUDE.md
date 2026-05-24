@@ -45,6 +45,27 @@ When a new preferred MCP is added to this project, append it under this section.
 
 Don't invoke speculatively.
 
+### Dashboard-specific (TanStack + transitions)
+
+When touching `apps/dashboard`, default to these patterns and skill sources:
+
+- **TanStack Router skills** ship with `@tanstack/router-core` in `apps/dashboard/node_modules/.pnpm/@tanstack+router-core@*/node_modules/@tanstack/router-core/skills/router-core/`. Load with `pnpm dlx @tanstack/intent@latest load @tanstack/router-core#<sub-skill>`. Sub-skills: `search-params`, `path-params`, `navigation`, `data-loading`, `auth-and-guards`, `code-splitting`, `not-found-and-errors`, `type-safety`, `ssr`.
+  - **Always** before substantial router work or a new route, load the relevant sub-skill rather than guessing.
+  - Routes are **client-first**, types are **fully inferred** (never cast `Route.useLoaderData()` etc.), and `createRootRouteWithContext<T>()({...})` is a double-call factory.
+  - The router skill is the source of truth for routing patterns; this CLAUDE.md does not duplicate them.
+- **`transitions-dev` skill** (`.claude/skills/transitions-dev/`) — load when adding micro-interactions (badge pop-ins, modal open/close, page slides, success checks, error shakes, panel reveals). Don't hand-roll transitions when an entry covers the case.
+
+### Preferred component library
+
+Order of preference for dashboard UI components:
+
+1. **Spell UI** (https://spell.sh) — via the shadcn MCP `@spell` registry, when present.
+2. **Vanilla shadcn/ui primitives** — local to `apps/dashboard/src/components/ui/`, hand-imported (Radix + Tailwind) when Spell doesn't ship a piece.
+3. **Recharts** — for charts.
+4. **Plain divs + Tailwind** — for layout glue only.
+
+Never hand-roll a component that exists in Spell or shadcn.
+
 ## Project-specific rules
 
 - **MCP tool naming**: `snake_case` (tool names *and* parameter names).

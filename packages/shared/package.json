@@ -3,14 +3,30 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./schemas": "./src/schemas.ts",
-    "./types": "./src/types.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./dto": {
+      "types": "./src/dto.ts",
+      "default": "./dist/dto.js"
+    },
+    "./schemas": {
+      "types": "./src/schemas.ts",
+      "default": "./dist/schemas.js"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./dist/types.js"
+    }
   },
+  "files": ["dist", "src"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "echo \"no tests\" && exit 0"
   },

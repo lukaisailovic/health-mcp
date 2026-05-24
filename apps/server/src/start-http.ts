@@ -3,6 +3,7 @@ import { serve } from '@hono/node-server';
 import type { Hono } from 'hono';
 import type { Config } from './config.js';
 import type { Logger } from './logger.js';
+import { openBrowser } from './open-browser.js';
 
 export type StartHttpServerArgs = {
   app: Hono;
@@ -17,6 +18,11 @@ type NodeHttpServer = {
   listeners: (event: string) => RequestListener[];
   removeAllListeners: (event: string) => void;
   close: (cb?: () => void) => void;
+};
+
+const dashboardUrl = (config: Config): string => {
+  const host = config.host === '0.0.0.0' ? '127.0.0.1' : config.host;
+  return `http://${host}:${config.port}`;
 };
 
 export const startHttpServer = async ({
@@ -49,7 +55,15 @@ export const startHttpServer = async ({
     for (const l of existing) l(req, res);
   });
 
-  logger.info('listening', { host: config.host, port: config.port, tz: config.tz });
+  const url = dashboardUrl(config);
+  logger.info('listening', { url, tz: config.tz });
+  if (config.dashboard) {
+    process.stdout.write(`\n  health-mcp · ${url}\n  press ctrl-c to stop\n\n`);
+  }
+
+  if (config.openBrowser) {
+    openBrowser(url);
+  }
 
   return () => new Promise<void>((resolve) => httpServer.close(() => resolve()));
 };
