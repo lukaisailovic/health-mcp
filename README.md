@@ -4,7 +4,7 @@ Personal nutrition + wearables + biomarker tracker, exposed as an MCP server so 
 
 Designed for single-user, self-hosted use. SQLite-backed. Local-first. No AI provider dependency — the calling agent does estimation; this server is the system of record and insight layer.
 
-> **Status: P0–P5 shipped.** Nutrition, biomarkers, recipes, batches, remembered meals, wearables abstraction + Whoop provider, MCP HTTP + stdio transports, REST mirror, and a React dashboard SPA served from the same server.
+> **Status: P0–P7 shipped.** Nutrition, biomarkers, recipes/batches, remembered meals, MCP HTTP + stdio transports, REST mirror, a React dashboard SPA served from the same server, a `correlate` insights tool with capability gating, a USDA bulk JSON importer, and a second wearable provider (Oura) on top of Whoop.
 
 ## What works today
 
@@ -13,7 +13,7 @@ Designed for single-user, self-hosted use. SQLite-backed. Local-first. No AI pro
 - **Recipes & batches** — recipes scale to per-serving macros, batches deplete as you log intake against them, atomic batch updates inside `log_intake`.
 - **Remembered meals** — label re-loggable meals (canonical text for agent re-estimation, or pre-resolved items).
 - **Wearables** — provider-agnostic abstraction with Whoop and Oura OAuth2 providers (raw + normalized tables, refresh-token rotation, per-provider mutex, signed-state callback).
-- **Two surfaces, one service layer** — MCP Streamable-HTTP at `/mcp`, MCP stdio mode behind `--stdio`, REST at `/api/*` (used by the eventual dashboard).
+- **Three surfaces, one service layer** — MCP Streamable-HTTP at `/mcp`, MCP stdio mode behind `--stdio`, REST at `/api/*`, and the dashboard SPA at `/`. Service modules in `src/services/` are the only place business logic lives.
 - **Capability-gated tools** — Whoop and wearable tools are hidden until a provider is linked; remembered-meal read tools are hidden until at least one is saved. Keeps the agent's tool surface small.
 
 ## Quick start
