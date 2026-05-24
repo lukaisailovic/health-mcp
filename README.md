@@ -12,7 +12,7 @@ Designed for single-user, self-hosted use. SQLite-backed. Local-first. No AI pro
 - **Biomarkers** — ~60 seeded biomarkers with LOINC codes and curated ranges, lab panels + results over time, three-range model (lab-supplied / per-marker default / curated optimal), unit conversion for the common dual-unit markers, trend + latest-value queries.
 - **Recipes & batches** — recipes scale to per-serving macros, batches deplete as you log intake against them, atomic batch updates inside `log_intake`.
 - **Remembered meals** — label re-loggable meals (canonical text for agent re-estimation, or pre-resolved items).
-- **Wearables** — provider-agnostic abstraction with a Whoop OAuth2 provider (raw + normalized tables, refresh-token rotation, per-provider mutex, signed-state callback).
+- **Wearables** — provider-agnostic abstraction with Whoop and Oura OAuth2 providers (raw + normalized tables, refresh-token rotation, per-provider mutex, signed-state callback).
 - **Two surfaces, one service layer** — MCP Streamable-HTTP at `/mcp`, MCP stdio mode behind `--stdio`, REST at `/api/*` (used by the eventual dashboard).
 - **Capability-gated tools** — Whoop and wearable tools are hidden until a provider is linked; remembered-meal read tools are hidden until at least one is saved. Keeps the agent's tool surface small.
 
@@ -77,6 +77,8 @@ CLI flag > env var > config file > default.
 | USDA API key | `HEALTH_MCP_USDA_API_KEY` | — | unset (local-only search) |
 | Whoop client id | `HEALTH_MCP_WHOOP_CLIENT_ID` | — | — |
 | Whoop client secret | `HEALTH_MCP_WHOOP_CLIENT_SECRET` | — | — |
+| Oura client id | `HEALTH_MCP_OURA_CLIENT_ID` | — | — |
+| Oura client secret | `HEALTH_MCP_OURA_CLIENT_SECRET` | — | — |
 | Wearable redirect | `HEALTH_MCP_WEARABLE_REDIRECT_BASE` | — | `http://{host}:{port}/auth/wearable/callback` |
 | Whoop sync cron | `HEALTH_MCP_WHOOP_SYNC_CRON` | — | `*/30 * * * *` |
 | Log level | `HEALTH_MCP_LOG_LEVEL` | `--log-level` | `info` |
@@ -224,7 +226,8 @@ The test suite runs file-backed SQLite in tmpdirs with the same pragmas as produ
 | P4 | shipped | Wearables abstraction, provider registry, file-backed auth store (mode 0600 + atomic writes + per-provider mutex), signed-state OAuth callback with single-use nonce, Whoop provider (rate-limited client, refresh rotation, raw + normalized sync). |
 | P5 | shipped | Dashboard SPA (Vite + TanStack Router + TanStack Query + shadcn primitives + Recharts), served from the same Hono app at `/` with SPA fallback. Auto-opens the browser on HTTP boot. |
 | P6 | shipped | `correlate` tool + `list_correlate_metrics` companion (capability-gated), Pearson/Spearman over Day/Week/Month buckets with `forward_fill` for sparse series and signed `lag_buckets`. USDA bulk JSON import subcommand (`health-mcp import-usda <dump.json>`). Lab PDF stays agent-side by design. Dashboard exposes correlate via an Insights page. |
-| P7+ | not started | Oura, Fitbit, Polar, Garmin, Apple Health (file_import). |
+| P7 | shipped | Oura provider — OAuth2 + dedicated rate-limited client, raw + normalized sync for sleep, daily activity, daily readiness, daily sleep score, and workouts; type map seeded so workouts land on the canonical activity enum. |
+| P7+ | not started | Fitbit, Polar, Garmin (OAuth1), Apple Health (file_import). |
 
 See `PLAN.md` for the design rationale and detailed breakdown.
 

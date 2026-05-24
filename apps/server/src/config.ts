@@ -19,6 +19,8 @@ export type Config = {
   usdaApiKey: string | null;
   whoopClientId: string | null;
   whoopClientSecret: string | null;
+  ouraClientId: string | null;
+  ouraClientSecret: string | null;
   wearableRedirectBase: string | null;
   whoopSyncCron: string;
   logLevel: LogLevel;
@@ -195,6 +197,8 @@ export const parseConfig = (argv: string[] = process.argv.slice(2)): Config => {
     usdaApiKey: resolveString(undefined, 'USDA_API_KEY', 'usda_api_key'),
     whoopClientId: resolveString(undefined, 'WHOOP_CLIENT_ID', 'whoop_client_id'),
     whoopClientSecret: resolveString(undefined, 'WHOOP_CLIENT_SECRET', 'whoop_client_secret'),
+    ouraClientId: resolveString(undefined, 'OURA_CLIENT_ID', 'oura_client_id'),
+    ouraClientSecret: resolveString(undefined, 'OURA_CLIENT_SECRET', 'oura_client_secret'),
     wearableRedirectBase,
     whoopSyncCron:
       resolveString(undefined, 'WHOOP_SYNC_CRON', 'whoop_sync_cron') ?? DEFAULTS.whoopSyncCron,
