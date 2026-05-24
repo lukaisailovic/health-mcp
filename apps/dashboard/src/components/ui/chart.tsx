@@ -28,6 +28,13 @@ export const formatTooltipDate = (v: string): string => {
   return v.slice(5);
 };
 
+const compactY = (v: number): string => {
+  const abs = Math.abs(v);
+  if (abs >= 1000) return `${(v / 1000).toFixed(abs >= 10000 ? 0 : 1)}k`;
+  if (abs >= 100) return v.toFixed(0);
+  return v.toFixed(0);
+};
+
 export const TrendArea = ({
   id,
   data,
@@ -45,8 +52,9 @@ export const TrendArea = ({
 }) => {
   const values = data.map((d) => d.value).filter((v): v is number => v !== null);
   const avg = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null;
+  const hasData = values.length > 0;
   return (
-    <div style={{ width: '100%', height }}>
+    <div className="relative w-full" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <defs>
@@ -76,8 +84,10 @@ export const TrendArea = ({
             axisLine={false}
             tickLine={false}
             stroke="hsl(var(--muted-foreground))"
-            width={36}
+            width={40}
             tickMargin={4}
+            tickFormatter={compactY}
+            allowDecimals={false}
           />
           {avg !== null ? (
             <ReferenceLine
@@ -105,11 +115,16 @@ export const TrendArea = ({
             fill={`url(#g-${id})`}
             dot={false}
             activeDot={{ r: 4, fill: color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-            isAnimationActive
+            isAnimationActive={hasData}
             animationDuration={420}
           />
         </AreaChart>
       </ResponsiveContainer>
+      {hasData ? null : (
+        <div className="pointer-events-none absolute inset-0 grid place-items-center">
+          <span className="text-xs text-muted-foreground/70">No data in this range</span>
+        </div>
+      )}
     </div>
   );
 };

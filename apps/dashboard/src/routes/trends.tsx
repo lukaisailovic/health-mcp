@@ -1,11 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type SeriesPoint, TrendArea } from '@/components/ui/chart';
-import { Empty } from '@/components/ui/empty';
-import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { daysAgoIso, fmtNum, todayIso } from '@/lib/format';
@@ -43,7 +41,7 @@ const ChartCard = ({
   const { latest, avg } = useMemo(() => summarize(data), [data]);
   return (
     <Card className="transition-shadow hover:shadow-lift">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-2">
         <div className="space-y-0.5">
           <CardTitle className="capitalize">{title}</CardTitle>
           <p className="text-xs text-muted-foreground">
@@ -53,7 +51,7 @@ const ChartCard = ({
             </span>
           </p>
         </div>
-        <div className="text-right">
+        <div className="min-w-[4.5rem] shrink-0 text-right">
           <div
             className="text-xl font-semibold leading-none tabular-nums tracking-tight"
             style={{ color }}
@@ -68,11 +66,14 @@ const ChartCard = ({
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        {data.length === 0 ? (
-          <Empty title="No data" description="Nothing logged in this range." />
-        ) : (
-          <TrendArea id={id} data={data} color={color} unit={unit} title={title} height={height} />
-        )}
+        <TrendArea
+          id={id}
+          data={data}
+          color={color}
+          unit={unit}
+          title={title}
+          height={height}
+        />
       </CardContent>
     </Card>
   );
@@ -115,20 +116,24 @@ const Trends = () => {
   const range = useQuery({
     queryKey: ['summary', 'range', start, end, 'day'],
     queryFn: () => api.summary.range({ start, end, bucket: 'day' }),
+    placeholderData: keepPreviousData,
   });
   const weight = useQuery({
     queryKey: ['weight', 'range', start, end],
     queryFn: () =>
       api.weight.list({ start: `${start}T00:00:00Z`, end: `${end}T23:59:59Z`, limit: 365 }),
+    placeholderData: keepPreviousData,
   });
   const readiness = useQuery({
     queryKey: ['readiness', start, end],
     queryFn: () => api.wearables.readiness({ start, end }),
+    placeholderData: keepPreviousData,
   });
   const sleep = useQuery({
     queryKey: ['sleep', start, end],
     queryFn: () =>
       api.wearables.sleep({ start: `${start}T00:00:00Z`, end: `${end}T23:59:59Z` }),
+    placeholderData: keepPreviousData,
   });
 
   const daysData = range.data?.days ?? [];
@@ -162,26 +167,20 @@ const Trends = () => {
         }
         actions={<RangeToggle days={days} onChange={setDays} />}
       />
-      {range.isLoading ? (
-        <div className="grid place-items-center py-20">
-          <Spinner className="h-5 w-5" />
-        </div>
-      ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <ChartCard id="kcal" title="kcal" data={kcal} color="hsl(var(--primary))" />
-          <ChartCard id="protein" title="protein" data={protein} color="hsl(var(--ok))" unit="g" />
-          <ChartCard id="carbs" title="carbs" data={carbs} color="hsl(var(--warn))" unit="g" />
-          <ChartCard id="fat" title="fat" data={fat} color="hsl(var(--bad))" unit="g" />
-          <ChartCard id="weight" title="weight" data={weights} color="hsl(var(--primary))" unit="kg" />
-          <ChartCard id="recovery" title="recovery" data={recoveries} color="hsl(var(--ok))" />
-          <ChartCard
-            id="sleep"
-            title="sleep score"
-            data={sleeps}
-            color="hsl(var(--primary))"
-          />
-        </div>
-      )}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartCard id="kcal" title="kcal" data={kcal} color="hsl(var(--primary))" />
+        <ChartCard id="protein" title="protein" data={protein} color="hsl(var(--ok))" unit="g" />
+        <ChartCard id="carbs" title="carbs" data={carbs} color="hsl(var(--warn))" unit="g" />
+        <ChartCard id="fat" title="fat" data={fat} color="hsl(var(--bad))" unit="g" />
+        <ChartCard id="weight" title="weight" data={weights} color="hsl(var(--primary))" unit="kg" />
+        <ChartCard id="recovery" title="recovery" data={recoveries} color="hsl(var(--ok))" />
+        <ChartCard
+          id="sleep"
+          title="sleep score"
+          data={sleeps}
+          color="hsl(var(--primary))"
+        />
+      </div>
     </>
   );
 };
