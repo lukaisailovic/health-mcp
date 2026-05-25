@@ -90,6 +90,7 @@ Never hand-roll a component that exists in Kumo.
 - **Biomarker unit conversion**: only the hardcoded dual-unit table is safe. Unknown unit + biomarker-default mismatch → store as-supplied and emit `unit_mismatch`. No silent casts.
 - **Offensive programming for invariants**; defensive validation only at trust boundaries (user input, external APIs).
 - **Comments only when they add information the code can't** (global rule, reinforced).
+- **Docs track code in the same commit**: when a change alters user-visible behavior — tool params/descriptions/error codes, REST contracts, status semantics, config flags, capability gating rules — update the relevant `docs/*.md` file and the README tool list alongside the code. Purely internal refactors don't need doc updates. PLAN.md is gitignored design rationale; update it locally when the design assumptions shift, even though it won't ship.
 
 ## Out of scope — do not drift here without explicit ask
 
