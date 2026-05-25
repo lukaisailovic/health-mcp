@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { Hono } from 'hono';
 import { bearerAuth } from './auth.js';
 import type { Config } from './config.js';
@@ -15,14 +16,29 @@ export const createHonoApp = (opts: {
   sdkVersion?: string;
 }): Hono => {
   const app = new Hono();
+  const { config } = opts;
 
   app.get('/health', (c) =>
     c.json({
       ok: true,
       db: 'up',
-      tz: opts.config.tz,
+      tz: config.tz,
       version: VERSION,
-      auth_required: Boolean(opts.config.token),
+      auth_required: Boolean(config.token),
+      host: config.host,
+      port: config.port,
+      db_path: config.dbPath,
+      auth_path: join(config.authDir, 'auth.json'),
+      dashboard: config.dashboard,
+      log_level: config.logLevel,
+      auto_migrate: config.autoMigrate,
+      whoop_sync_cron: config.whoopSyncCron,
+      wearable_redirect_base: config.wearableRedirectBase,
+      providers: {
+        usda: Boolean(config.usdaApiKey),
+        whoop: Boolean(config.whoopClientId && config.whoopClientSecret),
+        oura: Boolean(config.ouraClientId && config.ouraClientSecret),
+      },
     }),
   );
   app.get('/version', (c) =>

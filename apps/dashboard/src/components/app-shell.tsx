@@ -62,10 +62,11 @@ const NavLink = ({
     to={item.to}
     onClick={onNavigate}
     className={cn(
-      'group flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+      'group relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium no-underline outline-none transition-colors',
+      'focus-visible:ring-2 focus-visible:ring-kumo-focus',
       active
         ? 'bg-kumo-fill text-kumo-strong'
-        : 'text-kumo-subtle hover:bg-kumo-tint hover:text-kumo-default',
+        : 'text-kumo-subtle hover:bg-kumo-fill hover:text-kumo-default',
     )}
   >
     <item.icon
@@ -73,6 +74,7 @@ const NavLink = ({
         'h-4 w-4 shrink-0 transition-colors',
         active ? 'text-kumo-brand' : 'text-kumo-subtle group-hover:text-kumo-default',
       )}
+      aria-hidden="true"
     />
     <span>{item.label}</span>
   </Link>
@@ -89,7 +91,7 @@ const NavGroup = ({
   path: string;
   onNavigate?: () => void;
 }) => (
-  <div className="flex flex-col gap-0.5">
+  <div className="flex flex-col gap-1">
     <div className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-[0.12em] text-kumo-subtle">
       {label}
     </div>
@@ -129,11 +131,13 @@ const NavSections = ({ path, onNavigate }: { path: string; onNavigate?: () => vo
 );
 
 const SettingsLink = ({ path, onNavigate }: { path: string; onNavigate?: () => void }) => (
-  <NavLink
-    item={NAV_SETTINGS}
-    active={isActivePath(path, NAV_SETTINGS.to)}
-    onNavigate={onNavigate}
-  />
+  <div className="mt-1 border-t border-kumo-line pt-2">
+    <NavLink
+      item={NAV_SETTINGS}
+      active={isActivePath(path, NAV_SETTINGS.to)}
+      onNavigate={onNavigate}
+    />
+  </div>
 );
 
 const currentSectionLabel = (path: string): string =>

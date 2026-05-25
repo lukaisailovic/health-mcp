@@ -8,7 +8,7 @@ type KumoInputProps = ComponentProps<typeof KumoInput>;
 export type InputProps = KumoInputProps;
 
 const InputBase = (
-  { className, size = 'sm', ...props }: InputProps,
+  { className, size = 'base', ...props }: InputProps,
   ref: ForwardedRef<HTMLInputElement>,
 ) => (
   // biome-ignore lint/suspicious/noExplicitAny: Kumo Input ref typing through forwardRef

@@ -142,15 +142,20 @@ export const getRecipe = (
   id: string,
 ): {
   recipe: Recipe;
-  ingredients: RecipeIngredient[];
+  ingredients: Array<RecipeIngredient & { food_name: string | null }>;
   total: RecipeMacros;
   per_serving: RecipeMacros;
 } => {
   const recipe = ctx.db.prepare('SELECT * FROM recipes WHERE id = ?').get(id) as Recipe | undefined;
   if (!recipe) throw new ServiceError('recipe_not_found', `recipe ${id} not found`, 404);
   const ingredients = ctx.db
-    .prepare('SELECT * FROM recipe_ingredients WHERE recipe_id = ?')
-    .all(id) as RecipeIngredient[];
+    .prepare(
+      `SELECT ri.*, f.name AS food_name
+       FROM recipe_ingredients ri
+       LEFT JOIN foods f ON f.id = ri.food_id
+       WHERE ri.recipe_id = ?`,
+    )
+    .all(id) as Array<RecipeIngredient & { food_name: string | null }>;
   const total = computeRecipeTotal(ctx, ingredients);
   const per_serving = scaleMacros(total, 1 / recipe.servings);
   return { recipe, ingredients, total, per_serving };

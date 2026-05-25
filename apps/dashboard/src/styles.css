@@ -84,6 +84,10 @@
   --shake-dur-a: 80ms;
   --shake-dur-b: 60ms;
   --shake-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --panel-open-dur: 360ms;
+  --panel-translate-y: 12px;
+  --panel-blur: 2px;
+  --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Page enter — opacity only to avoid layout shift on load */
@@ -153,10 +157,29 @@
     var(--shake-ease) both;
 }
 
+/* Panel reveal (transitions-dev #07) */
+@keyframes panel-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(var(--panel-translate-y));
+    filter: blur(var(--panel-blur));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+.t-panel-reveal {
+  animation: panel-reveal var(--panel-open-dur) var(--panel-ease) both;
+  will-change: transform, opacity, filter;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .route-enter,
   .t-number.is-animating > span,
-  .t-input.is-shaking {
+  .t-input.is-shaking,
+  .t-panel-reveal {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;

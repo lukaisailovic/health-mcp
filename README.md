@@ -231,6 +231,19 @@ The test suite runs file-backed SQLite in tmpdirs with the same pragmas as produ
 
 See `PLAN.md` for the design rationale and detailed breakdown.
 
+## Documentation
+
+Full reference docs live under [`docs/`](./docs/README.md). Quick jumps:
+
+- [Architecture](./docs/ARCHITECTURE.md) — one-process layout, transports, service layer, scheduler
+- [Configuration](./docs/CONFIGURATION.md) — every flag, env var, and config-file key
+- [REST API](./docs/API.md) — `/api/*` endpoints used by the dashboard
+- [MCP tools](./docs/MCP.md) — full tool catalog, capability gating, item shapes
+- [Data model](./docs/DATA_MODEL.md) — SQLite schema, indexes, the raw-vs-normalized wearable split
+- [Biomarkers](./docs/BIOMARKERS.md) — three-tier range model, status walk, unit conversion table
+- [Wearables](./docs/WEARABLES.md) — provider abstraction, OAuth flow, refresh-token rotation
+- [Security](./docs/SECURITY.md) — bearer auth, loopback rule, file modes, OAuth state
+
 ## License
 
 Personal project. License TBD.

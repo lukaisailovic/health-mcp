@@ -23,6 +23,16 @@ const summarize = (data: SeriesPoint[]): { latest: number | null; avg: number | 
   };
 };
 
+const toReversedSeries = <T,>(
+  data: T[] | undefined,
+  date: (item: T) => string,
+  value: (item: T) => number | null,
+): SeriesPoint[] =>
+  (data ?? [])
+    .slice()
+    .reverse()
+    .map((item) => ({ date: date(item), value: value(item) }));
+
 const ChartCard = ({
   id,
   title,
@@ -86,18 +96,24 @@ const RangeToggle = ({
   days: number;
   onChange: (n: number) => void;
 }) => (
-  <div className="inline-flex rounded-md bg-kumo-fill p-0.5">
+  <div
+    className="inline-flex rounded-md border border-kumo-line bg-kumo-elevated p-0.5"
+    role="tablist"
+    aria-label="Range"
+  >
     {RANGES.map((r) => {
       const active = days === r.days;
       return (
         <button
           key={r.label}
           type="button"
+          role="tab"
+          aria-selected={active}
           onClick={() => onChange(r.days)}
           className={cn(
-            'inline-flex h-7 items-center justify-center rounded px-3 text-xs font-medium transition-colors',
+            'inline-flex h-[26px] items-center justify-center rounded px-3 text-xs font-medium transition-colors',
             active
-              ? 'bg-kumo-base text-kumo-default'
+              ? 'bg-kumo-base text-kumo-default shadow-sm ring-1 ring-kumo-line'
               : 'text-kumo-subtle hover:text-kumo-default',
           )}
         >
@@ -141,18 +157,9 @@ const Trends = () => {
   const protein = daysData.map((d) => ({ date: d.date, value: d.protein_g }));
   const carbs = daysData.map((d) => ({ date: d.date, value: d.carb_g }));
   const fat = daysData.map((d) => ({ date: d.date, value: d.fat_g }));
-  const weights = (weight.data ?? [])
-    .slice()
-    .reverse()
-    .map((w) => ({ date: w.date, value: w.kg }));
-  const recoveries = (readiness.data ?? [])
-    .slice()
-    .reverse()
-    .map((r) => ({ date: r.date, value: r.score }));
-  const sleeps = (sleep.data ?? [])
-    .slice()
-    .reverse()
-    .map((s) => ({ date: s.start.slice(0, 10), value: s.score }));
+  const weights = toReversedSeries(weight.data, (w) => w.date, (w) => w.kg);
+  const recoveries = toReversedSeries(readiness.data, (r) => r.date, (r) => r.score);
+  const sleeps = toReversedSeries(sleep.data, (s) => s.start.slice(0, 10), (s) => s.score);
 
   return (
     <>

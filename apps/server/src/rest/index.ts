@@ -6,7 +6,7 @@ import {
   deleteLabPanel,
   deleteLabResult,
   getBiomarker,
-  getLabPanel,
+  getLabPanelDetail,
   latestBiomarkers,
   listLabPanels,
   listLabResults,
@@ -322,7 +322,7 @@ export const mountRestRoutes = (app: Hono, ctx: WearableServiceCtx): void => {
     ),
   );
   app.post('/api/lab-panels', (c) => wrap(c, async () => logLabPanel(ctx, await parseBody(c))));
-  app.get('/api/lab-panels/:id', (c) => wrap(c, () => getLabPanel(ctx, c.req.param('id'))));
+  app.get('/api/lab-panels/:id', (c) => wrap(c, () => getLabPanelDetail(ctx, c.req.param('id'))));
   app.delete('/api/lab-panels/:id', (c) => wrap(c, () => deleteLabPanel(ctx, c.req.param('id'))));
   app.get('/api/lab-results', (c) =>
     wrap(c, () =>

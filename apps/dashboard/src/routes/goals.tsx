@@ -4,8 +4,8 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 
@@ -16,13 +16,13 @@ type Field = {
 };
 
 const FIELDS: Field[] = [
-  { key: 'kcal', label: 'kcal', unit: 'kcal/day' },
-  { key: 'protein_g', label: 'protein', unit: 'g/day' },
-  { key: 'carb_g', label: 'carbs', unit: 'g/day' },
-  { key: 'fat_g', label: 'fat', unit: 'g/day' },
-  { key: 'fiber_g', label: 'fiber', unit: 'g/day' },
-  { key: 'hydration_ml', label: 'hydration', unit: 'ml/day' },
-  { key: 'weight_kg_target', label: 'weight target', unit: 'kg' },
+  { key: 'kcal', label: 'Calories', unit: 'kcal/day' },
+  { key: 'protein_g', label: 'Protein', unit: 'g/day' },
+  { key: 'carb_g', label: 'Carbs', unit: 'g/day' },
+  { key: 'fat_g', label: 'Fat', unit: 'g/day' },
+  { key: 'fiber_g', label: 'Fiber', unit: 'g/day' },
+  { key: 'hydration_ml', label: 'Hydration', unit: 'ml/day' },
+  { key: 'weight_kg_target', label: 'Weight Target', unit: 'kg' },
 ];
 
 type FormState = Record<Field['key'], string>;
@@ -65,7 +65,7 @@ const Goals = () => {
   if (goals.isLoading) return <Spinner />;
   return (
     <>
-      <PageHeader title="Goals" description="Daily macro + hydration targets used everywhere." />
+      <PageHeader title="Goals" description="Daily macro and hydration targets used everywhere." />
       <Card>
         <CardHeader>
           <CardTitle>Daily targets</CardTitle>
@@ -73,23 +73,26 @@ const Goals = () => {
         <CardContent>
           <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FIELDS.map((f) => (
-              <div key={f.key} className="space-y-2">
-                <Label htmlFor={f.key}>{f.label}</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id={f.key}
-                    type="number"
-                    inputMode="decimal"
-                    value={form[f.key] ?? ''}
-                    onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
-                  />
-                  <span className="shrink-0 text-xs text-kumo-subtle">{f.unit}</span>
-                </div>
-              </div>
+              <FormField
+                key={f.key}
+                label={f.label}
+                htmlFor={f.key}
+                suffix={f.unit}
+              >
+                <Input
+                  id={f.key}
+                  type="number"
+                  inputMode="decimal"
+                  value={form[f.key] ?? ''}
+                  onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
+                />
+              </FormField>
             ))}
-            <div className="col-span-full flex items-center justify-end gap-2">
+            <div className="col-span-full flex items-center justify-end gap-3 pt-2">
               {save.isSuccess ? (
-                <span className="text-xs text-kumo-subtle">saved</span>
+                <span className="text-xs text-kumo-subtle" aria-live="polite">
+                  Saved
+                </span>
               ) : null}
               <Button type="submit" disabled={save.isPending}>
                 Save goals

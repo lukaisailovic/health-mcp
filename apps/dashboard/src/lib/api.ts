@@ -9,6 +9,7 @@ import type {
   HealthProbe,
   HydrationEntryDto,
   IntakeEntryDto,
+  LabPanelDetailDto,
   LabPanelDto,
   LabResultDto,
   LatestBiomarkerRowDto,
@@ -200,7 +201,7 @@ export const api = {
   labs: {
     panels: (params: { start?: string; end?: string; limit?: number } = {}) =>
       get<LabPanelDto[]>(`/api/lab-panels${qs(params)}`),
-    panel: (id: string) => get<{ panel: LabPanelDto; results: LabResultDto[] }>(`/api/lab-panels/${encodeURIComponent(id)}`),
+    panel: (id: string) => get<LabPanelDetailDto>(`/api/lab-panels/${encodeURIComponent(id)}`),
     createPanel: (body: unknown) => post<{ panel: LabPanelDto; results: LabResultDto[] }>('/api/lab-panels', body),
     deletePanel: (id: string) => del<{ id: string }>(`/api/lab-panels/${encodeURIComponent(id)}`),
     results: (params: {

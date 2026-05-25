@@ -376,16 +376,20 @@ export const statusForResult = (ctx: Ctx, r: LabResult, b?: Biomarker): Biomarke
       | Biomarker
       | undefined);
   if (!biomarker) return 'unknown';
-  if (biomarker.optimal_low !== null || biomarker.optimal_high !== null) {
+  const hasOptimal = biomarker.optimal_low !== null || biomarker.optimal_high !== null;
+  if (hasOptimal) {
     const lo = biomarker.optimal_low ?? Number.NEGATIVE_INFINITY;
     const hi = biomarker.optimal_high ?? Number.POSITIVE_INFINITY;
     if (r.value_numeric >= lo && r.value_numeric <= hi) return 'optimal';
   }
   const refLow = r.ref_low ?? biomarker.default_ref_low ?? Number.NEGATIVE_INFINITY;
   const refHigh = r.ref_high ?? biomarker.default_ref_high ?? Number.POSITIVE_INFINITY;
-  if (refLow === Number.NEGATIVE_INFINITY && refHigh === Number.POSITIVE_INFINITY) return 'unknown';
-  if (r.value_numeric >= refLow && r.value_numeric <= refHigh) return 'in_ref';
-  return 'out_of_ref';
+  const hasRef = refLow !== Number.NEGATIVE_INFINITY || refHigh !== Number.POSITIVE_INFINITY;
+  if (hasRef) {
+    if (r.value_numeric >= refLow && r.value_numeric <= refHigh) return 'in_ref';
+    return 'out_of_ref';
+  }
+  return hasOptimal ? 'out_of_ref' : 'unknown';
 };
 
 export const latestBiomarkers = (
@@ -496,6 +500,23 @@ export const getLabPanel = (ctx: Ctx, id: string): { panel: LabPanel; results: L
     .prepare('SELECT * FROM lab_results WHERE panel_id = ? ORDER BY taken_at')
     .all(id) as LabResult[];
   return { panel, results };
+};
+
+export const getLabPanelDetail = (
+  ctx: Ctx,
+  id: string,
+): {
+  panel: LabPanel;
+  rows: Array<{ biomarker: Biomarker; result: LabResult; status: BiomarkerStatus }>;
+} => {
+  const { panel, results } = getLabPanel(ctx, id);
+  const rows = results.map((result) => {
+    const biomarker = ctx.db
+      .prepare('SELECT * FROM biomarkers WHERE id = ?')
+      .get(result.biomarker_id) as Biomarker;
+    return { biomarker, result, status: statusForResult(ctx, result, biomarker) };
+  });
+  return { panel, rows };
 };
 
 export const deleteLabResult = (ctx: Ctx, id: string): { id: string } => {

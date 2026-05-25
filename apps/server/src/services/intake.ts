@@ -246,31 +246,41 @@ export const logIntake = (ctx: Ctx, input: LogIntakeInput): LogIntakeResult => {
 export const listIntake = (
   ctx: Ctx,
   args: { date?: string; start?: string; end?: string; meal_type?: MealType; limit?: number },
-): IntakeEntry[] => {
+): Array<IntakeEntry & { display_name: string | null }> => {
   const conditions: string[] = [];
   const params: unknown[] = [];
   if (args.date) {
-    conditions.push('date = ?');
+    conditions.push('ie.date = ?');
     params.push(args.date);
   }
   if (args.start) {
-    conditions.push('ts >= ?');
+    conditions.push('ie.ts >= ?');
     params.push(args.start);
   }
   if (args.end) {
-    conditions.push('ts <= ?');
+    conditions.push('ie.ts <= ?');
     params.push(args.end);
   }
   if (args.meal_type) {
-    conditions.push('meal_type = ?');
+    conditions.push('ie.meal_type = ?');
     params.push(args.meal_type);
   }
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const limit = args.limit ?? 200;
   params.push(limit);
   return ctx.db
-    .prepare(`SELECT * FROM intake_entries ${where} ORDER BY ts DESC LIMIT ?`)
-    .all(...params) as IntakeEntry[];
+    .prepare(
+      `SELECT ie.*,
+              COALESCE(ie.custom_name, f.name, r.name, b.name) AS display_name
+       FROM intake_entries ie
+       LEFT JOIN foods f ON f.id = ie.food_id
+       LEFT JOIN recipes r ON r.id = ie.recipe_id
+       LEFT JOIN batches b ON b.id = ie.batch_id
+       ${where}
+       ORDER BY ie.ts DESC
+       LIMIT ?`,
+    )
+    .all(...params) as Array<IntakeEntry & { display_name: string | null }>;
 };
 
 export const deleteIntake = (ctx: Ctx, id: string): { id: string; batch_id: string | null } => {

@@ -6,6 +6,20 @@ export type HealthProbe = {
   tz: string;
   version: string;
   auth_required: boolean;
+  host: string;
+  port: number;
+  db_path: string;
+  auth_path: string;
+  dashboard: boolean;
+  log_level: 'debug' | 'info' | 'warn' | 'error';
+  auto_migrate: boolean;
+  whoop_sync_cron: string;
+  wearable_redirect_base: string | null;
+  providers: {
+    usda: boolean;
+    whoop: boolean;
+    oura: boolean;
+  };
 };
 
 export type GoalsDto = {
@@ -48,6 +62,7 @@ export type IntakeEntryDto = IntakeMacros & {
   recipe_id: string | null;
   batch_id: string | null;
   custom_name: string | null;
+  display_name: string | null;
   grams: number | null;
   servings: number | null;
   confidence: number;
@@ -137,6 +152,7 @@ export type RecipeWithIngredientsDto = {
     id: string;
     recipe_id: string;
     food_id: string | null;
+    food_name: string | null;
     free_text_name: string | null;
     grams: number;
     notes: string | null;
@@ -218,6 +234,15 @@ export type LatestBiomarkerRowDto = {
   result: LabResultDto;
   status: BiomarkerStatus;
   delta_vs_prev: number | null;
+};
+
+export type LabPanelDetailDto = {
+  panel: LabPanelDto;
+  rows: Array<{
+    biomarker: BiomarkerDto;
+    result: LabResultDto;
+    status: BiomarkerStatus;
+  }>;
 };
 
 export type BiomarkerTrendPointDto = {

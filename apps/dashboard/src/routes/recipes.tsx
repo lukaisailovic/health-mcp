@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { ChefHat } from 'lucide-react';
-import { useState } from 'react';
+import { ChefHat, Search } from 'lucide-react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,11 +45,15 @@ const RecipeDetail = ({ id }: { id: string }) => {
         </div>
         <ul className="divide-y divide-kumo-line">
           {ingredients.map((i) => (
-            <li key={i.id} className="flex items-center justify-between py-2 text-sm">
+            <li key={i.id} className="flex items-center justify-between gap-3 py-2 text-sm">
               <span className="truncate">
-                {i.free_text_name ?? <code className="text-xs">{i.food_id}</code>}
+                {i.food_name ?? i.free_text_name ?? (
+                  <span className="text-kumo-subtle italic">unnamed ingredient</span>
+                )}
               </span>
-              <span className="text-xs tabular-nums text-kumo-subtle">{fmtNum(i.grams, 0)} g</span>
+              <span className="shrink-0 text-xs tabular-nums text-kumo-subtle">
+                {fmtNum(i.grams, 0)} g
+              </span>
             </li>
           ))}
         </ul>
@@ -60,11 +64,19 @@ const RecipeDetail = ({ id }: { id: string }) => {
 
 const Recipes = () => {
   const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
   const list = useQuery({
-    queryKey: ['recipes', 'list', query],
-    queryFn: () => api.recipes.list({ query: query || undefined, limit: 100 }),
+    queryKey: ['recipes', 'list'],
+    queryFn: () => api.recipes.list({ limit: 100 }),
   });
   const [selected, setSelected] = useState<string | null>(null);
+  const filtered = useMemo(() => {
+    const all = list.data ?? [];
+    const q = deferredQuery.trim().toLowerCase();
+    if (!q) return all;
+    return all.filter((r) => r.name.toLowerCase().includes(q));
+  }, [list.data, deferredQuery]);
+  const isStale = query !== deferredQuery;
   return (
     <>
       <PageHeader
@@ -73,20 +85,33 @@ const Recipes = () => {
       />
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         <div className="space-y-3">
-          <Input
-            placeholder="Filter…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-kumo-subtle">
+              <Search className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <Input
+              aria-label="Filter recipes"
+              placeholder="Filter recipes…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full pl-9"
+            />
+          </div>
           {list.isLoading ? (
             <Spinner />
-          ) : !list.data?.length ? (
-            <Empty icon={ChefHat} title="No recipes yet" />
+          ) : !filtered.length ? (
+            <Empty
+              icon={ChefHat}
+              title={query.trim() ? 'No matches' : 'No recipes yet'}
+              description={query.trim() ? 'Try a different filter.' : undefined}
+            />
           ) : (
             <Card>
-              <CardContent className="p-1.5">
+              <CardContent
+                className={`p-1.5 transition-opacity duration-150 ${isStale ? 'opacity-70' : 'opacity-100'}`}
+              >
                 <ul className="space-y-0.5">
-                  {list.data.map((r) => (
+                  {filtered.map((r) => (
                     <li key={r.id}>
                       <Button
                         variant={selected === r.id ? 'secondary' : 'ghost'}

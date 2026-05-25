@@ -86,13 +86,18 @@ const Batches = () => {
                       <span>of {fmtNum(b.total_grams, 0)} g</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-4 gap-2 text-xs tabular-nums text-kumo-subtle">
-                    <span>{fmtNum(b.kcal_total, 0)} kcal</span>
-                    <span>P {fmtNum(b.protein_g_total, 0)}</span>
-                    <span>C {fmtNum(b.carb_g_total, 0)}</span>
-                    <span>F {fmtNum(b.fat_g_total, 0)}</span>
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums text-kumo-subtle">
+                    <span>
+                      <span className="font-medium text-kumo-default">
+                        {fmtNum(b.kcal_total, 0)}
+                      </span>{' '}
+                      kcal
+                    </span>
+                    <span>P {fmtNum(b.protein_g_total, 0)} g</span>
+                    <span>C {fmtNum(b.carb_g_total, 0)} g</span>
+                    <span>F {fmtNum(b.fat_g_total, 0)} g</span>
                   </div>
-                  <div className="flex justify-end gap-1.5">
+                  <div className="flex items-center justify-end gap-1.5">
                     {!b.archived ? (
                       <Button
                         variant="outline"
@@ -105,7 +110,8 @@ const Batches = () => {
                     ) : null}
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="sm"
+                      shape="square"
                       aria-label="Delete batch"
                       disabled={remove.isPending}
                       onClick={() => remove.mutate(b.id)}

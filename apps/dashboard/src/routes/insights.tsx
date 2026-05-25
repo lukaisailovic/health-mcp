@@ -15,8 +15,9 @@ import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty } from '@/components/ui/empty';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
@@ -84,9 +85,6 @@ const parseFilter = (raw: string): Record<string, string> | undefined => {
   return Object.keys(out).length ? out : undefined;
 };
 
-const selectClass =
-  't-input h-9 w-full rounded-md border border-kumo-line bg-kumo-elevated px-2 text-sm transition-colors hover:border-kumo-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kumo-focus';
-
 const correlationTone = (r: number | null): 'ok' | 'warn' | 'bad' | 'default' => {
   if (r === null) return 'default';
   const abs = Math.abs(r);
@@ -96,7 +94,7 @@ const correlationTone = (r: number | null): 'ok' | 'warn' | 'bad' | 'default' =>
 };
 
 const correlationLabel = (r: number | null): string => {
-  if (r === null) return 'Not enough data';
+  if (r === null) return 'not enough data';
   const abs = Math.abs(r);
   const direction = r >= 0 ? 'positive' : 'negative';
   if (abs >= 0.7) return `strong ${direction}`;
@@ -138,21 +136,29 @@ const ChipToggle = <T extends string>({
   value,
   options,
   onChange,
+  label,
 }: {
   value: T;
   options: readonly T[];
   onChange: (v: T) => void;
+  label: string;
 }) => (
-  <div className="inline-flex w-full rounded-md border border-kumo-line bg-kumo-elevated p-0.5">
+  <div
+    role="radiogroup"
+    aria-label={label}
+    className="inline-flex h-9 w-full rounded-lg border border-kumo-line bg-kumo-elevated p-1"
+  >
     {options.map((opt) => {
       const active = value === opt;
       return (
         <button
           key={opt}
           type="button"
+          role="radio"
+          aria-checked={active}
           onClick={() => onChange(opt)}
           className={cn(
-            'flex-1 rounded-[5px] px-2.5 py-1 text-xs font-medium capitalize transition-colors',
+            'flex-1 rounded-md px-2.5 text-xs font-medium capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kumo-focus',
             active
               ? 'bg-kumo-base text-kumo-default ring-1 ring-kumo-line'
               : 'text-kumo-subtle hover:text-kumo-default',
@@ -180,13 +186,16 @@ const SpecPicker = ({
   sources: Array<{ source: string; fields: string[] }>;
   fieldsFor: (source: string) => string[];
 }) => (
-  <div className="space-y-2 rounded-lg border border-kumo-line bg-kumo-tint p-3">
+  <div className="space-y-3 rounded-lg border border-kumo-line bg-kumo-tint p-4">
     <div className="flex items-center gap-2">
       <span
         className={cn(
           'grid h-5 w-5 place-items-center rounded-md text-[10px] font-semibold',
-          badgeColor === 'primary' ? 'bg-kumo-info-tint text-kumo-brand' : 'bg-kumo-success-tint text-kumo-success',
+          badgeColor === 'primary'
+            ? 'bg-kumo-info-tint text-kumo-brand'
+            : 'bg-kumo-success-tint text-kumo-success',
         )}
+        aria-hidden="true"
       >
         {label}
       </span>
@@ -194,47 +203,56 @@ const SpecPicker = ({
         Series {label}
       </span>
     </div>
-    <div className="grid grid-cols-2 gap-2">
-      <select
-        value={spec.source}
-        onChange={(e) =>
-          onChange({ ...spec, source: e.target.value, field: fieldsFor(e.target.value)[0] ?? '' })
-        }
-        className={selectClass}
-      >
-        {sources.map((s) => (
-          <option key={s.source} value={s.source}>
-            {s.source}
-          </option>
-        ))}
-      </select>
-      <select
-        value={spec.field}
-        onChange={(e) => onChange({ ...spec, field: e.target.value })}
-        className={selectClass}
-      >
-        {fieldsFor(spec.source).map((f) => (
-          <option key={f} value={f}>
-            {f}
-          </option>
-        ))}
-      </select>
-      <select
-        value={spec.agg}
-        onChange={(e) => onChange({ ...spec, agg: e.target.value })}
-        className={selectClass}
-      >
-        {AGGS.map((agg) => (
-          <option key={agg} value={agg}>
-            {agg}
-          </option>
-        ))}
-      </select>
-      <Input
-        placeholder="filter (e.g. biomarker=Glucose)"
-        value={spec.filter}
-        onChange={(e) => onChange({ ...spec, filter: e.target.value })}
-      />
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <FormField label="Source" htmlFor={`spec-${label}-source`}>
+        <Select
+          id={`spec-${label}-source`}
+          value={spec.source}
+          onChange={(e) =>
+            onChange({ ...spec, source: e.target.value, field: fieldsFor(e.target.value)[0] ?? '' })
+          }
+        >
+          {sources.map((s) => (
+            <option key={s.source} value={s.source}>
+              {s.source}
+            </option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label="Field" htmlFor={`spec-${label}-field`}>
+        <Select
+          id={`spec-${label}-field`}
+          value={spec.field}
+          onChange={(e) => onChange({ ...spec, field: e.target.value })}
+        >
+          {fieldsFor(spec.source).map((f) => (
+            <option key={f} value={f}>
+              {f}
+            </option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label="Aggregation" htmlFor={`spec-${label}-agg`}>
+        <Select
+          id={`spec-${label}-agg`}
+          value={spec.agg}
+          onChange={(e) => onChange({ ...spec, agg: e.target.value })}
+        >
+          {AGGS.map((agg) => (
+            <option key={agg} value={agg}>
+              {agg}
+            </option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label="Filter" htmlFor={`spec-${label}-filter`}>
+        <Input
+          id={`spec-${label}-filter`}
+          placeholder="e.g. biomarker=Glucose"
+          value={spec.filter}
+          onChange={(e) => onChange({ ...spec, filter: e.target.value })}
+        />
+      </FormField>
     </div>
   </div>
 );
@@ -243,17 +261,18 @@ const Explainer = () => (
   <Card>
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
-        <HelpCircle className="h-4 w-4 text-kumo-brand" />
+        <HelpCircle className="h-4 w-4 text-kumo-brand" aria-hidden="true" />
         How Insights works
       </CardTitle>
     </CardHeader>
     <CardContent className="space-y-3 text-sm text-kumo-subtle">
       <p>
-        Pick any two time series — calories, sleep score, HRV, hydration, labs — and we compute the{' '}
-        <span className="font-medium text-kumo-default">correlation</span> over a date range.
-        The result is a number{' '}
-        <span className="font-mono text-kumo-default">r ∈ [−1, 1]</span> telling you how tightly the two
-        move together.
+        Pick any two time series — calories, sleep score, HRV, hydration, labs — and we compute
+        the{' '}
+        <span className="font-medium text-kumo-default">correlation</span> over a date range. The
+        result is a number{' '}
+        <span className="font-mono text-kumo-default">r ∈ [−1, 1]</span> telling you how tightly
+        the two move together.
       </p>
       <ul className="grid gap-2 sm:grid-cols-3">
         <li className="rounded-md border border-kumo-line bg-kumo-elevated px-3 py-2 text-xs">
@@ -349,7 +368,8 @@ const Insights = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-kumo-warning" /> Quick examples
+                <Lightbulb className="h-4 w-4 text-kumo-warning" aria-hidden="true" /> Quick
+                examples
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -359,11 +379,14 @@ const Insights = () => {
                     key={ex.title}
                     type="button"
                     onClick={() => applyExample(ex)}
-                    className="group flex flex-col items-start gap-1 rounded-lg border border-kumo-line bg-kumo-elevated p-3 text-left transition-[transform,border-color] hover:-translate-y-px hover:border-kumo-strong"
+                    className="group flex flex-col items-start gap-1 rounded-lg border border-kumo-line bg-kumo-elevated p-3 text-left transition-[transform,border-color] hover:-translate-y-px hover:border-kumo-strong focus-visible:-translate-y-px focus-visible:border-kumo-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kumo-focus"
                   >
                     <span className="flex items-center gap-1.5 text-sm font-medium text-kumo-default">
                       {ex.title}
-                      <ArrowRight className="h-3 w-3 -translate-x-1 opacity-0 transition-[transform,opacity] group-hover:translate-x-0 group-hover:opacity-100" />
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="h-3 w-3 -translate-x-1 opacity-0 transition-[transform,opacity] group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
+                      />
                     </span>
                     <span className="text-xs text-kumo-subtle">{ex.question}</span>
                   </button>
@@ -373,15 +396,15 @@ const Insights = () => {
           </Card>
         ) : null}
 
-        <div className="grid gap-4 xl:grid-cols-[440px_1fr]">
+        <div className="grid gap-4 xl:grid-cols-[480px_1fr]">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-kumo-brand" /> Configure
+                <Sparkles className="h-4 w-4 text-kumo-brand" aria-hidden="true" /> Configure
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={submit} className="space-y-4">
+              <form onSubmit={submit} className="space-y-5">
                 <SpecPicker
                   label="A"
                   badgeColor="primary"
@@ -398,55 +421,63 @@ const Insights = () => {
                   sources={sources}
                   fieldsFor={fieldsFor}
                 />
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="i-start">Start</Label>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField label="Start" htmlFor="i-start">
                     <Input
                       id="i-start"
                       type="date"
                       value={start}
                       onChange={(e) => setStart(e.target.value)}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="i-end">End</Label>
+                  </FormField>
+                  <FormField label="End" htmlFor="i-end">
                     <Input
                       id="i-end"
                       type="date"
                       value={end}
                       onChange={(e) => setEnd(e.target.value)}
                     />
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label>Bucket size</Label>
-                    <ChipToggle value={bucket} options={BUCKETS} onChange={setBucket} />
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label>Method</Label>
-                    <ChipToggle value={method} options={METHODS} onChange={setMethod} />
-                    <p className="text-[11px] text-kumo-subtle">
-                      Pearson assumes linear; Spearman is rank-based and robust to outliers.
-                    </p>
-                  </div>
-                  <div className="col-span-2 space-y-2">
-                    <Label htmlFor="i-lag">Lag (in {bucket}s)</Label>
-                    <Input
-                      id="i-lag"
-                      type="number"
-                      inputMode="numeric"
-                      value={lag}
-                      onChange={(e) => setLag(Number(e.target.value) || 0)}
-                    />
-                    <p className="text-[11px] text-kumo-subtle">
-                      Positive lag shifts A back, so it tests whether A leads B.
-                    </p>
-                  </div>
+                  </FormField>
                 </div>
+                <FormField label="Bucket size">
+                  <ChipToggle
+                    value={bucket}
+                    options={BUCKETS}
+                    onChange={setBucket}
+                    label="Bucket size"
+                  />
+                </FormField>
+                <FormField
+                  label="Method"
+                  description="Pearson assumes linear; Spearman is rank-based and robust to outliers."
+                >
+                  <ChipToggle
+                    value={method}
+                    options={METHODS}
+                    onChange={setMethod}
+                    label="Correlation method"
+                  />
+                </FormField>
+                <FormField
+                  label={`Lag (in ${bucket}s)`}
+                  htmlFor="i-lag"
+                  description="Positive lag shifts A back, so it tests whether A leads B."
+                >
+                  <Input
+                    id="i-lag"
+                    type="number"
+                    inputMode="numeric"
+                    value={lag}
+                    onChange={(e) => setLag(Number(e.target.value) || 0)}
+                  />
+                </FormField>
                 <Button type="submit" className="w-full" disabled={run.isPending}>
                   {run.isPending ? <Spinner /> : 'Compute correlation'}
                 </Button>
                 {run.isError ? (
-                  <p className="text-xs text-kumo-danger">{(run.error as Error).message}</p>
+                  <p className="text-xs text-kumo-danger" role="alert">
+                    {(run.error as Error).message}
+                  </p>
                 ) : null}
               </form>
             </CardContent>
@@ -464,7 +495,7 @@ const Insights = () => {
                   description="Pick an example above, or configure two series and hit compute."
                 />
               ) : (
-                <div className="space-y-5">
+                <div className="t-panel-reveal space-y-5" key={run.submittedAt}>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     <Stat
                       label={`r (${run.data.method})`}
@@ -525,7 +556,10 @@ const Insights = () => {
                               borderRadius: 10,
                               fontSize: 12,
                             }}
-                            labelStyle={{ color: 'var(--text-color-kumo-default)', fontWeight: 500 }}
+                            labelStyle={{
+                              color: 'var(--text-color-kumo-default)',
+                              fontWeight: 500,
+                            }}
                             itemStyle={{ color: 'var(--text-color-kumo-subtle)' }}
                             cursor={{
                               stroke: 'var(--color-kumo-line)',
@@ -556,10 +590,18 @@ const Insights = () => {
                       </ResponsiveContainer>
                       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-kumo-subtle">
                         <span className="flex items-center gap-1.5">
-                          <span className="h-2 w-2 rounded-full bg-kumo-brand" /> {a.source}.{a.field}
+                          <span
+                            aria-hidden="true"
+                            className="h-2 w-2 rounded-full bg-kumo-brand"
+                          />{' '}
+                          {a.source}.{a.field}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <span className="h-2 w-2 rounded-full bg-kumo-success" /> {b.source}.{b.field}
+                          <span
+                            aria-hidden="true"
+                            className="h-2 w-2 rounded-full bg-kumo-success"
+                          />{' '}
+                          {b.source}.{b.field}
                         </span>
                       </div>
                     </div>
@@ -567,7 +609,9 @@ const Insights = () => {
                   {run.data.r !== null && run.data.n >= 7 ? (
                     <p className="text-xs text-kumo-subtle">
                       Reading: {a.source}.{a.field} shows a{' '}
-                      <span className="font-medium text-kumo-default">{correlationLabel(run.data.r)}</span>{' '}
+                      <span className="font-medium text-kumo-default">
+                        {correlationLabel(run.data.r)}
+                      </span>{' '}
                       relationship with {b.source}.{b.field}
                       {run.data.lag_buckets > 0
                         ? ` at lag ${run.data.lag_buckets} ${run.data.bucket}`

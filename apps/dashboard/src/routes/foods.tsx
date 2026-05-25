@@ -15,8 +15,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Empty } from '@/components/ui/empty';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { fmtNum } from '@/lib/format';
@@ -83,22 +83,25 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
       },
     });
   };
-  const field = (key: keyof FormState, label: string, type: 'text' | 'number' = 'number') => (
-    <div className="space-y-2">
-      <Label htmlFor={key}>{label}</Label>
+  const renderField = (
+    key: keyof FormState,
+    label: string,
+    type: 'text' | 'number' = 'number',
+  ) => (
+    <FormField label={label} htmlFor={key}>
       <Input
         id={key}
         type={type}
         value={form[key]}
         onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))}
       />
-    </div>
+    </FormField>
   );
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={(p) => (
-          <Button {...p} size="sm" icon={<Plus className="h-3.5 w-3.5" />}>
+          <Button {...p} icon={<Plus className="h-4 w-4" aria-hidden="true" />}>
             New custom food
           </Button>
         )}
@@ -107,19 +110,23 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
         <DialogHeader>
           <DialogTitle>Create custom food</DialogTitle>
         </DialogHeader>
-        <form id="food-form" onSubmit={submit} className="grid grid-cols-2 gap-3">
-          <div className="col-span-2">{field('name', 'name', 'text')}</div>
-          <div className="col-span-2 sm:col-span-1">{field('brand', 'brand', 'text')}</div>
-          <div className="col-span-2 sm:col-span-1">{field('serving_grams', 'serving (g)')}</div>
-          <div className="col-span-2 mt-2 border-t border-kumo-line pt-3 text-xs uppercase tracking-wide text-kumo-subtle">
-            per 100 g
+        <form id="food-form" onSubmit={submit} className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">{renderField('name', 'Name', 'text')}</div>
+          <div className="col-span-2 sm:col-span-1">
+            {renderField('brand', 'Brand', 'text')}
           </div>
-          {field('kcal_per_100g', 'kcal')}
-          {field('protein_g_per_100g', 'protein g')}
-          {field('carb_g_per_100g', 'carbs g')}
-          {field('fat_g_per_100g', 'fat g')}
-          {field('fiber_g_per_100g', 'fiber g')}
-          {field('sodium_mg_per_100g', 'sodium mg')}
+          <div className="col-span-2 sm:col-span-1">
+            {renderField('serving_grams', 'Serving (g)')}
+          </div>
+          <div className="col-span-2 mt-1 border-t border-kumo-line pt-3 text-[10px] font-medium uppercase tracking-[0.12em] text-kumo-subtle">
+            Per 100 g
+          </div>
+          {renderField('kcal_per_100g', 'Calories')}
+          {renderField('protein_g_per_100g', 'Protein (g)')}
+          {renderField('carb_g_per_100g', 'Carbs (g)')}
+          {renderField('fat_g_per_100g', 'Fat (g)')}
+          {renderField('fiber_g_per_100g', 'Fiber (g)')}
+          {renderField('sodium_mg_per_100g', 'Sodium (mg)')}
         </form>
         <DialogFooter>
           <Button variant="outline" type="button" onClick={() => setOpen(false)}>
@@ -153,27 +160,38 @@ const Foods = () => {
       <PageHeader
         title="Foods"
         description="Search local cache, USDA, and Open Food Facts; create custom foods."
-        actions={<CreateCustomFood onCreated={() => qc.invalidateQueries({ queryKey: ['foods'] })} />}
+        actions={
+          <CreateCustomFood onCreated={() => qc.invalidateQueries({ queryKey: ['foods'] })} />
+        }
       />
       <Card className="mb-4">
         <CardContent className="p-4">
           <form
-            className="flex gap-2"
+            className="flex items-center gap-2"
             onSubmit={(e) => {
               e.preventDefault();
               setActive(query.trim());
             }}
           >
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-kumo-subtle" />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-kumo-subtle"
+              >
+                <Search className="h-4 w-4" />
+              </span>
               <Input
+                aria-label="Search foods"
                 placeholder="Search foods…"
+                autoComplete="off"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="pl-8"
+                className="w-full pl-9"
               />
             </div>
-            <Button type="submit">Search</Button>
+            <Button type="submit" className="shrink-0">
+              Search
+            </Button>
           </form>
         </CardContent>
       </Card>
@@ -187,11 +205,18 @@ const Foods = () => {
           ) : search.isLoading ? (
             <Spinner />
           ) : !search.data?.length ? (
-            <Empty icon={Salad} title="No matches" description="Try a different query or create a custom food." />
+            <Empty
+              icon={Salad}
+              title="No matches"
+              description="Try a different query or create a custom food."
+            />
           ) : (
             <ul className="divide-y divide-kumo-line">
               {search.data.map((f) => (
-                <li key={f.id} className="grid grid-cols-[1fr_auto] items-center gap-3 py-3">
+                <li
+                  key={f.id}
+                  className="grid grid-cols-[1fr_auto] items-center gap-3 py-3"
+                >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-[10px] uppercase">
