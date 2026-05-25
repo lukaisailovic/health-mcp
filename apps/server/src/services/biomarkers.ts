@@ -16,6 +16,9 @@ export type Biomarker = {
   optimal_low: number | null;
   optimal_high: number | null;
   notes: string | null;
+  why_it_matters: string | null;
+  influences: string | null;
+  how_to_improve: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -113,6 +116,9 @@ export const createCustomBiomarker = (
     optimal_low?: number;
     optimal_high?: number;
     notes?: string;
+    why_it_matters?: string;
+    influences?: string;
+    how_to_improve?: string;
   },
 ): Biomarker => {
   const id = cuid();
@@ -121,8 +127,9 @@ export const createCustomBiomarker = (
       .prepare(
         `INSERT INTO biomarkers (
           id, loinc_code, name, display_name, aliases, default_unit_ucum, value_type,
-          default_ref_low, default_ref_high, optimal_low, optimal_high, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          default_ref_low, default_ref_high, optimal_low, optimal_high, notes,
+          why_it_matters, influences, how_to_improve
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         id,
@@ -137,6 +144,9 @@ export const createCustomBiomarker = (
         args.optimal_low ?? null,
         args.optimal_high ?? null,
         args.notes ?? null,
+        args.why_it_matters ?? null,
+        args.influences ?? null,
+        args.how_to_improve ?? null,
       );
     for (const catName of args.categories ?? []) {
       let cat = ctx.db
@@ -176,6 +186,9 @@ export const updateBiomarker = (ctx: Ctx, args: Partial<Biomarker> & { id: strin
         optimal_low = ?,
         optimal_high = ?,
         notes = ?,
+        why_it_matters = ?,
+        influences = ?,
+        how_to_improve = ?,
         updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
        WHERE id = ?`,
     )
@@ -190,6 +203,9 @@ export const updateBiomarker = (ctx: Ctx, args: Partial<Biomarker> & { id: strin
       args.optimal_low === undefined ? existing.optimal_low : args.optimal_low,
       args.optimal_high === undefined ? existing.optimal_high : args.optimal_high,
       args.notes === undefined ? existing.notes : args.notes,
+      args.why_it_matters === undefined ? existing.why_it_matters : args.why_it_matters,
+      args.influences === undefined ? existing.influences : args.influences,
+      args.how_to_improve === undefined ? existing.how_to_improve : args.how_to_improve,
       args.id,
     );
   return ctx.db.prepare('SELECT * FROM biomarkers WHERE id = ?').get(args.id) as Biomarker;

@@ -196,6 +196,9 @@ export type BiomarkerDto = {
   optimal_low: number | null;
   optimal_high: number | null;
   notes: string | null;
+  why_it_matters: string | null;
+  influences: string | null;
+  how_to_improve: string | null;
   created_at: string;
   updated_at: string;
 };

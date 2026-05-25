@@ -9,6 +9,16 @@ The biomarker subsystem is generic — it can hold anything from a blood draw, s
 
 Categories are many-to-many — Glucose belongs to both `CMP` and `Glycemic`. There's no primary category column.
 
+## About copy (catalog metadata)
+
+Three optional text columns on `biomarkers` carry educational copy that renders in the dashboard's About card:
+
+- `why_it_matters` — what the marker signals and why it's worth tracking.
+- `influences` — what physiologically or behaviorally moves it up/down.
+- `how_to_improve` — actionable interventions, or `NULL` when there is no user-actionable lever (e.g. RBC indices, tightly homeostatic electrolytes).
+
+Seed content for the curated catalog lives in `apps/server/src/biomarkers/seed-biomarkers.json` and is backfilled by migration `0007-biomarker-about`. `create_biomarker` and `update_biomarker` accept the same three fields for custom entries.
+
 ## Three-tier range model
 
 Three ranges, walked in this order to decide a result's `status`:

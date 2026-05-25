@@ -23,6 +23,15 @@ import { cn } from '@/lib/cn';
 import { fmtDate, fmtNum } from '@/lib/format';
 import { STATUS_LABEL, STATUS_VARIANT, classifyValue } from '@/lib/labs';
 
+const AboutSection = ({ label, body }: { label: string; body: string }) => (
+  <div>
+    <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-kumo-subtle">
+      {label}
+    </div>
+    <p className="mt-1.5 leading-relaxed text-kumo-default">{body}</p>
+  </div>
+);
+
 const StatTile = ({
   label,
   value,
@@ -377,11 +386,21 @@ const BiomarkerDetail = () => {
           <CardHeader>
             <CardTitle>About</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-kumo-subtle">
-            <p>
-              {b.notes ?? 'No notes recorded for this biomarker yet.'}
-            </p>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
+          <CardContent className="space-y-4 text-sm text-kumo-subtle">
+            {b.why_it_matters ? (
+              <AboutSection label="Why it matters" body={b.why_it_matters} />
+            ) : null}
+            {b.influences ? (
+              <AboutSection label="What influences it" body={b.influences} />
+            ) : null}
+            {b.how_to_improve ? (
+              <AboutSection label="How to improve" body={b.how_to_improve} />
+            ) : null}
+            {!b.why_it_matters && !b.influences && !b.how_to_improve ? (
+              <p>No description recorded for this biomarker yet.</p>
+            ) : null}
+            {b.notes ? <AboutSection label="Notes" body={b.notes} /> : null}
+            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 border-t border-kumo-line pt-3 text-xs">
               <dt className="text-kumo-subtle">Unit</dt>
               <dd className="font-mono text-kumo-default">{b.default_unit_ucum}</dd>
               <dt className="text-kumo-subtle">Value type</dt>

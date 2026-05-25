@@ -1,0 +1,1011 @@
+[
+  {
+    "loinc_code": "2093-3",
+    "name": "Total Cholesterol",
+    "aliases": [
+      "TC",
+      "Chol-Total"
+    ],
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 100,
+    "default_ref_high": 199,
+    "optimal_high": 180,
+    "categories": [
+      "Lipid"
+    ],
+    "why_it_matters": "Sum of all cholesterol carried in the blood across LDL, HDL, and VLDL particles. On its own it's a coarse signal — the particle breakdown matters far more — but persistently high totals track with cardiovascular risk over decades.",
+    "influences": "Saturated fat and refined carb intake push it up; soluble fiber, polyunsaturated fats, and physical activity pull it down. Genetics set a large portion of the baseline, and thyroid status, alcohol, and weight shift it around that setpoint.",
+    "how_to_improve": "Replace saturated fat with mono- and polyunsaturated sources (olive oil, nuts, fatty fish), add 5-10g soluble fiber daily (oats, psyllium, beans), and get 150+ minutes of moderate cardio per week. If lifestyle hits a ceiling and ApoB stays elevated, statins or ezetimibe are the standard escalation."
+  },
+  {
+    "loinc_code": "2085-9",
+    "name": "HDL Cholesterol",
+    "aliases": [
+      "HDL",
+      "HDL-C"
+    ],
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 40,
+    "optimal_low": 55,
+    "categories": [
+      "Lipid"
+    ],
+    "why_it_matters": "Cholesterol packaged in HDL particles, which shuttle cholesterol back to the liver. Higher levels correlate with lower cardiovascular risk in observational data, though raising HDL pharmacologically hasn't reduced events — it's more marker than lever.",
+    "influences": "Exercise (especially endurance), moderate alcohol, and monounsaturated fat raise it. Smoking, sedentary behavior, trans fats, anabolic steroids, and metabolic syndrome lower it. Women run higher than men due to estrogen.",
+    "how_to_improve": "Regular aerobic exercise is the most reliable lever — 30+ minutes most days. Drop trans fats entirely, swap refined carbs for olive oil and nuts, and stop smoking if applicable. Don't chase HDL with drugs; the trials are negative."
+  },
+  {
+    "loinc_code": "13457-7",
+    "name": "LDL Cholesterol",
+    "aliases": [
+      "LDL",
+      "LDL-C"
+    ],
+    "default_unit_ucum": "mg/dL",
+    "default_ref_high": 99,
+    "optimal_high": 80,
+    "categories": [
+      "Lipid"
+    ],
+    "why_it_matters": "Cholesterol carried by LDL particles, which deposit into arterial walls and drive atherosclerosis. Lowering LDL lowers cardiovascular events in trials, making it one of the few lipid markers with strong causal evidence behind treating it.",
+    "influences": "Dietary saturated fat and dietary cholesterol raise it modestly; genetics (familial hypercholesterolemia, ApoE variants) drive most of the variance. Hypothyroidism, nephrotic syndrome, and certain medications push it up. Weight loss and soluble fiber bring it down.",
+    "how_to_improve": "Cut saturated fat to under 7% of calories, add 10g+ soluble fiber daily, and include plant sterols (2g/day from fortified foods or supplements). If LDL stays above target after lifestyle changes — especially with high ApoB or family history — statins are the first-line drug and very well-tolerated."
+  },
+  {
+    "loinc_code": "2571-8",
+    "name": "Triglycerides",
+    "aliases": [
+      "TG"
+    ],
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 0,
+    "default_ref_high": 149,
+    "optimal_high": 80,
+    "categories": [
+      "Lipid"
+    ],
+    "why_it_matters": "Fats circulating in the blood, mostly packaged in VLDL particles. Elevated levels signal carbohydrate overload, insulin resistance, or excess alcohol, and very high values (>500 mg/dL) raise pancreatitis risk. Better metabolic-health marker than direct cardiovascular driver.",
+    "influences": "Refined carbs, sugar, and alcohol spike it sharply. Fasting state matters — eating in the 12 hours before the draw inflates the number. Insulin resistance, hypothyroidism, kidney disease, and certain medications (beta blockers, thiazides, estrogens) raise it.",
+    "how_to_improve": "Cut sugar and refined carbs, limit alcohol, and lose visceral fat. Omega-3s work — 2-4g EPA+DHA daily drops triglycerides 20-30%. For severely elevated values (>500), fibrates or prescription omega-3 are the standard pharmacological options."
+  },
+  {
+    "loinc_code": "49383-5",
+    "name": "ApoB",
+    "display_name": "Apolipoprotein B",
+    "aliases": [
+      "Apo-B",
+      "apoB"
+    ],
+    "default_unit_ucum": "mg/dL",
+    "optimal_high": 80,
+    "categories": [
+      "Lipid",
+      "Cardiac"
+    ],
+    "why_it_matters": "One ApoB molecule sits on every atherogenic particle (LDL, VLDL, IDL, Lp(a)), so ApoB counts the actual number of artery-damaging particles in circulation. When LDL-C and ApoB disagree, ApoB is the better predictor of cardiovascular events.",
+    "influences": "Same drivers as LDL — saturated fat, genetics, insulin resistance — but ApoB also captures small dense LDL and remnant particles that LDL-C misses. Elevated in metabolic syndrome even when LDL-C looks fine.",
+    "how_to_improve": "Lifestyle changes that lower LDL also lower ApoB: reduce saturated fat, add soluble fiber, lose visceral fat, and exercise. Statins drop ApoB roughly in parallel with LDL; PCSK9 inhibitors and ezetimibe stack on top when the target is aggressive (under 60 mg/dL for high-risk individuals)."
+  },
+  {
+    "loinc_code": "43396-1",
+    "name": "Lp(a)",
+    "display_name": "Lipoprotein (a)",
+    "aliases": [
+      "Lp-a",
+      "lpa"
+    ],
+    "default_unit_ucum": "nmol/L",
+    "optimal_high": 75,
+    "categories": [
+      "Lipid",
+      "Cardiac"
+    ],
+    "why_it_matters": "An LDL-like particle with an extra protein (apo(a)) attached, making it both atherogenic and prothrombotic. Independently raises cardiovascular and aortic stenosis risk. Roughly 20% of people carry elevated levels and most don't know it — one lifetime measurement is enough since it barely changes.",
+    "influences": "Almost entirely genetic — set by the LPA gene and stable across your lifetime. Diet, exercise, and statins barely move it. Estrogen lowers it slightly; menopause and hypothyroidism raise it modestly.",
+    "how_to_improve": "There's no lifestyle fix — Lp(a) is genetically locked. Current strategy is to aggressively lower everything else (ApoB, LDL, blood pressure) to compensate for the elevated baseline risk. PCSK9 inhibitors drop it 20-30%; targeted siRNA therapies (pelacarsen, olpasiran) that cut Lp(a) by 80%+ are in late-stage trials and not yet approved."
+  },
+  {
+    "loinc_code": "6690-2",
+    "name": "WBC",
+    "display_name": "White Blood Cells",
+    "default_unit_ucum": "10*3/uL",
+    "default_ref_low": 4,
+    "default_ref_high": 11,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "Total count of immune cells in circulation. High values typically signal infection, inflammation, or stress; low values suggest immunosuppression, marrow problems, or recent viral infection. Useful as a general inflammatory and immune-health snapshot.",
+    "influences": "Acute infection, recent exercise, stress, smoking, and corticosteroids raise it. Viral infections, autoimmune disease, chemotherapy, severe sepsis, and B12/folate deficiency lower it. Daily variation is real — morning vs evening can differ 10-20%.",
+    "how_to_improve": "Treat the underlying cause rather than chase the number. Persistent low-grade elevation usually traces back to chronic inflammation — visceral fat, poor sleep, smoking — and resolves when those do. Persistent lows warrant a hematology workup, not a supplement stack."
+  },
+  {
+    "loinc_code": "789-8",
+    "name": "RBC",
+    "display_name": "Red Blood Cells",
+    "default_unit_ucum": "10*6/uL",
+    "default_ref_low": 4.2,
+    "default_ref_high": 5.9,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "Count of oxygen-carrying cells. Low values define anemia and show up as fatigue and exertional breathlessness; high values can indicate dehydration, smoking, sleep apnea, or polycythemia. Interpreted alongside hemoglobin and the RBC indices.",
+    "influences": "Altitude, smoking, testosterone, dehydration, and chronic hypoxia raise it. Iron, B12, or folate deficiency, blood loss, chronic kidney disease, and bone marrow suppression lower it. Pregnancy lowers it through dilution.",
+    "how_to_improve": "Address the upstream driver. Iron-deficiency anemia responds to iron supplementation (ferrous bisglycinate is gentler than sulfate) and treating the source of loss. B12 or folate deficiency needs targeted replacement. Persistently high RBC with no obvious cause (sleep apnea, smoking, altitude) warrants a JAK2 test for polycythemia vera."
+  },
+  {
+    "loinc_code": "718-7",
+    "name": "Hemoglobin",
+    "aliases": [
+      "Hgb",
+      "Hb"
+    ],
+    "default_unit_ucum": "g/dL",
+    "default_ref_low": 13.5,
+    "default_ref_high": 17.5,
+    "categories": [
+      "CBC",
+      "Iron"
+    ],
+    "why_it_matters": "The oxygen-carrying protein inside red blood cells — what actually delivers O2 to tissues. The most direct measure of anemia and the primary trigger for transfusion decisions. Tracks closely with RBC count but is the more clinically meaningful number.",
+    "influences": "Iron, B12, and folate availability set the ceiling for production. Blood loss (menstruation, GI bleeding), kidney disease (low erythropoietin), and chronic inflammation lower it. Altitude, smoking, dehydration, and androgens raise it.",
+    "how_to_improve": "If low, identify and treat the cause. Iron deficiency: 60-120mg elemental iron daily (bisglycinate or sulfate), taken with vitamin C, away from coffee and calcium; recheck in 6-8 weeks. Heavy menstrual bleeding often needs gynecological evaluation. B12 deficiency in vegans or older adults: 1000mcg sublingual methylcobalamin daily."
+  },
+  {
+    "loinc_code": "4544-3",
+    "name": "Hematocrit",
+    "aliases": [
+      "Hct"
+    ],
+    "default_unit_ucum": "%",
+    "default_ref_low": 38,
+    "default_ref_high": 50,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "The percentage of blood volume made up of red cells. Mirrors hemoglobin and RBC closely — low means anemia, high means concentrated blood (often dehydration or polycythemia). Useful as a sanity check on the other red-cell numbers.",
+    "influences": "Hydration is the biggest short-term influence — a dehydrated draw inflates it noticeably. Same long-term drivers as RBC: altitude, smoking, testosterone, sleep apnea raise it; iron/B12/folate deficiency and blood loss lower it.",
+    "how_to_improve": "If isolated high hematocrit traces to dehydration, smoking, or untreated sleep apnea, fix those. Persistently elevated (>52% in men, >48% in women) without a clear secondary cause warrants polycythemia workup including JAK2. Low values follow the same anemia workup as hemoglobin."
+  },
+  {
+    "loinc_code": "787-2",
+    "name": "MCV",
+    "display_name": "Mean Corpuscular Volume",
+    "default_unit_ucum": "fL",
+    "default_ref_low": 80,
+    "default_ref_high": 100,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "Average size of red blood cells. Not a target to optimize, but a diagnostic clue when anemia is present: small cells (microcytic) point to iron deficiency or thalassemia, large cells (macrocytic) point to B12, folate, alcohol, hypothyroidism, or myelodysplasia.",
+    "influences": "B12 and folate deficiency enlarge cells; iron deficiency and chronic disease shrink them. Alcohol enlarges MCV even without overt deficiency. Reticulocytosis after blood loss temporarily raises it. Hypothyroidism and certain drugs (hydroxyurea, methotrexate) push it up.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "785-6",
+    "name": "MCH",
+    "default_unit_ucum": "pg",
+    "default_ref_low": 27,
+    "default_ref_high": 33,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "Average amount of hemoglobin per red blood cell. Tracks MCV closely — small cells hold less hemoglobin, large cells hold more. A diagnostic descriptor of the anemia type, not a parameter to move on its own.",
+    "influences": "Same drivers as MCV: iron status, B12, folate, alcohol, and underlying marrow conditions. Hemoglobinopathies (thalassemia trait) lower it characteristically while leaving the RBC count normal or high.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "786-4",
+    "name": "MCHC",
+    "default_unit_ucum": "g/dL",
+    "default_ref_low": 32,
+    "default_ref_high": 36,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "Hemoglobin concentration inside the average red cell — how densely packed the hemoglobin is, independent of cell size. Mostly used to flag hereditary spherocytosis (high) or iron deficiency (low). Diagnostic clue, not a treatment target.",
+    "influences": "Iron deficiency lowers it as cells become hemoglobin-poor. Hereditary spherocytosis and severe dehydration raise it. Lab artifacts (cold agglutinins, lipemia) can spuriously elevate the reading.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "777-3",
+    "name": "Platelets",
+    "default_unit_ucum": "10*3/uL",
+    "default_ref_low": 150,
+    "default_ref_high": 400,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "Cells that initiate clotting. Low counts increase bleeding risk; high counts increase clotting risk and can signal inflammation, iron deficiency, infection, or a myeloproliferative disorder. Sustained extremes in either direction warrant hematology workup.",
+    "influences": "Acute infection, inflammation, iron deficiency, and post-splenectomy state raise it. Viral infections, autoimmune destruction (ITP), alcohol, certain drugs (heparin, quinine), and marrow suppression lower it. Pregnancy lowers it mildly through dilution.",
+    "how_to_improve": "Mild elevation tied to inflammation or iron deficiency resolves when the underlying issue does — correct the iron, treat the infection. Persistently high counts (>450k) without an obvious reactive cause warrant JAK2/CALR testing for essential thrombocythemia. Low counts need workup, not supplementation."
+  },
+  {
+    "loinc_code": "770-8",
+    "name": "Neutrophils",
+    "default_unit_ucum": "%",
+    "default_ref_low": 40,
+    "default_ref_high": 70,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "The first-responder white cells that handle bacterial and fungal infections. The largest WBC fraction in most adults. Elevated counts suggest active bacterial infection, inflammation, or physical stress; low counts (neutropenia) raise serious infection risk.",
+    "influences": "Bacterial infection, acute stress, exercise, corticosteroids, and smoking raise it sharply. Viral infections, chemotherapy, autoimmune neutropenia, severe sepsis, and B12/folate deficiency lower it. Benign ethnic neutropenia is common in people of African descent and not pathological.",
+    "how_to_improve": "Address the underlying trigger rather than the cell count. Mild chronic elevation usually reflects low-grade inflammation or active smoking — resolves with lifestyle changes. Significant neutropenia is a hematology question, not a lifestyle one."
+  },
+  {
+    "loinc_code": "736-9",
+    "name": "Lymphocytes",
+    "default_unit_ucum": "%",
+    "default_ref_low": 20,
+    "default_ref_high": 45,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "T cells, B cells, and NK cells — the adaptive and viral-fighting arm of the immune system. Elevated in viral infections and some lymphoid cancers; depressed in acute bacterial infection, corticosteroid use, HIV, and after intense exercise or chemotherapy.",
+    "influences": "Viral infections (EBV, CMV, COVID, hepatitis) raise them. Corticosteroids, chronic stress, intense endurance training, alcohol, and HIV lower them. Time of day matters — counts dip in the morning and rise in the evening.",
+    "how_to_improve": "Persistent depression in the absence of obvious cause (steroids, recent infection, overtraining) warrants checking for HIV, chronic stress load, or marrow issues. Heavy endurance athletes often run low — pulling back training volume usually normalizes it. Persistent elevation deserves a smear and possibly flow cytometry."
+  },
+  {
+    "loinc_code": "5905-5",
+    "name": "Monocytes",
+    "default_unit_ucum": "%",
+    "default_ref_low": 2,
+    "default_ref_high": 12,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "White cells that mature into tissue macrophages and clean up debris, pathogens, and dying cells. Elevated in chronic infections (TB, endocarditis), autoimmune disease, and some hematological cancers. A subtle but useful marker of chronic inflammation.",
+    "influences": "Chronic infections, autoimmune conditions (IBD, RA, lupus), recovery phase from acute infection, and stress raise them. Corticosteroids and acute infection lower them transiently. Smoking nudges them up.",
+    "how_to_improve": "Isolated mild elevation is rarely actionable on its own — interpret alongside CRP, ESR, and clinical context. Persistent elevation paired with other inflammatory markers points back to lifestyle drivers of chronic inflammation: visceral fat, poor sleep, smoking, untreated gum disease, or an undiagnosed autoimmune process."
+  },
+  {
+    "loinc_code": "713-8",
+    "name": "Eosinophils",
+    "default_unit_ucum": "%",
+    "default_ref_low": 0,
+    "default_ref_high": 5,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "Eosinophils are white cells that fight parasites and drive allergic inflammation. Elevated counts point to allergies, asthma, eczema, parasitic infection, or drug reactions; persistently high levels can signal eosinophilic disorders or autoimmune disease. Low counts are usually meaningless.",
+    "influences": "Allergic conditions (hay fever, asthma, atopic dermatitis), parasitic infections, drug hypersensitivity, and eosinophilic GI disease push them up. Acute stress, Cushing's, and corticosteroid use suppress them.",
+    "how_to_improve": "If elevated, identify and remove the trigger: track seasonal allergens, screen for parasites if travel or GI symptoms fit, review recent medications for hypersensitivity. Treating underlying atopy with antihistamines, nasal steroids, or eliminating a food trigger normalizes the count."
+  },
+  {
+    "loinc_code": "706-2",
+    "name": "Basophils",
+    "default_unit_ucum": "%",
+    "default_ref_low": 0,
+    "default_ref_high": 2,
+    "categories": [
+      "CBC"
+    ],
+    "why_it_matters": "Basophils are the rarest white cell and release histamine in allergic and inflammatory reactions. Elevations are uncommon and can point to chronic inflammation, hypothyroidism, or in rare cases myeloproliferative disorders like CML. Low counts have no clinical meaning.",
+    "influences": "Allergic reactions, chronic inflammation, hypothyroidism, and certain hematologic conditions raise them. Acute infection, stress, ovulation, and steroids lower them.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "2345-7",
+    "name": "Glucose",
+    "aliases": [
+      "Fasting Glucose",
+      "FBG"
+    ],
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 70,
+    "default_ref_high": 99,
+    "optimal_high": 90,
+    "categories": [
+      "CMP",
+      "Glycemic"
+    ],
+    "why_it_matters": "Fasting glucose reflects how well your body manages blood sugar after an overnight fast. Values above 100 mg/dL indicate prediabetes, above 126 mg/dL diabetes; it's the earliest signal of insulin resistance alongside fasting insulin.",
+    "influences": "Carbohydrate load the prior evening, fasting duration, sleep quality, cortisol (dawn phenomenon raises morning glucose), recent illness, and stress all move it. Strenuous exercise the day before can transiently lower it; poor sleep and alcohol raise it.",
+    "how_to_improve": "Cut refined carbs and sugary drinks, walk 10-15 minutes after meals to blunt postprandial spikes, add resistance training 2-3x/week to improve glucose disposal, and prioritize 7+ hours of sleep. Time-restricted eating in a 10-hour window and 5-10g soluble fiber per meal (psyllium, oats, beans) lower fasting glucose within weeks."
+  },
+  {
+    "loinc_code": "4548-4",
+    "name": "HbA1c",
+    "display_name": "Hemoglobin A1c",
+    "default_unit_ucum": "%",
+    "default_ref_high": 5.6,
+    "optimal_high": 5.2,
+    "categories": [
+      "Glycemic"
+    ],
+    "why_it_matters": "HbA1c is the percentage of hemoglobin with glucose attached and reflects average blood sugar over the past 2-3 months. Above 5.7% is prediabetic, above 6.5% diabetic; it's the gold-standard marker for long-term glycemic control and correlates strongly with cardiovascular risk.",
+    "influences": "Average glucose exposure over 90 days drives it. Anemia, recent blood loss, hemoglobin variants, and conditions that shorten RBC lifespan (hemolysis) falsely lower it; iron deficiency and splenectomy falsely raise it.",
+    "how_to_improve": "Same levers as fasting glucose, applied consistently: reduce carb quality and quantity, add post-meal walks, build muscle through resistance training, and sleep 7+ hours. Expect a 0.3-0.5% drop per 3 months with sustained changes; berberine 500mg 3x/day and metformin both reliably lower it if lifestyle alone isn't enough."
+  },
+  {
+    "loinc_code": "14749-6",
+    "name": "Fasting Insulin",
+    "default_unit_ucum": "uIU/mL",
+    "default_ref_low": 2.6,
+    "default_ref_high": 24.9,
+    "optimal_high": 5,
+    "categories": [
+      "Glycemic",
+      "Hormones - adrenal"
+    ],
+    "why_it_matters": "Fasting insulin reveals insulin resistance years before glucose rises. Below 5 uIU/mL is optimal, above 10 suggests resistance, above 15 is overt; paired with glucose it gives HOMA-IR, the best early metabolic dysfunction signal.",
+    "influences": "Visceral fat, refined carb intake, sedentary lifestyle, poor sleep, and chronic stress drive it up. Fasting longer than 12 hours, intense exercise, low-carb eating, and weight loss lower it.",
+    "how_to_improve": "Lose visceral fat through a calorie deficit, cut sugar and refined grains, and add resistance training to grow insulin-sensitive muscle tissue. Time-restricted eating (8-10 hour window), 7+ hours of sleep, and 150+ minutes of weekly cardio drop insulin meaningfully within 6-8 weeks."
+  },
+  {
+    "loinc_code": "2160-0",
+    "name": "Creatinine",
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 0.6,
+    "default_ref_high": 1.3,
+    "categories": [
+      "CMP",
+      "Kidney"
+    ],
+    "why_it_matters": "Creatinine is a muscle breakdown product cleared by the kidneys, used as a proxy for filtration rate. Rising values suggest declining kidney function, though it's a lagging indicator and varies with body composition.",
+    "influences": "Muscle mass is the biggest non-kidney driver: muscular people run higher, sarcopenic elderly run lower. High-protein meals, creatine supplementation, intense exercise within 24 hours, and dehydration all raise it independent of kidney health. NSAIDs, ACE inhibitors, and contrast dye can acutely bump it.",
+    "how_to_improve": "If elevated due to kidney issues, address the upstream cause: control blood pressure (target under 130/80), manage diabetes, stop NSAIDs, and stay well-hydrated. If elevated due to muscle mass or creatine supplementation, no change is needed — pair with eGFR and cystatin C for a clearer picture."
+  },
+  {
+    "loinc_code": "3094-0",
+    "name": "BUN",
+    "display_name": "Blood Urea Nitrogen",
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 7,
+    "default_ref_high": 20,
+    "categories": [
+      "CMP",
+      "Kidney"
+    ],
+    "why_it_matters": "BUN measures urea, the nitrogen waste from protein breakdown that kidneys filter. It rises with kidney impairment but is far more sensitive to hydration and protein intake than to actual kidney function.",
+    "influences": "Dehydration, high-protein diet, GI bleeding, catabolic states, and corticosteroids raise it. Low protein intake, liver disease, pregnancy, and overhydration lower it. The BUN/creatinine ratio helps distinguish dehydration (high ratio) from intrinsic kidney issues.",
+    "how_to_improve": "If elevated from dehydration, drink more water — most isolated BUN elevations resolve with adequate fluids. If chronically high with normal creatinine and eGFR, moderate protein intake to 0.8-1.2g/kg and address any GI bleeding source."
+  },
+  {
+    "loinc_code": "62238-1",
+    "name": "eGFR",
+    "display_name": "Estimated GFR",
+    "default_unit_ucum": "mL/min/1.73m2",
+    "default_ref_low": 60,
+    "categories": [
+      "Kidney"
+    ],
+    "why_it_matters": "Estimated glomerular filtration rate is the calculated rate at which kidneys filter blood, derived from creatinine, age, and sex. Above 90 is normal, 60-89 mildly reduced, below 60 for three months defines chronic kidney disease.",
+    "influences": "Because it's calculated from creatinine, anything that moves creatinine moves eGFR: muscle mass, hydration, protein intake, creatine supplements, recent exercise. True kidney drivers are hypertension, diabetes, NSAIDs, contrast dye, and age (declines roughly 1 mL/min/year after 40).",
+    "how_to_improve": "Protect kidney function by controlling blood pressure under 130/80, managing diabetes tightly (HbA1c under 7%), eliminating chronic NSAID use, and staying hydrated. Moderate protein to 0.8g/kg if eGFR is under 60, and treat sleep apnea if present — it accelerates kidney decline."
+  },
+  {
+    "loinc_code": "17861-6",
+    "name": "Calcium",
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 8.5,
+    "default_ref_high": 10.5,
+    "categories": [
+      "CMP",
+      "Minerals"
+    ],
+    "why_it_matters": "Serum calcium is tightly regulated and reflects parathyroid, vitamin D, and bone metabolism rather than dietary intake. Elevations point to hyperparathyroidism, malignancy, or vitamin D toxicity; low values suggest vitamin D deficiency, hypoparathyroidism, or kidney disease.",
+    "influences": "Parathyroid hormone, vitamin D status, kidney function, and albumin level all shift it (low albumin falsely lowers total calcium — check ionized or corrected calcium). Thiazide diuretics, lithium, and excessive vitamin D raise it; loop diuretics and proton pump inhibitors lower it.",
+    "how_to_improve": "If low and vitamin D is also low, correct vitamin D to 40-60 ng/mL with 2000-5000 IU/day. If persistently abnormal, check PTH, vitamin D, and phosphorus to identify the upstream cause rather than supplementing calcium directly."
+  },
+  {
+    "loinc_code": "2951-2",
+    "name": "Sodium",
+    "default_unit_ucum": "mmol/L",
+    "default_ref_low": 136,
+    "default_ref_high": 145,
+    "categories": [
+      "CMP"
+    ],
+    "why_it_matters": "Sodium reflects water balance more than salt intake — it's the primary determinant of plasma osmolality. Low values usually mean too much water (SIADH, heart failure, certain medications); high values mean dehydration.",
+    "influences": "Hydration status, diuretics, SSRIs, vasopressin, heart failure, kidney disease, and adrenal function all shift it. Salt intake has surprisingly little effect on serum sodium because the kidneys excrete excess; it mostly affects blood pressure instead.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "2823-3",
+    "name": "Potassium",
+    "default_unit_ucum": "mmol/L",
+    "default_ref_low": 3.5,
+    "default_ref_high": 5.1,
+    "categories": [
+      "CMP",
+      "Minerals"
+    ],
+    "why_it_matters": "Potassium runs cardiac and skeletal muscle electrical activity. Even small deviations cause arrhythmias, weakness, or cramps; it's one of the most critical electrolytes to keep in range.",
+    "influences": "Kidney function, aldosterone, insulin, and acid-base status all shift it. ACE inhibitors, ARBs, and potassium-sparing diuretics raise it; loop and thiazide diuretics, vomiting, diarrhea, and licorice lower it. Hemolyzed lab samples falsely elevate it.",
+    "how_to_improve": "If low without a medication cause, eat more potassium-rich foods: avocado, banana, spinach, sweet potato, beans, salmon (aim for 3500-4700 mg/day from food). If high, review ACE/ARB doses with the prescriber and cut potassium-rich foods until levels normalize."
+  },
+  {
+    "loinc_code": "2075-0",
+    "name": "Chloride",
+    "default_unit_ucum": "mmol/L",
+    "default_ref_low": 98,
+    "default_ref_high": 107,
+    "categories": [
+      "CMP"
+    ],
+    "why_it_matters": "Chloride moves with sodium and helps maintain fluid balance and acid-base status. Abnormalities usually mirror sodium changes or point to acid-base disorders rather than standalone problems.",
+    "influences": "Tracks sodium closely. Vomiting lowers it (loss of stomach acid), diarrhea and saline infusion raise it. Metabolic acidosis raises it, metabolic alkalosis lowers it.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "2028-9",
+    "name": "CO2",
+    "display_name": "Carbon Dioxide",
+    "default_unit_ucum": "mmol/L",
+    "default_ref_low": 22,
+    "default_ref_high": 29,
+    "categories": [
+      "CMP"
+    ],
+    "why_it_matters": "Serum CO2 measures bicarbonate, the body's main acid buffer. Low values indicate metabolic acidosis (kidney disease, diabetic ketoacidosis, severe diarrhea); high values indicate metabolic alkalosis (vomiting, diuretic use) or respiratory compensation.",
+    "influences": "Kidney function, respiratory rate, vomiting, diarrhea, diuretics, and ketosis all shift it. Chronic low-grade acidosis can occur with high animal-protein diets and declining kidney function.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "1751-7",
+    "name": "Albumin",
+    "default_unit_ucum": "g/dL",
+    "default_ref_low": 3.5,
+    "default_ref_high": 5,
+    "categories": [
+      "CMP",
+      "Liver"
+    ],
+    "why_it_matters": "Albumin is the main blood protein, made by the liver, and reflects nutritional status, liver synthetic function, and inflammation. Low values signal malnutrition, liver disease, kidney protein loss, or chronic inflammation; it's one of the strongest mortality predictors in older adults.",
+    "influences": "Liver function, protein intake, inflammation (acts as a negative acute-phase reactant — drops in any inflammatory state), hydration, and kidney protein loss all move it. Pregnancy and lying down for the blood draw lower it slightly.",
+    "how_to_improve": "Eat 1.2-1.6g/kg of protein per day from quality sources (eggs, fish, meat, dairy, legumes) and ensure adequate calories — protein won't build albumin in a calorie deficit. Address inflammation by treating the underlying driver (chronic infection, autoimmune disease, gut dysfunction); screen for protein loss in urine (microalbumin) and malabsorption (celiac, IBD) if intake is adequate but albumin stays low."
+  },
+  {
+    "loinc_code": "2885-2",
+    "name": "Total Protein",
+    "default_unit_ucum": "g/dL",
+    "default_ref_low": 6,
+    "default_ref_high": 8.3,
+    "categories": [
+      "CMP",
+      "Liver"
+    ],
+    "why_it_matters": "Total protein is albumin plus globulins (immunoglobulins, transport proteins, clotting factors). Low values suggest malnutrition, liver disease, or protein loss; high values point to chronic inflammation, infection, or plasma cell disorders like multiple myeloma.",
+    "influences": "Driven by the same factors as albumin plus immune activity. Chronic infections, autoimmune disease, and monoclonal gammopathies raise globulins; liver disease and protein loss lower both fractions.",
+    "how_to_improve": "If low, raise protein intake to 1.2-1.6g/kg/day with adequate calories and address malabsorption (celiac, IBD, exocrine pancreatic insufficiency). If high, the issue isn't intake — get serum protein electrophoresis to identify whether globulins are polyclonal (inflammation, infection) or monoclonal (workup needed)."
+  },
+  {
+    "loinc_code": "1975-2",
+    "name": "Total Bilirubin",
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 0.2,
+    "default_ref_high": 1.2,
+    "categories": [
+      "CMP",
+      "Liver"
+    ],
+    "why_it_matters": "Bilirubin is the breakdown product of old red blood cells, processed by the liver and excreted in bile. Elevations suggest liver dysfunction, bile duct obstruction, or accelerated red cell breakdown.",
+    "influences": "Mild isolated elevations (1.2-3 mg/dL) with normal liver enzymes are usually Gilbert's syndrome — a benign genetic variant in 5-10% of people that worsens with fasting, dehydration, illness, or stress and has no clinical consequence. True elevations come from hepatitis, fatty liver, bile duct stones, or hemolysis. Some medications (rifampin, indinavir) raise it.",
+    "how_to_improve": "If it's Gilbert's, no action needed — stay hydrated and don't fast excessively before labs to avoid alarming spikes. If liver enzymes are also elevated, address the underlying cause: cut alcohol, lose weight if fatty liver, screen for viral hepatitis, and review hepatotoxic medications and supplements."
+  },
+  {
+    "loinc_code": "6768-6",
+    "name": "Alkaline Phosphatase",
+    "aliases": [
+      "ALP"
+    ],
+    "default_unit_ucum": "U/L",
+    "default_ref_low": 44,
+    "default_ref_high": 147,
+    "categories": [
+      "CMP",
+      "Liver"
+    ],
+    "why_it_matters": "ALP is an enzyme from liver, bile ducts, and bone. Elevations suggest bile duct obstruction, liver disease, or bone turnover (fractures, Paget's, vitamin D deficiency, growing adolescents); fractionation or GGT distinguishes the source.",
+    "influences": "Bile duct obstruction, cholestatic liver disease, bone growth or disease, pregnancy (placenta produces it), and hyperthyroidism raise it. Vitamin D deficiency, zinc deficiency, hypothyroidism, and malnutrition lower it.",
+    "how_to_improve": "If elevated with normal GGT, suspect bone source and check vitamin D (correct to 40-60 ng/mL) and screen for bone disease. If GGT is also elevated, the source is biliary — cut alcohol, address fatty liver through weight loss, and image the bile ducts if persistently high. If low, correct vitamin D, zinc (15-30mg/day), and check thyroid function."
+  },
+  {
+    "loinc_code": "1742-6",
+    "name": "ALT",
+    "display_name": "Alanine Aminotransferase",
+    "default_unit_ucum": "U/L",
+    "default_ref_low": 7,
+    "default_ref_high": 56,
+    "categories": [
+      "Liver"
+    ],
+    "why_it_matters": "ALT is an enzyme concentrated in liver cells that leaks into the bloodstream when hepatocytes are damaged, making it the most liver-specific routine marker. Elevations point to hepatitis, fatty liver, alcohol-related injury, or drug toxicity well before symptoms appear.",
+    "influences": "Alcohol, non-alcoholic fatty liver from excess body fat or sugar, viral hepatitis, statins and acetaminophen, anabolic steroids, and acute infections all push it up. Intense exercise in the 24-48 hours before the draw can also bump it modestly.",
+    "how_to_improve": "Cut alcohol entirely for 4-8 weeks and recheck. Lose 5-10 percent of body weight if NAFLD is the driver, which usually means reducing refined carbs and added sugar rather than fat. Review hepatotoxic medications and supplements with whoever prescribed them."
+  },
+  {
+    "loinc_code": "1920-8",
+    "name": "AST",
+    "display_name": "Aspartate Aminotransferase",
+    "default_unit_ucum": "U/L",
+    "default_ref_low": 10,
+    "default_ref_high": 40,
+    "categories": [
+      "Liver"
+    ],
+    "why_it_matters": "AST is similar to ALT but lives in liver, skeletal muscle, and heart, so it's less liver-specific. The AST-to-ALT ratio matters: ratios above 2 suggest alcohol-related injury, while ratios under 1 are more typical of fatty liver.",
+    "influences": "Same liver drivers as ALT, plus muscle damage from heavy lifting, endurance events, rhabdomyolysis, or IM injections. Statins, alcohol, and recent strenuous training are the most common reasons AST rises in isolation.",
+    "how_to_improve": "If ALT is normal and AST is high, suspect muscle and back off intense training for a week before retesting. Otherwise the liver playbook applies: stop alcohol, address fatty liver via weight loss and reduced refined carbs, and audit medications."
+  },
+  {
+    "loinc_code": "2324-2",
+    "name": "GGT",
+    "display_name": "Gamma-Glutamyl Transferase",
+    "default_unit_ucum": "U/L",
+    "default_ref_low": 9,
+    "default_ref_high": 48,
+    "categories": [
+      "Liver"
+    ],
+    "why_it_matters": "GGT sits on liver and bile duct cells and is the most sensitive routine marker for alcohol intake and cholestasis. It also tracks oxidative stress and glutathione turnover, so elevations correlate with cardiovascular and metabolic risk even when other liver enzymes look fine.",
+    "influences": "Alcohol is the dominant driver, even at moderate intake. Fatty liver, bile duct obstruction, enzyme-inducing medications like phenytoin and barbiturates, smoking, and insulin resistance all raise it.",
+    "how_to_improve": "Stop alcohol completely for 4-6 weeks and most cases resolve. N-acetylcysteine 600-1200mg per day supports glutathione synthesis. If GGT stays elevated, work on the fatty liver drivers: weight loss, fewer refined carbs, more fiber, and treat insulin resistance."
+  },
+  {
+    "loinc_code": "3016-3",
+    "name": "TSH",
+    "default_unit_ucum": "mIU/L",
+    "default_ref_low": 0.4,
+    "default_ref_high": 4.5,
+    "optimal_low": 0.5,
+    "optimal_high": 2.5,
+    "categories": [
+      "Thyroid"
+    ],
+    "why_it_matters": "TSH is the pituitary's signal telling the thyroid to produce more hormone, so it moves inversely to thyroid output. High TSH means the thyroid is underperforming and the pituitary is pushing harder; low TSH means thyroid hormone is abundant or the pituitary is suppressed.",
+    "influences": "TSH is highest in the early morning and drops through the day, so draw timing matters. Iodine intake, selenium status, acute stress, illness, pregnancy, biotin supplements interfering with the assay, and autoimmune thyroiditis all shift it.",
+    "how_to_improve": "For borderline subclinical patterns, ensure iodine intake of around 150mcg per day, selenium 100-200mcg per day from food or supplement, consistent sleep, and lower chronic stress load. Frank hypo or hyperthyroidism is treatment territory and needs medical management, not lifestyle alone."
+  },
+  {
+    "loinc_code": "3024-7",
+    "name": "Free T4",
+    "aliases": [
+      "FT4"
+    ],
+    "default_unit_ucum": "ng/dL",
+    "default_ref_low": 0.8,
+    "default_ref_high": 1.8,
+    "categories": [
+      "Thyroid"
+    ],
+    "why_it_matters": "Free T4 is the unbound, biologically available form of thyroxine, the storage hormone the thyroid mainly produces. It converts peripherally to active T3 and is the most stable read on thyroid output.",
+    "influences": "Thyroid disease, levothyroxine dosing, severe illness, pregnancy, estrogen and birth control which raise binding proteins, and biotin assay interference. Acute stress and starvation can lower it modestly.",
+    "how_to_improve": "Free T4 mostly reflects thyroid gland output and medication, so direct interventions are limited outside treatment. Ensure adequate iodine and selenium, and if on levothyroxine, take it on an empty stomach away from calcium, iron, and coffee to optimize absorption."
+  },
+  {
+    "loinc_code": "3051-0",
+    "name": "Free T3",
+    "aliases": [
+      "FT3"
+    ],
+    "default_unit_ucum": "pg/mL",
+    "default_ref_low": 2.3,
+    "default_ref_high": 4.2,
+    "categories": [
+      "Thyroid"
+    ],
+    "why_it_matters": "Free T3 is the biologically active thyroid hormone that drives metabolism at the cellular level. It's produced mostly by peripheral conversion of T4, so it reflects both thyroid output and conversion efficiency.",
+    "influences": "Caloric restriction, low carb intake, illness, stress, selenium deficiency, and liver dysfunction impair T4 to T3 conversion and drop Free T3. Hyperthyroidism, T3-containing medication, and refeeding raise it.",
+    "how_to_improve": "Eat enough total calories and at least 100-150g carbs per day if Free T3 is suppressed from dieting. Selenium 100-200mcg per day, zinc 15-30mg per day, and addressing chronic inflammation support conversion. Sustained low-calorie dieting will keep T3 down regardless of supplements."
+  },
+  {
+    "loinc_code": "5385-0",
+    "name": "Reverse T3",
+    "aliases": [
+      "rT3"
+    ],
+    "default_unit_ucum": "ng/dL",
+    "default_ref_low": 8,
+    "default_ref_high": 25,
+    "categories": [
+      "Thyroid"
+    ],
+    "why_it_matters": "Reverse T3 is an inactive isomer of T3 that acts as a brake on thyroid signaling at the cellular level. It rises when the body wants to conserve energy, so high levels indicate the system is downshifting metabolism even if TSH and T4 look normal.",
+    "influences": "Acute and chronic illness, severe caloric restriction, prolonged fasting, intense overtraining, high cortisol, trauma, surgery, and certain medications like amiodarone and beta-blockers all push it up.",
+    "how_to_improve": "Treat the underlying stressor: eat more total calories, reduce training volume, prioritize sleep, and address chronic infections or inflammation. Selenium and adequate carbohydrate intake support normal T4 to T3 conversion and reduce the rT3 shunt."
+  },
+  {
+    "loinc_code": "8099-7",
+    "name": "TPO Antibodies",
+    "aliases": [
+      "TPO"
+    ],
+    "default_unit_ucum": "IU/mL",
+    "default_ref_high": 35,
+    "categories": [
+      "Thyroid",
+      "Autoimmunity"
+    ],
+    "why_it_matters": "TPO antibodies attack thyroid peroxidase, the enzyme that builds thyroid hormone. Elevated titers confirm Hashimoto's or autoimmune thyroiditis and predict eventual hypothyroidism even when TSH is still normal.",
+    "influences": "Genetic susceptibility plus triggers: gluten in susceptible people, iodine excess, vitamin D deficiency, selenium deficiency, gut dysbiosis, EBV reactivation, smoking, and other coexisting autoimmune conditions.",
+    "how_to_improve": "Run a strict 90-day gluten elimination and retest, since responders often see meaningful drops. Selenium 200mcg per day from selenomethionine has the best evidence for lowering titers. Get vitamin D into the 40-60 ng/mL range. Titers don't always normalize even with optimal care, and the goal is slowing progression rather than chasing a number."
+  },
+  {
+    "loinc_code": "2986-8",
+    "name": "Testosterone Total",
+    "aliases": [
+      "Total Testosterone"
+    ],
+    "default_unit_ucum": "ng/dL",
+    "default_ref_low": 264,
+    "default_ref_high": 916,
+    "optimal_low": 600,
+    "categories": [
+      "Hormones - sex"
+    ],
+    "why_it_matters": "Total testosterone measures all circulating testosterone, both bound and free. It anchors the diagnosis of hypogonadism and tracks androgen status, but it's heavily influenced by SHBG, so free testosterone is often the more useful read.",
+    "influences": "Sleep duration, body fat percentage, resistance training, alcohol, opioids, anabolic steroid use, chronic stress, type 2 diabetes, and aging all move it. Levels are highest in the morning and drop through the day, so draw before 10am.",
+    "how_to_improve": "Sleep 7-9 hours consistently, since one week of 5-hour nights drops testosterone 10-15 percent. Get body fat into a healthy range and lift heavy compound movements 3-4 times per week. Cut alcohol to under 5 drinks per week. Address sleep apnea if present. Zinc 15-30mg per day if deficient."
+  },
+  {
+    "loinc_code": "2991-8",
+    "name": "Free Testosterone",
+    "default_unit_ucum": "pg/mL",
+    "default_ref_low": 9.3,
+    "default_ref_high": 26.5,
+    "categories": [
+      "Hormones - sex"
+    ],
+    "why_it_matters": "Free testosterone is the unbound fraction that can actually enter cells and act on androgen receptors. It's the better marker of androgen status when SHBG is high or low, which is common with aging, insulin resistance, and birth control use.",
+    "influences": "Anything that changes total testosterone, plus anything that changes SHBG. High SHBG from low body fat, hyperthyroidism, estrogen, or aging will lower free testosterone even when total looks normal.",
+    "how_to_improve": "Same drivers as total testosterone: sleep, resistance training, fat loss if obese, less alcohol. If SHBG is the issue, address it directly: reduce excess estradiol if elevated, treat hyperthyroidism, and ensure adequate protein intake of 1.6-2.2g per kg bodyweight."
+  },
+  {
+    "loinc_code": "13967-5",
+    "name": "SHBG",
+    "display_name": "Sex Hormone Binding Globulin",
+    "default_unit_ucum": "nmol/L",
+    "default_ref_low": 16.5,
+    "default_ref_high": 55.9,
+    "categories": [
+      "Hormones - sex"
+    ],
+    "why_it_matters": "SHBG is a liver-produced protein that binds testosterone and estradiol, controlling how much is free to act on tissues. It modulates the entire sex hormone picture, so interpreting total testosterone or estradiol without it is incomplete.",
+    "influences": "High SHBG comes from aging, hyperthyroidism, estrogen and oral contraceptives, low body fat, low insulin, and liver disease. Low SHBG comes from insulin resistance, obesity, hypothyroidism, anabolic steroid use, and high androgen states.",
+    "how_to_improve": "To raise low SHBG: address insulin resistance through weight loss, carb reduction, and resistance training. To lower high SHBG: ensure adequate calorie and protein intake, reduce excess estrogen exposure, and review oral contraceptive use with a clinician. Boron 6-10mg per day has modest SHBG-lowering effects."
+  },
+  {
+    "loinc_code": "14288-5",
+    "name": "Estradiol",
+    "aliases": [
+      "E2"
+    ],
+    "default_unit_ucum": "pg/mL",
+    "default_ref_low": 7.6,
+    "default_ref_high": 42.6,
+    "categories": [
+      "Hormones - sex"
+    ],
+    "why_it_matters": "Estradiol is the primary estrogen and matters in both sexes. In women it drives menstrual cycle phases, fertility, bone density, and cardiovascular protection. In men it comes from aromatization of testosterone and is essential for libido, mood, and bone health, but excess from high body fat causes problems.",
+    "influences": "Cycle phase in women, body fat percentage which drives aromatization, alcohol, testosterone replacement, aromatase inhibitors, hormonal birth control, age and menopause, and liver function which clears it.",
+    "how_to_improve": "If too high, especially in men: lose body fat since adipose tissue is where testosterone aromatizes to estradiol. Cut alcohol since it raises estradiol and impairs liver clearance. Cruciferous vegetables and DIM 100-200mg per day support estrogen metabolism. If too low from menopause or hypothalamic amenorrhea, that's a clinical conversation about HRT, body weight, and training load."
+  },
+  {
+    "loinc_code": "15067-2",
+    "name": "FSH",
+    "default_unit_ucum": "mIU/mL",
+    "categories": [
+      "Hormones - sex"
+    ],
+    "why_it_matters": "FSH from the pituitary drives sperm production in men and follicle maturation in women. It's a diagnostic window into the hypothalamic-pituitary-gonadal axis: high FSH means the gonads aren't responding and the pituitary is pushing harder, low FSH points to pituitary or hypothalamic suppression.",
+    "influences": "Age and menopause, primary gonadal failure, anabolic steroid use which suppresses it, hypothalamic amenorrhea from low body fat or overtraining, prolactinoma, and pituitary disease.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "10501-5",
+    "name": "LH",
+    "default_unit_ucum": "mIU/mL",
+    "categories": [
+      "Hormones - sex"
+    ],
+    "why_it_matters": "LH from the pituitary triggers ovulation in women and testosterone production in men. It pairs with FSH to localize where a problem in the reproductive axis sits: high LH with low testosterone points to primary testicular failure, low LH with low testosterone points to pituitary or hypothalamic issues.",
+    "influences": "Age, menopause, anabolic steroid and exogenous testosterone use which suppresses it, hypothalamic amenorrhea from low energy availability, PCOS which often shows an elevated LH to FSH ratio, and pituitary disease.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "2842-3",
+    "name": "Prolactin",
+    "default_unit_ucum": "ng/mL",
+    "default_ref_low": 2,
+    "default_ref_high": 18,
+    "categories": [
+      "Hormones - sex"
+    ],
+    "why_it_matters": "Prolactin from the pituitary drives lactation but also suppresses GnRH, so high levels lower testosterone, estradiol, and fertility in both sexes. Markedly elevated prolactin can indicate a pituitary adenoma and needs imaging.",
+    "influences": "Stress, poor sleep, recent nipple stimulation or breast exam within the prior hour, pregnancy and breastfeeding, antipsychotics, SSRIs, metoclopramide, opioids, hypothyroidism which raises TRH and therefore prolactin, and prolactinomas.",
+    "how_to_improve": "For mild stress-driven elevation: improve sleep, reduce chronic stress, and avoid nipple stimulation before the draw. Review medications with whoever prescribed them, since antipsychotics and certain antidepressants are common culprits. Treat hypothyroidism if present. Persistently high prolactin or levels above 100 ng/mL warrants pituitary imaging."
+  },
+  {
+    "loinc_code": "2143-6",
+    "name": "Cortisol AM",
+    "display_name": "Cortisol (AM)",
+    "default_unit_ucum": "ug/dL",
+    "default_ref_low": 6.2,
+    "default_ref_high": 19.4,
+    "categories": [
+      "Hormones - adrenal"
+    ],
+    "why_it_matters": "Morning cortisol should be at its daily peak between 6-8am, reflecting a healthy circadian rhythm. It's the screening test for both adrenal insufficiency on the low end and Cushing's on the high end, and tracks how the HPA axis is handling stress load.",
+    "influences": "Draw timing is the single biggest variable, since cortisol drops 50 percent or more by noon. Sleep quality, recent acute stress, exogenous steroids including inhaled and topical, estrogen which raises binding globulin, depression, and shift work all shift it.",
+    "how_to_improve": "Draw between 7-9am after normal sleep for an accurate baseline. For elevated patterns from chronic stress: prioritize 7-9 hours of sleep, get morning sunlight within 30 minutes of waking, limit caffeine after noon, and reduce stimulant and alcohol use in the evening. Adrenal insufficiency and Cushing's are clinical diagnoses that need proper workup, not lifestyle fixes."
+  },
+  {
+    "loinc_code": "2191-5",
+    "name": "DHEA-S",
+    "display_name": "Dehydroepiandrosterone Sulfate",
+    "default_unit_ucum": "ug/dL",
+    "categories": [
+      "Hormones - adrenal"
+    ],
+    "why_it_matters": "DHEA-S is the most abundant adrenal androgen and serves as a precursor to testosterone and estradiol. It peaks in the mid-20s and declines steadily with age, making it a rough proxy for adrenal reserve and biological aging.",
+    "influences": "Age is the dominant driver, with levels dropping roughly 10 percent per decade after 30. Chronic stress and HPA axis dysfunction lower it, while PCOS, congenital adrenal hyperplasia, and adrenal tumors raise it.",
+    "how_to_improve": "Sleep 7-9 hours, manage chronic stress, and lift heavy 3-4 times per week, since resistance training modestly supports adrenal androgen output. DHEA supplementation at 25-50mg per day is sometimes used in adults with documented low levels, but it converts to both testosterone and estradiol unpredictably and requires periodic hormone monitoring rather than blind dosing."
+  },
+  {
+    "loinc_code": "1989-3",
+    "name": "Vitamin D",
+    "display_name": "25-Hydroxy Vitamin D",
+    "aliases": [
+      "25-OH Vit D"
+    ],
+    "default_unit_ucum": "ng/mL",
+    "default_ref_low": 30,
+    "default_ref_high": 100,
+    "optimal_low": 40,
+    "optimal_high": 80,
+    "categories": [
+      "Vitamins"
+    ],
+    "why_it_matters": "Reflects total vitamin D stores from sun and diet, and drives calcium absorption, bone density, immune regulation, and mood. Low levels track with higher infection risk, fatigue, bone loss, and depressive symptoms. The serum 25-OH value is a snapshot of stores, not active hormone.",
+    "influences": "Sun exposure on bare skin, latitude and season, skin pigmentation, body fat (sequesters D), age, kidney and liver function, and oral intake from fatty fish, egg yolks, or supplements. Obesity, malabsorption, and chronic kidney disease all pull it down.",
+    "how_to_improve": "10 to 20 minutes of midday sun on arms and legs when UV index allows, plus 2000 to 5000 IU D3 daily with a fatty meal. Pair with 100 to 200 mcg K2 (MK-7) to direct calcium to bone and 200 to 400 mg magnesium, which is a cofactor for D activation. Retest after 8 to 12 weeks."
+  },
+  {
+    "loinc_code": "2132-9",
+    "name": "Vitamin B12",
+    "aliases": [
+      "B12",
+      "Cobalamin"
+    ],
+    "default_unit_ucum": "pg/mL",
+    "default_ref_low": 200,
+    "default_ref_high": 900,
+    "optimal_low": 500,
+    "categories": [
+      "Vitamins"
+    ],
+    "why_it_matters": "Required for red blood cell production, myelin synthesis, and methylation. Deficiency causes macrocytic anemia, neuropathy, cognitive fog, and irreversible nerve damage if prolonged. Stores last years, so low values usually mean a long-standing absorption or intake problem.",
+    "influences": "Animal foods (meat, fish, eggs, dairy) are the only meaningful dietary source. Pernicious anemia, atrophic gastritis, low stomach acid, PPIs, metformin, nitrous oxide exposure, and gastric or ileal surgery all suppress absorption. Vegan diets without supplementation deplete it.",
+    "how_to_improve": "1000 to 2000 mcg methylcobalamin or hydroxocobalamin sublingual daily bypasses gut absorption issues. For confirmed pernicious anemia or severe deficiency, IM hydroxocobalamin 1000 mcg weekly then monthly. Eat liver, sardines, eggs, and beef regularly if absorption is intact."
+  },
+  {
+    "loinc_code": "2284-8",
+    "name": "Folate",
+    "aliases": [
+      "Folic Acid"
+    ],
+    "default_unit_ucum": "ng/mL",
+    "default_ref_low": 5.4,
+    "default_ref_high": 24,
+    "categories": [
+      "Vitamins"
+    ],
+    "why_it_matters": "Folate runs the methylation cycle alongside B12, builds DNA, and lowers homocysteine. Low folate causes macrocytic anemia, elevated homocysteine, and neural tube defects in pregnancy. Adequate folate also supports neurotransmitter synthesis and mood.",
+    "influences": "Leafy greens, lentils, beets, liver, and asparagus. Alcohol, methotrexate, sulfasalazine, anticonvulsants, and PPIs deplete it. MTHFR C677T or A1298C variants reduce conversion of folic acid to active 5-MTHF, so synthetic folic acid can sit unconverted while functional folate runs low.",
+    "how_to_improve": "Eat a daily plate of dark leafy greens, plus lentils or beets several times a week. If supplementing, use 400 to 800 mcg L-methylfolate (5-MTHF) rather than folic acid, especially with MTHFR variants. Pair with methylcobalamin so the methylation cycle doesn't stall."
+  },
+  {
+    "loinc_code": "5895-7",
+    "name": "Magnesium",
+    "aliases": [
+      "Mg"
+    ],
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 1.7,
+    "default_ref_high": 2.2,
+    "categories": [
+      "Minerals"
+    ],
+    "why_it_matters": "Magnesium drives over 300 enzymatic reactions including ATP production, muscle relaxation, vascular tone, and glucose control. Serum is a poor proxy for tissue stores because roughly 99 percent of body magnesium sits inside cells and bone, so serum can read normal while you're functionally depleted. RBC magnesium is a closer read on actual status.",
+    "influences": "Leafy greens, nuts, seeds, legumes, and dark chocolate raise it. Alcohol, PPIs, loop and thiazide diuretics, chronic stress, high sweat loss, refined diets, and gut malabsorption deplete it. Insulin resistance accelerates urinary wasting.",
+    "how_to_improve": "200 to 400 mg of magnesium glycinate, malate, or citrate at night (glycinate for sleep, malate for energy, citrate if constipated). Eat pumpkin seeds, almonds, spinach, and 70 percent dark chocolate daily. Avoid magnesium oxide, which is poorly absorbed."
+  },
+  {
+    "loinc_code": "2823-3",
+    "name": "Zinc",
+    "default_unit_ucum": "ug/dL",
+    "default_ref_low": 60,
+    "default_ref_high": 130,
+    "categories": [
+      "Minerals"
+    ],
+    "why_it_matters": "Zinc supports immune function, wound healing, testosterone production, taste and smell, and skin integrity. Deficiency shows up as frequent colds, slow-healing cuts, hair loss, low libido, and altered taste. It also acts as a cofactor for hundreds of enzymes.",
+    "influences": "Oysters, red meat, pumpkin seeds, and shellfish raise it. Phytates in grains and legumes block absorption. High copper intake, chronic alcohol use, gut inflammation, and prolonged stress lower it. Zinc and copper compete for the same transporter, so chronic high-dose zinc tanks copper.",
+    "how_to_improve": "15 to 30 mg zinc picolinate or bisglycinate with food, paired with 1 to 2 mg copper if dosing above 25 mg daily for more than a few weeks. Eat oysters, beef, or pumpkin seeds regularly. Don't supplement zinc in isolation long-term without watching the zinc to copper ratio (aim for roughly 8 to 12 to 1)."
+  },
+  {
+    "loinc_code": "5621-7",
+    "name": "Copper",
+    "default_unit_ucum": "ug/dL",
+    "default_ref_low": 70,
+    "default_ref_high": 140,
+    "categories": [
+      "Minerals"
+    ],
+    "why_it_matters": "Copper is required for iron metabolism, connective tissue (via lysyl oxidase), neurotransmitter synthesis, and antioxidant defense through ceruloplasmin and SOD. Deficiency mimics iron-deficiency anemia that doesn't respond to iron, and causes neuropathy and connective tissue weakness. Excess (Wilson's, supplement overload) is hepatotoxic.",
+    "influences": "Beef liver, oysters, dark chocolate, cashews, and sesame seeds raise it. High-dose zinc supplementation, bariatric surgery, and chronic diarrhea deplete it. Estrogen, inflammation, and pregnancy raise serum copper through ceruloplasmin.",
+    "how_to_improve": "Eat beef liver weekly (an ounce covers daily needs), or add oysters and cashews. If supplementing, 1 to 2 mg copper bisglycinate, taken away from zinc and vitamin C. Never supplement copper without checking that your zinc isn't already low."
+  },
+  {
+    "loinc_code": "14685-2",
+    "name": "Selenium",
+    "default_unit_ucum": "ug/L",
+    "default_ref_low": 70,
+    "default_ref_high": 150,
+    "categories": [
+      "Minerals"
+    ],
+    "why_it_matters": "Selenium powers glutathione peroxidase and thyroid hormone conversion (T4 to T3). Deficiency raises oxidative stress and impairs thyroid function and immune response. The therapeutic window is narrow, and excess causes hair loss, brittle nails, and neuropathy.",
+    "influences": "Brazil nuts, seafood, organ meats, and eggs. Soil selenium content varies dramatically by region, so plant sources are inconsistent. Crohn's, celiac, and dialysis deplete it.",
+    "how_to_improve": "Eat 1 to 2 Brazil nuts daily, which delivers 70 to 200 mcg per nut depending on origin. Alternatively, sardines, tuna, or eggs several times a week. If supplementing, cap at 100 to 200 mcg as selenomethionine and don't stack with a Brazil nut habit."
+  },
+  {
+    "loinc_code": "2498-4",
+    "name": "Iron",
+    "display_name": "Serum Iron",
+    "default_unit_ucum": "ug/dL",
+    "default_ref_low": 60,
+    "default_ref_high": 170,
+    "categories": [
+      "Iron"
+    ],
+    "why_it_matters": "Serum iron is iron currently in transit bound to transferrin, not stored iron. It's only meaningful read alongside TIBC, ferritin, and TSAT because it swings with recent meals, time of day, and inflammation. Used in isolation it's misleading.",
+    "influences": "Recent red meat or iron supplement intake raises it within hours. Diurnal variation (higher in the morning), menstruation, blood loss, pregnancy, inflammation, and chronic disease lower it. Hemochromatosis and repeated transfusions raise it.",
+    "how_to_improve": "If genuinely low, eat heme iron from red meat, liver, or shellfish 2 to 3 times a week and pair non-heme sources (lentils, spinach) with vitamin C to boost absorption. Avoid coffee, tea, and calcium within an hour of iron-rich meals. Supplement with iron bisglycinate 25 to 50 mg every other day (better absorbed than daily) only if ferritin confirms low stores."
+  },
+  {
+    "loinc_code": "2500-7",
+    "name": "TIBC",
+    "display_name": "Total Iron Binding Capacity",
+    "default_unit_ucum": "ug/dL",
+    "default_ref_low": 240,
+    "default_ref_high": 450,
+    "categories": [
+      "Iron"
+    ],
+    "why_it_matters": "TIBC measures the total capacity of transferrin to carry iron, which is an indirect read on transferrin levels. It rises when the body upregulates transport in iron deficiency and falls in iron overload, chronic disease, and malnutrition. Read it alongside serum iron and ferritin to interpret the iron panel.",
+    "influences": "Iron deficiency, pregnancy, and oral contraceptives raise it. Chronic inflammation, liver disease, malnutrition, nephrotic syndrome, and iron overload lower it. Acute illness drops it transiently as part of the acute phase response.",
+    "how_to_improve": "Not directly targetable. Treat the underlying iron status: if TIBC is high because iron is low, correct the iron deficiency with diet and supplementation; if TIBC is low alongside high ferritin in inflammation, address the inflammation rather than chasing the number."
+  },
+  {
+    "loinc_code": "2276-4",
+    "name": "Ferritin",
+    "default_unit_ucum": "ng/mL",
+    "default_ref_low": 20,
+    "default_ref_high": 250,
+    "optimal_low": 50,
+    "optimal_high": 150,
+    "categories": [
+      "Iron",
+      "Inflammation"
+    ],
+    "why_it_matters": "Ferritin is the body's stored iron and the most useful single marker of iron status. Low ferritin (below 30 ng/mL, ideally above 50 to 70 for energy and hair) means depleted stores even before hemoglobin drops. High ferritin can mean iron overload, but ferritin is also an acute phase reactant and rises with inflammation, infection, liver disease, and metabolic syndrome independent of actual iron stores.",
+    "influences": "Heme iron intake, vitamin C, gastric acid, and pregnancy alter it. Blood loss (menstrual, GI), chronic kidney disease, malabsorption, and vegetarian diets lower it. Inflammation, alcohol, fatty liver, hemochromatosis, and repeated transfusions raise it. Always read with hs-CRP to know whether a high value reflects iron or inflammation.",
+    "how_to_improve": "If low, red meat, liver, oysters, and dark poultry 2 to 3 times a week, plus iron bisglycinate 25 to 50 mg every other day with vitamin C. If high without genetic overload, donate blood every 8 to 12 weeks, reduce alcohol, and treat metabolic inflammation. Recheck in 3 to 6 months."
+  },
+  {
+    "loinc_code": "2502-3",
+    "name": "Transferrin Saturation",
+    "aliases": [
+      "TSAT"
+    ],
+    "default_unit_ucum": "%",
+    "default_ref_low": 20,
+    "default_ref_high": 50,
+    "categories": [
+      "Iron"
+    ],
+    "why_it_matters": "TSAT is the percentage of transferrin currently carrying iron and is the most sensitive early marker of iron overload. Above 45 percent (and especially above 50) suggests overload or hemochromatosis well before ferritin climbs. Below 20 percent suggests deficiency, often before hemoglobin drops.",
+    "influences": "Recent iron intake, time of day (morning highs), and fasting state shift it. Hemochromatosis, repeated transfusions, hemolysis, and high-dose supplementation raise it. Iron deficiency, chronic disease, and inflammation lower it.",
+    "how_to_improve": "If low, address iron deficiency with heme sources and supplementation as above. If persistently above 45 percent, get HFE gene testing for hemochromatosis and consider therapeutic phlebotomy; reduce iron-fortified foods, vitamin C with meals, and alcohol while working up the cause."
+  },
+  {
+    "loinc_code": "30522-7",
+    "name": "hs-CRP",
+    "display_name": "High-Sensitivity C-Reactive Protein",
+    "default_unit_ucum": "mg/L",
+    "default_ref_high": 3,
+    "optimal_high": 1,
+    "categories": [
+      "Inflammation",
+      "Cardiac"
+    ],
+    "why_it_matters": "hs-CRP is a sensitive but nonspecific marker of systemic inflammation, produced by the liver in response to IL-6. It predicts cardiovascular risk independently of cholesterol. Optimal is well below 1 mg/L; 1 to 3 is moderate risk, above 3 is high. Acute infections spike it transiently to 10 or higher, so retest after illness clears.",
+    "influences": "Acute infection, recent injury or surgery, obesity (adipose tissue secretes IL-6), smoking, periodontal disease, sleep apnea, poor sleep, chronic stress, gut dysbiosis, and autoimmune disease raise it. Statins, omega-3s, exercise, weight loss, and Mediterranean-style eating lower it. Estrogen-containing contraceptives can raise it via hepatic synthesis.",
+    "how_to_improve": "2 to 4 g EPA/DHA daily, 7 to 9 hours of sleep, lose visceral fat, treat gum disease and sleep apnea, and run down any chronic low-grade infection. Eat fatty fish, olive oil, berries, and cruciferous vegetables; cut ultra-processed foods, industrial seed oils, and added sugar. Recheck after 8 to 12 weeks of consistent changes, not during an active illness."
+  },
+  {
+    "loinc_code": "4537-7",
+    "name": "ESR",
+    "display_name": "Erythrocyte Sedimentation Rate",
+    "default_unit_ucum": "mm/h",
+    "default_ref_high": 22,
+    "categories": [
+      "Inflammation"
+    ],
+    "why_it_matters": "ESR measures how fast red cells settle in a tube, which rises when inflammatory proteins (fibrinogen, immunoglobulins) coat them. It's slower to rise and fall than hs-CRP and less specific. Useful for tracking chronic inflammatory and autoimmune disease (rheumatoid arthritis, polymyalgia rheumatica, giant cell arteritis, lupus).",
+    "influences": "Anemia, age (rises across decades), female sex, pregnancy, obesity, and any chronic inflammation raise it. Polycythemia, sickle cell disease, and very high white counts can falsely lower it. Autoimmune flares, infections, and malignancy push it up.",
+    "how_to_improve": "Treat the underlying inflammation rather than the number. If autoimmune, work with a rheumatologist on disease-modifying therapy. Lifestyle interventions that lower hs-CRP also lower ESR over time: omega-3s, sleep, weight management, and exercise; low-dose aspirin reduces it modestly."
+  },
+  {
+    "loinc_code": "13994-0",
+    "name": "Homocysteine",
+    "default_unit_ucum": "umol/L",
+    "default_ref_low": 5,
+    "default_ref_high": 15,
+    "optimal_high": 9,
+    "categories": [
+      "Cardiac"
+    ],
+    "why_it_matters": "Homocysteine is a methylation cycle intermediate that damages vascular endothelium and accelerates cognitive decline when elevated. Optimal is below 7 to 8 umol/L; above 10 to 12 raises cardiovascular and dementia risk. It's the most direct functional marker of B-vitamin sufficiency and methylation status.",
+    "influences": "B12, folate, B6, betaine (TMG), and choline deficiency raise it. MTHFR variants, kidney disease, hypothyroidism, advancing age, smoking, alcohol, and high coffee intake also raise it. Methylated B-vitamin intake and adequate protein lower it.",
+    "how_to_improve": "Daily methyl-B-complex with 400 to 800 mcg methylfolate (5-MTHF), 500 to 1000 mcg methylcobalamin, and 25 to 50 mg P5P (active B6). Add 500 to 1000 mg betaine (TMG) if homocysteine stays elevated despite B-vitamins. Eat eggs, liver, and leafy greens; cut smoking and excessive alcohol. Retest in 8 to 12 weeks."
+  },
+  {
+    "loinc_code": "34714-6",
+    "name": "Uric Acid",
+    "default_unit_ucum": "mg/dL",
+    "default_ref_low": 3.5,
+    "default_ref_high": 7.2,
+    "optimal_high": 5.5,
+    "categories": [
+      "Inflammation"
+    ],
+    "why_it_matters": "Uric acid is the end product of purine metabolism and a marker of metabolic health beyond gout. Elevated levels (above 6 in women, 7 in men) trigger gout attacks and kidney stones, and correlate with insulin resistance, hypertension, fatty liver, and cardiovascular disease. It's increasingly viewed as a driver, not just a passenger, of metabolic syndrome.",
+    "influences": "Fructose (especially from sugar-sweetened drinks and HFCS), alcohol (beer worst, then spirits), purine-rich foods (organ meats, anchovies, sardines, shellfish), dehydration, fasting, and rapid weight loss raise it. Kidney impairment, diuretics, and aspirin reduce excretion. Coffee, dairy, cherries, and vitamin C lower it.",
+    "how_to_improve": "Cut sugar-sweetened drinks, fruit juice, and beer. Lose visceral fat, hydrate consistently, and add 1 to 2 cups of tart cherries or 500 mg tart cherry extract daily. Coffee and low-fat dairy help. If clinically gouty or persistently above 8 to 9, allopurinol or febuxostat under a physician."
+  },
+  {
+    "loinc_code": "49563-0",
+    "name": "NT-proBNP",
+    "display_name": "N-terminal pro-BNP",
+    "default_unit_ucum": "pg/mL",
+    "default_ref_high": 125,
+    "categories": [
+      "Cardiac"
+    ],
+    "why_it_matters": "NT-proBNP is released when cardiac ventricles stretch under pressure or volume overload. It's the primary blood marker for diagnosing and monitoring heart failure, and helps distinguish cardiac from pulmonary causes of shortness of breath. Levels rise with age and kidney disease even without overt heart failure.",
+    "influences": "Heart failure, atrial fibrillation, valvular disease, pulmonary embolism, sepsis, age (rises across decades), kidney disease, and anemia raise it. Obesity paradoxically lowers it. Recent strenuous exercise and acute illness can transiently elevate it.",
+    "how_to_improve": null
+  },
+  {
+    "loinc_code": "6298-4",
+    "name": "Vitamin A",
+    "display_name": "Retinol",
+    "default_unit_ucum": "ug/dL",
+    "default_ref_low": 32.5,
+    "default_ref_high": 78,
+    "categories": [
+      "Vitamins"
+    ],
+    "why_it_matters": "Retinol is the active form of vitamin A, required for vision (rhodopsin synthesis), epithelial integrity, immune function, and reproduction. Deficiency causes night blindness, dry eyes, frequent infections, and skin issues. Excess is teratogenic in pregnancy and can cause liver toxicity, headaches, and bone loss; the safe window matters.",
+    "influences": "Preformed retinol from liver, egg yolks, butter, and full-fat dairy raises it directly. Beta-carotene from carrots and leafy greens converts to retinol, but conversion efficiency varies widely by genetics (BCO1 variants) and can be as low as 3 to 1 by weight. Zinc deficiency, fat malabsorption, alcohol, and liver disease lower it.",
+    "how_to_improve": "Eat beef or chicken liver once a week (a single ounce exceeds daily needs), pastured egg yolks, and full-fat dairy. Cod liver oil delivers retinol plus D and omega-3s; a teaspoon a few times a week is reasonable. Don't rely on beta-carotene alone if conversion is poor, and avoid high-dose retinol supplements (above 10,000 IU daily) long-term."
+  },
+  {
+    "loinc_code": "1834-1",
+    "name": "Vitamin E",
+    "display_name": "Alpha-Tocopherol",
+    "default_unit_ucum": "mg/L",
+    "default_ref_low": 5.5,
+    "default_ref_high": 17,
+    "categories": [
+      "Vitamins"
+    ],
+    "why_it_matters": "Alpha-tocopherol is the main circulating form of vitamin E, a fat-soluble antioxidant that protects cell membranes and LDL particles from oxidation. Deficiency is rare outside of fat malabsorption but causes neurological symptoms (ataxia, neuropathy) and hemolytic anemia over time. Isolated high-dose alpha-tocopherol can displace gamma-tocopherol, which has its own protective role, so mixed tocopherols may matter more than alpha alone.",
+    "influences": "Dietary fat intake (it requires fat for absorption), nuts, seeds, avocado, and olive oil raise it. Polyunsaturated fat intake increases the requirement because PUFAs oxidize readily. Fat malabsorption (cystic fibrosis, cholestatic liver disease, short bowel) and very low-fat diets lower it.",
+    "how_to_improve": "Eat a small handful of almonds or sunflower seeds daily, avocado, and extra-virgin olive oil with meals. If supplementing, choose mixed tocopherols (including gamma) at 100 to 400 IU rather than isolated synthetic dl-alpha-tocopherol. Take with a fat-containing meal."
+  }
+]

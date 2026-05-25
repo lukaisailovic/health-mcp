@@ -6,6 +6,7 @@ import { migration0003 } from './sql/0003-recipes-batches.js';
 import { migration0004 } from './sql/0004-wearables.js';
 import { migration0005 } from './sql/0005-seed-biomarkers.js';
 import { migration0006 } from './sql/0006-oura.js';
+import { migration0007 } from './sql/0007-biomarker-about.js';
 
 export type Migration = {
   id: string;
@@ -20,6 +21,7 @@ const migrations: Migration[] = [
   migration0004,
   migration0005,
   migration0006,
+  migration0007,
 ];
 
 const ensureTable = (db: Db) => {
