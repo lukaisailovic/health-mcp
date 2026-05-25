@@ -1,3 +1,12 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# Refuse to install packages younger than 2 weeks (20160 minutes) — supply-chain hardening.
+# Requires pnpm >= 10.16.0.
+minimumReleaseAge: 20160
+
+# Allow build scripts only for vetted native modules (pnpm 10 blocks all by default).
+onlyBuiltDependencies:
+  - better-sqlite3
+

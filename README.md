@@ -61,6 +61,27 @@ npx @lukaisailovic/health-mcp           # HTTP server + dashboard, opens browser
 npx @lukaisailovic/health-mcp --stdio   # MCP stdio for Claude Desktop
 ```
 
+### Docker
+
+```bash
+cp .env.example .env
+# edit .env — at minimum set HEALTH_MCP_TOKEN (openssl rand -hex 32)
+
+docker compose up -d         # builds the image, starts the server on http://127.0.0.1:7777
+docker compose logs -f
+docker compose down          # stops; data persists in the named volume
+```
+
+Headless server (no dashboard):
+
+```bash
+HEALTH_MCP_DASHBOARD=false docker compose up -d
+```
+
+Data lives in the `health-mcp-data` named volume (path `/data` inside the container).
+To bind-mount a host directory instead, replace the `volumes:` entry in `docker-compose.yml` with
+`./.health-mcp-data:/data` and ensure the directory is owned by uid `1001`.
+
 ## Configuration
 
 CLI flag > env var > config file > default.

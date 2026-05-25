@@ -1,0 +1,22 @@
+services:
+  health-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: health-mcp:local
+    container_name: health-mcp
+    restart: unless-stopped
+    ports:
+      - "${HEALTH_MCP_BIND:-127.0.0.1}:${HEALTH_MCP_HOST_PORT:-7777}:7777"
+    env_file:
+      - .env
+    environment:
+      HEALTH_MCP_HOST: 0.0.0.0
+      HEALTH_MCP_PORT: "7777"
+      HEALTH_MCP_DATA_DIR: /data
+      HEALTH_MCP_OPEN: "false"
+    volumes:
+      - health-mcp-data:/data
+
+volumes:
+  health-mcp-data:
