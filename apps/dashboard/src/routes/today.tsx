@@ -15,6 +15,7 @@ import { type ReactElement, useState } from 'react';
 import { MealCard } from '@/components/meal-card';
 import { MacroRings } from '@/components/macro-rings';
 import { PageHeader } from '@/components/page-header';
+import { SectionLabel } from '@/components/ui/section-label';
 import { StatCard } from '@/components/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -129,9 +130,7 @@ const HydrationDialog = ({ renderTrigger, date }: HydrationDialogProps) => {
             </Button>
           </div>
           <div>
-            <div className="mb-2 text-[10px] font-medium uppercase tracking-[0.12em] text-kumo-subtle">
-              Today's pours
-            </div>
+            <SectionLabel className="mb-2">Today's pours</SectionLabel>
             {entries.isLoading ? (
               <Spinner />
             ) : today.length === 0 ? (

@@ -19,6 +19,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { SectionLabel } from '@/components/ui/section-label';
 import { cn } from '@/lib/cn';
 
 type NavItem = { to: string; label: string; icon: LucideIcon };
@@ -92,9 +93,7 @@ const NavGroup = ({
   onNavigate?: () => void;
 }) => (
   <div className="flex flex-col gap-1">
-    <div className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-[0.12em] text-kumo-subtle">
-      {label}
-    </div>
+    <SectionLabel className="px-3 pb-1 pt-3">{label}</SectionLabel>
     {items.map((item) => (
       <NavLink
         key={item.to}

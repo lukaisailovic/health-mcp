@@ -2,20 +2,17 @@ import { InputGroup } from '@cloudflare/kumo';
 import type { GoalBound, GoalsDto } from '@health-mcp/shared/dto';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { type FormEvent, useEffect, useState } from 'react';
+import { Check, Droplets, Flame, Salad, Scale } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { FormField } from '@/components/ui/form-field';
+import { Card, CardContent } from '@/components/ui/card';
+import { SectionLabel } from '@/components/ui/section-label';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
+import { cn } from '@/lib/cn';
+import { fmtNum } from '@/lib/format';
 
 type MacroKey =
   | 'kcal'
@@ -26,83 +23,49 @@ type MacroKey =
   | 'sat_fat_g'
   | 'hydration_ml';
 
+type Shape = 'range' | 'floor' | 'cap';
+
 type MacroField = {
   key: MacroKey;
   label: string;
   unit: string;
-  shape: 'min-max' | 'min-only' | 'max-only';
-  hint: string;
+  shape: Shape;
+  hint?: string;
 };
 
-type Section = {
+type MacroSection = {
   title: string;
+  icon: LucideIcon;
   fields: MacroField[];
 };
 
-const SECTIONS: Section[] = [
+const SECTIONS: MacroSection[] = [
   {
     title: 'Energy',
-    fields: [
-      {
-        key: 'kcal',
-        label: 'Calories',
-        unit: 'kcal / day',
-        shape: 'min-max',
-        hint: 'Target band — leave both blank for no goal, fill one for a floor/cap.',
-      },
-    ],
+    icon: Flame,
+    fields: [{ key: 'kcal', label: 'Calories', unit: 'kcal', shape: 'range' }],
   },
   {
     title: 'Macros',
+    icon: Salad,
     fields: [
-      {
-        key: 'protein_g',
-        label: 'Protein',
-        unit: 'g / day',
-        shape: 'min-only',
-        hint: 'Floor — eat at least this much.',
-      },
-      {
-        key: 'carb_g',
-        label: 'Carbs',
-        unit: 'g / day',
-        shape: 'min-max',
-        hint: 'Target band, leave open-ended if you don\'t care.',
-      },
-      {
-        key: 'fat_g',
-        label: 'Fat',
-        unit: 'g / day',
-        shape: 'min-max',
-        hint: 'Target band.',
-      },
+      { key: 'protein_g', label: 'Protein', unit: 'g', shape: 'floor' },
+      { key: 'carb_g', label: 'Carbs', unit: 'g', shape: 'range' },
+      { key: 'fat_g', label: 'Fat', unit: 'g', shape: 'range' },
       {
         key: 'sat_fat_g',
         label: 'Saturated fat',
-        unit: 'g / day',
-        shape: 'max-only',
-        hint: 'Ceiling — AHA recommends ≤13g/day for a 2000 kcal diet.',
+        unit: 'g',
+        shape: 'cap',
+        hint: 'AHA recommends ≤ 13 g for a 2000 kcal diet.',
       },
-      {
-        key: 'fiber_g',
-        label: 'Fiber',
-        unit: 'g / day',
-        shape: 'min-only',
-        hint: 'Floor — eat at least this much.',
-      },
+      { key: 'fiber_g', label: 'Fiber', unit: 'g', shape: 'floor' },
     ],
   },
   {
     title: 'Hydration',
-    fields: [
-      {
-        key: 'hydration_ml',
-        label: 'Hydration',
-        unit: 'ml / day',
-        shape: 'min-only',
-        hint: 'Floor — drink at least this much.',
-      },
-    ],
+    icon: Droplets,
+    fields: [{ key: 'hydration_ml', label: 'Water', unit: 'ml', shape: 'floor' }],
   },
 ];
 
@@ -110,6 +73,9 @@ const ALL_FIELDS = SECTIONS.flatMap((s) => s.fields);
 
 type CellKey = `${MacroKey}_min` | `${MacroKey}_max` | 'weight_kg_target';
 type FormState = Record<CellKey, string>;
+type GoalsInput = Partial<Omit<GoalsDto, 'updated_at'>>;
+
+const numToStr = (n: number | null): string => (n == null ? '' : String(n));
 
 const initialState = (): FormState => {
   const next = {} as FormState;
@@ -124,11 +90,10 @@ const initialState = (): FormState => {
 const fromGoals = (g: GoalsDto): FormState => {
   const next = initialState();
   for (const f of ALL_FIELDS) {
-    const bound = g[f.key];
-    next[`${f.key}_min`] = bound.min == null ? '' : String(bound.min);
-    next[`${f.key}_max`] = bound.max == null ? '' : String(bound.max);
+    next[`${f.key}_min`] = numToStr(g[f.key].min);
+    next[`${f.key}_max`] = numToStr(g[f.key].max);
   }
-  next.weight_kg_target = g.weight_kg_target == null ? '' : String(g.weight_kg_target);
+  next.weight_kg_target = numToStr(g.weight_kg_target);
   return next;
 };
 
@@ -139,134 +104,365 @@ const parseCell = (s: string): number | null => {
   return Number.isFinite(n) && n >= 0 ? n : null;
 };
 
+const isFormDirty = (form: FormState, server: GoalsDto | undefined): boolean => {
+  if (!server) return false;
+  for (const f of ALL_FIELDS) {
+    if (form[`${f.key}_min`].trim() !== numToStr(server[f.key].min)) return true;
+    if (form[`${f.key}_max`].trim() !== numToStr(server[f.key].max)) return true;
+  }
+  return form.weight_kg_target.trim() !== numToStr(server.weight_kg_target);
+};
+
+const formatBound = (b: GoalBound, unit: string): string | null => {
+  if (b.min != null && b.max != null) {
+    if (b.min === b.max) return `${fmtNum(b.min)} ${unit}`;
+    return `${fmtNum(b.min)}–${fmtNum(b.max)} ${unit}`;
+  }
+  if (b.min != null) return `min ${fmtNum(b.min)} ${unit}`;
+  if (b.max != null) return `max ${fmtNum(b.max)} ${unit}`;
+  return null;
+};
+
 const Goals = () => {
   const qc = useQueryClient();
   const goals = useQuery({ queryKey: ['goals'], queryFn: () => api.goals.get() });
   const [form, setForm] = useState<FormState>(initialState);
+  const [savedFlash, setSavedFlash] = useState(false);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (goals.data) setForm(fromGoals(goals.data));
   }, [goals.data]);
 
+  useEffect(
+    () => () => {
+      if (flashTimer.current) clearTimeout(flashTimer.current);
+    },
+    [],
+  );
+
   const save = useMutation({
     mutationFn: api.goals.set,
-    onSuccess: () => qc.invalidateQueries(),
+    onSuccess: () => {
+      qc.invalidateQueries();
+      setSavedFlash(true);
+      if (flashTimer.current) clearTimeout(flashTimer.current);
+      flashTimer.current = setTimeout(() => setSavedFlash(false), 2200);
+    },
   });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const body: Record<string, GoalBound | number | null> = {};
+    const body: GoalsInput = { weight_kg_target: parseCell(form.weight_kg_target) };
     for (const f of ALL_FIELDS) {
-      const min = parseCell(form[`${f.key}_min`]);
-      const max = parseCell(form[`${f.key}_max`]);
-      body[f.key] = min === null && max === null ? null : { min, max };
+      body[f.key] = {
+        min: parseCell(form[`${f.key}_min`]),
+        max: parseCell(form[`${f.key}_max`]),
+      };
     }
-    const weight = parseCell(form.weight_kg_target);
-    body.weight_kg_target = weight;
-    save.mutate(body as Parameters<typeof api.goals.set>[0]);
+    save.mutate(body);
   };
 
-  if (goals.isLoading) return <Spinner />;
+  if (goals.isLoading) {
+    return (
+      <div className="grid place-items-center py-20">
+        <Spinner className="h-5 w-5" />
+      </div>
+    );
+  }
 
-  const setCell = (key: CellKey, value: string) =>
-    setForm((p) => ({ ...p, [key]: value }));
+  const setCell = (key: CellKey, value: string) => setForm((p) => ({ ...p, [key]: value }));
+
+  const dirty = isFormDirty(form, goals.data);
+  const errorMessage = save.isError ? (save.error as Error).message : null;
 
   return (
     <>
       <PageHeader
         title="Goals"
-        description="Daily targets — set a min, a max, or both per macro."
+        description="Daily targets — set a floor, a cap, or both per macro. Leave blank to clear."
       />
-      <Card>
-        <CardHeader>
-          <CardTitle>Daily targets</CardTitle>
-          <CardDescription>
-            Min = floor (eat at least), max = ceiling (stay below), both = target band.
-            Leave both blank to clear that macro.
-          </CardDescription>
-        </CardHeader>
+
+      <Card className="t-panel-reveal">
         <form id="goals-form" onSubmit={submit}>
-          <CardContent className="flex flex-col gap-8">
+          <CardContent className="px-0 pb-0 pt-0 [&>section+section]:border-t [&>section+section]:border-kumo-line">
             {SECTIONS.map((section) => (
-              <section key={section.title} className="flex flex-col gap-4">
-                <h4 className="text-[10px] font-medium uppercase tracking-[0.12em] text-kumo-subtle">
-                  {section.title}
-                </h4>
-                <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
-                  {section.fields.map((f) => (
-                    <FormField key={f.key} label={f.label} description={f.hint}>
-                      <div className="grid grid-cols-2 gap-2">
-                        {f.shape !== 'max-only' ? (
-                          <InputGroup>
-                            <InputGroup.Addon>min</InputGroup.Addon>
-                            <InputGroup.Input
-                              type="number"
-                              inputMode="decimal"
-                              min={0}
-                              placeholder="—"
-                              value={form[`${f.key}_min`]}
-                              onChange={(e) => setCell(`${f.key}_min`, e.target.value)}
-                            />
-                          </InputGroup>
-                        ) : (
-                          <div />
-                        )}
-                        {f.shape !== 'min-only' ? (
-                          <InputGroup>
-                            <InputGroup.Addon>max</InputGroup.Addon>
-                            <InputGroup.Input
-                              type="number"
-                              inputMode="decimal"
-                              min={0}
-                              placeholder="—"
-                              value={form[`${f.key}_max`]}
-                              onChange={(e) => setCell(`${f.key}_max`, e.target.value)}
-                            />
-                          </InputGroup>
-                        ) : (
-                          <div />
-                        )}
-                      </div>
-                    </FormField>
-                  ))}
-                </div>
-              </section>
+              <Section
+                key={section.title}
+                section={section}
+                form={form}
+                server={goals.data}
+                onChange={setCell}
+              />
             ))}
-            <section className="flex flex-col gap-4">
-              <h4 className="text-[10px] font-medium uppercase tracking-[0.12em] text-kumo-subtle">
+
+            <section>
+              <SectionLabel icon={Scale} className="px-5 pb-3 pt-5">
                 Body
-              </h4>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField label="Weight target" htmlFor="weight_kg_target">
-                  <InputGroup>
-                    <InputGroup.Input
-                      id="weight_kg_target"
-                      type="number"
-                      inputMode="decimal"
-                      step="0.1"
-                      min={0}
-                      placeholder="—"
-                      value={form.weight_kg_target}
-                      onChange={(e) => setCell('weight_kg_target', e.target.value)}
-                    />
-                    <InputGroup.Addon align="end">kg</InputGroup.Addon>
-                  </InputGroup>
-                </FormField>
-              </div>
+              </SectionLabel>
+              <FieldRow
+                label="Weight target"
+                unit="kg"
+                previewBound={
+                  goals.data?.weight_kg_target != null
+                    ? `${fmtNum(goals.data.weight_kg_target, 1)} kg`
+                    : null
+                }
+              >
+                <SingleInput
+                  id="weight_kg_target"
+                  ariaLabel="Weight target in kilograms"
+                  step="0.1"
+                  endAddon="kg"
+                  value={form.weight_kg_target}
+                  onChange={(v) => setCell('weight_kg_target', v)}
+                />
+              </FieldRow>
             </section>
           </CardContent>
-          <CardFooter className="justify-between gap-3 border-t border-kumo-line pt-4">
-            <span className="text-xs text-kumo-subtle" aria-live="polite" role="status">
-              {save.isSuccess ? 'Saved' : ''}
-            </span>
-            <Button type="submit" form="goals-form" disabled={save.isPending}>
-              {save.isPending ? 'Saving…' : 'Save goals'}
-            </Button>
-          </CardFooter>
+
+          <SaveBar dirty={dirty} pending={save.isPending} saved={savedFlash} error={errorMessage} />
         </form>
       </Card>
     </>
   );
 };
+
+const Section = ({
+  section,
+  form,
+  server,
+  onChange,
+}: {
+  section: MacroSection;
+  form: FormState;
+  server: GoalsDto | undefined;
+  onChange: (key: CellKey, value: string) => void;
+}) => (
+  <section>
+    <SectionLabel icon={section.icon} className="px-5 pb-3 pt-5">
+      {section.title}
+    </SectionLabel>
+    <div className="divide-y divide-kumo-line/60">
+      {section.fields.map((field) => (
+        <FieldRow
+          key={field.key}
+          label={field.label}
+          unit={`${field.unit} / day`}
+          hint={field.hint}
+          previewBound={server ? formatBound(server[field.key], field.unit) : null}
+        >
+          <BoundedInputs
+            field={field}
+            minValue={form[`${field.key}_min`]}
+            maxValue={form[`${field.key}_max`]}
+            onChange={onChange}
+          />
+        </FieldRow>
+      ))}
+    </div>
+  </section>
+);
+
+const FieldRow = ({
+  label,
+  unit,
+  hint,
+  previewBound,
+  children,
+}: {
+  label: string;
+  unit: string;
+  hint?: string;
+  previewBound?: string | null;
+  children: ReactNode;
+}) => (
+  <div className="grid grid-cols-1 items-start gap-3 px-5 py-4 sm:grid-cols-[1fr_260px] sm:items-center">
+    <div className="min-w-0">
+      <div className="text-sm font-medium text-kumo-strong">{label}</div>
+      <div className="mt-0.5 flex items-baseline gap-2 text-xs">
+        <span className="font-mono tabular-nums text-kumo-subtle" translate="no">
+          {unit}
+        </span>
+        {previewBound ? (
+          <>
+            <span aria-hidden="true" className="text-kumo-subtle">
+              ·
+            </span>
+            <span
+              className="tabular-nums text-kumo-default"
+              aria-label={`Current goal ${previewBound}`}
+            >
+              {previewBound}
+            </span>
+          </>
+        ) : null}
+      </div>
+      {hint ? <p className="mt-1.5 text-[11px] text-kumo-subtle">{hint}</p> : null}
+    </div>
+    <div className="grid grid-cols-2 gap-2">{children}</div>
+  </div>
+);
+
+const BoundedInputs = ({
+  field,
+  minValue,
+  maxValue,
+  onChange,
+}: {
+  field: MacroField;
+  minValue: string;
+  maxValue: string;
+  onChange: (key: CellKey, value: string) => void;
+}) => {
+  const showMin = field.shape !== 'cap';
+  const showMax = field.shape !== 'floor';
+  return (
+    <>
+      {showMin ? (
+        <BoundInput
+          id={`${field.key}_min`}
+          ariaLabel={`${field.label} minimum in ${field.unit}`}
+          addon="min"
+          value={minValue}
+          onChange={(v) => onChange(`${field.key}_min`, v)}
+        />
+      ) : (
+        <EmptySlot label={`No minimum for ${field.label}`} />
+      )}
+      {showMax ? (
+        <BoundInput
+          id={`${field.key}_max`}
+          ariaLabel={`${field.label} maximum in ${field.unit}`}
+          addon="max"
+          value={maxValue}
+          onChange={(v) => onChange(`${field.key}_max`, v)}
+        />
+      ) : (
+        <EmptySlot label={`No maximum for ${field.label}`} />
+      )}
+    </>
+  );
+};
+
+const BoundInput = ({
+  id,
+  ariaLabel,
+  addon,
+  value,
+  onChange,
+}: {
+  id: string;
+  ariaLabel: string;
+  addon: string;
+  value: string;
+  onChange: (value: string) => void;
+}) => (
+  <InputGroup>
+    <InputGroup.Addon>{addon}</InputGroup.Addon>
+    <InputGroup.Input
+      id={id}
+      aria-label={ariaLabel}
+      type="number"
+      inputMode="decimal"
+      min={0}
+      placeholder="—"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  </InputGroup>
+);
+
+const EmptySlot = ({ label }: { label: string }) => (
+  <div
+    className="grid h-9 place-items-center rounded-md border border-dashed border-kumo-line/70 text-kumo-subtle/50"
+    aria-label={label}
+    role="note"
+  >
+    <span aria-hidden="true" className="text-sm leading-none">
+      —
+    </span>
+  </div>
+);
+
+const SingleInput = ({
+  id,
+  ariaLabel,
+  step,
+  endAddon,
+  value,
+  onChange,
+}: {
+  id: string;
+  ariaLabel: string;
+  step?: string;
+  endAddon: string;
+  value: string;
+  onChange: (value: string) => void;
+}) => (
+  <div className="col-span-2">
+    <InputGroup>
+      <InputGroup.Input
+        id={id}
+        aria-label={ariaLabel}
+        type="number"
+        inputMode="decimal"
+        step={step}
+        min={0}
+        placeholder="—"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <InputGroup.Addon align="end">{endAddon}</InputGroup.Addon>
+    </InputGroup>
+  </div>
+);
+
+const SaveBar = ({
+  dirty,
+  pending,
+  saved,
+  error,
+}: {
+  dirty: boolean;
+  pending: boolean;
+  saved: boolean;
+  error: string | null;
+}) => (
+  <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-kumo-line bg-kumo-base/95 px-5 py-3 backdrop-blur supports-[backdrop-filter]:bg-kumo-base/80">
+    <span className="min-w-0 truncate text-xs text-kumo-subtle" aria-live="polite" role="status">
+      {error ? (
+        <span className="text-kumo-danger">{error}</span>
+      ) : pending ? (
+        'Saving…'
+      ) : saved ? (
+        <span className="text-kumo-success">Goals updated.</span>
+      ) : dirty ? (
+        'Unsaved changes.'
+      ) : (
+        ' '
+      )}
+    </span>
+    <Button
+      type="submit"
+      form="goals-form"
+      disabled={pending || (!dirty && !saved)}
+      className={cn('transition-transform motion-reduce:transition-none', saved && 'scale-[1.02]')}
+    >
+      <span className="inline-flex items-center gap-2">
+        {saved ? (
+          <>
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>Saved</span>
+          </>
+        ) : pending ? (
+          <span>Saving…</span>
+        ) : (
+          <span>Save goals</span>
+        )}
+      </span>
+    </Button>
+  </div>
+);
 
 export const Route = createFileRoute('/goals')({ component: Goals });
