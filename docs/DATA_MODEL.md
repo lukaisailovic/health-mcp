@@ -10,31 +10,42 @@ Migrations live in `apps/server/src/db/sql/000N-*.ts`. They run automatically on
 
 | File | Adds |
 |---|---|
-| `0001-init.ts` | foods (+ FTS5), intake_entries, hydration, weight, measurements, goals, system |
+| `0001-init.ts` | foods (+ FTS5), intake_entries (dropped in 0008), hydration, weight, measurements, goals, system |
 | `0002-biomarkers.ts` | biomarkers, biomarker_categories, biomarker_category_map, lab_panels, lab_results |
-| `0003-recipes-batches.ts` | recipes, recipe_ingredients, batches, remembered_meals |
+| `0003-recipes-batches.ts` | recipes, recipe_ingredients, batches, remembered_meals (dropped in 0008) |
 | `0004-wearables.ts` | wearable_providers (seed), wearable_sync_state, wearable_sleep/activity/readiness/daily, wearable_metric_minutes, wearable_activity_type_map, whoop_* raw tables, oauth_state_nonces |
 | `0005-seed-biomarkers.ts` | ~60 curated biomarkers with LOINC codes, default units, categories, optimal ranges |
 | `0006-oura.ts` | oura_* raw tables; seeds `wearable_providers` with `oura` |
+| `0007-biomarker-about.ts` | adds `why_it_matters`, `influences`, `how_to_improve` to `biomarkers` |
+| `0008-meals.ts` | drops `intake_entries` + old `remembered_meals`; creates `meals`, `meal_components`, `intake_v` view, new `remembered_meals` with `components_json` |
 
 ## Nutrition
 
 ### `foods`
 `(id, source, source_id, name, brand, barcode, serving_grams, kcal_per_100g, protein_g, carb_g, fat_g, fiber_g?, sugar_g?, sat_fat_g?, sodium_mg?, raw_json?, created_at)` — `UNIQUE(source, source_id)`. `source ∈ ('usda','off','manual')`. `foods_fts` is an FTS5 virtual table over `(name, brand)` with sync triggers; `searchFood` queries it first.
 
-### `intake_entries`
-`(id, ts, date, meal_type, ref_kind, food_id, recipe_id, batch_id, custom_name, grams, servings, kcal, protein_g, carb_g, fat_g, fiber_g?, sugar_g?, sat_fat_g?, sodium_mg?, confidence, source_trace, notes, tags, created_at)`
+### `meals` + `meal_components`
 
-`meal_type ∈ ('breakfast','lunch','dinner','snack','other')`. `ref_kind ∈ ('food','recipe_serving','batch','custom')`. A `CHECK` constraint enforces that exactly the right discriminator field is populated for each `ref_kind`:
+A **meal** is the unit of logging: one event (eaten at a single timestamp, tagged with one meal-type slot). Each meal owns one-or-more **components** that carry the actual macros. This mirrors the Cal AI / SnapCalorie pattern — a photo of a restaurant plate becomes one meal with N editable components; a quick snack is just a meal with one component.
+
+`meals(id, ts, date, meal_type, name?, notes?, tags?, created_at, updated_at)` — `meal_type ∈ ('breakfast','lunch','dinner','snack','other')`. `name` is optional; the dashboard falls back to the slot label or to the single component's name. `tags` is a JSON-encoded `string[]` for forward compat.
+
+`meal_components(id, meal_id FK CASCADE, position int, ref_kind, food_id?, recipe_id?, batch_id?, custom_name?, grams?, servings?, kcal, protein_g, carb_g, fat_g, fiber_g?, sugar_g?, sat_fat_g?, sodium_mg?, confidence, source_trace, notes?, created_at)` — `ref_kind ∈ ('food','recipe_serving','batch','custom')`. A `CHECK` constraint enforces the discriminator-coherence rule:
 
 - `food` → `food_id`, `grams` not null; rest null
 - `recipe_serving` → `recipe_id`, `servings` not null; rest null
 - `batch` → `batch_id`, `grams` not null; rest null
 - `custom` → `custom_name`, `grams` not null; rest null
 
-Macros are **frozen on insert**. Later edits to the referenced food/recipe/batch do not retro-mutate. `updateIntake` re-derives macros only when `grams` or `servings` changes.
+Macros are **frozen on insert per component**. Later edits to the referenced food/recipe/batch do not retro-mutate. `update_meal_component` re-derives that component's macros when `grams` (food/batch) or `servings` (recipe_serving) changes. Custom components reject grams changes — `remove_meal_component` then `add_meal_component` with new grams. Meal totals are computed at read time from components — never denormalized.
 
-Indexes: `(date)`, `(ts)`, `(meal_type)`, `(batch_id)`.
+Indexes: `meals(date)`, `meals(ts)`, `meals(meal_type)`, `meal_components(meal_id)`, `meal_components(batch_id)`.
+
+### `intake_v` view
+
+`CREATE VIEW intake_v AS SELECT mc.id, m.ts, m.date, m.meal_type, mc.ref_kind, <macros>, mc.confidence FROM meal_components mc JOIN meals m ON m.id = mc.meal_id;`
+
+Flat read-only view consumed by `summaries.ts` (`SUM(kcal) … WHERE date = ?`) and `correlate.ts` (`SOURCES.intake.table = 'intake_v'`). Lets aggregation SQL stay simple without re-introducing a denormalized flat table.
 
 ### `hydration_entries` / `weight_entries` / `measurements`
 Thin event tables. All carry `(id, ts, date, ..., notes, created_at)`. `measurements.kind` is freeform (e.g. `waist`, `chest`, `biceps`); `unit` is freeform but expected to be UCUM-ish (`cm`, `mm`, …).
@@ -51,10 +62,10 @@ A cooked instance that depletes as it's eaten.
 
 `(id, name?, recipe_id?, total_grams, remaining_grams, kcal_total, protein_g_total, carb_g_total, fat_g_total, fiber_g_total?, sugar_g_total?, sat_fat_g_total?, sodium_mg_total?, cooked_at, expires_at?, notes?, archived bool, created_at, updated_at)`
 
-`remaining_grams` decrements atomically inside `log_intake` whenever an item has `ref: 'batch'`. The transaction fails with `batch_insufficient` if a decrement would drop below 0 — no partial writes. `delete_intake` refunds the grams. `archive_batch` is non-destructive: it just sets `archived = 1` so `list_batches(active_only=true)` hides it.
+`remaining_grams` decrements atomically inside `log_meal` (and `add_meal_component`) whenever a component has `ref: 'batch'`. The transaction fails with `batch_insufficient` if a decrement would drop below 0 — no partial writes. `delete_meal` and `remove_meal_component` refund the grams. `update_meal_component` handles batch grams deltas in-place (decrement or refund). `archive_batch` is non-destructive: it just sets `archived = 1` so `list_batches(active_only=true)` hides it.
 
 ### `remembered_meals`
-`(id, label UNIQUE NOCASE, aliases JSON, default_meal_type?, canonical_text?, items_json?, notes?, last_used_at?, use_count int default 0, created_at, updated_at)`. At least one of `canonical_text` / `items_json` is required. `log_remembered_meal` prefers `items_json` (deterministic) and falls back to returning `canonical_text` for the agent to re-estimate.
+`(id, label UNIQUE NOCASE, aliases JSON, default_meal_type?, default_name?, canonical_text?, components_json?, notes?, last_used_at?, use_count int default 0, created_at, updated_at)`. At least one of `canonical_text` / `components_json` is required. `log_remembered_meal` prefers `components_json` (deterministic — creates a `meal` directly via `logMeal`) and falls back to returning `canonical_text` for the agent to re-estimate. `default_name` is used as the new meal's `name` if no override is provided; falls back to `label`.
 
 ## Biomarkers and labs
 

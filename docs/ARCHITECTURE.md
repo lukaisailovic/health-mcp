@@ -55,7 +55,7 @@ Each service module is a set of plain functions over a `Ctx` (or `WearableServic
 | Service | File | Owns |
 |---|---|---|
 | food | `services/food.ts` | foods table, USDA/OFF lookup, per-100g macro math |
-| intake | `services/intake.ts` | intake_entries, batch decrement (transactional), undo |
+| meals | `services/meals.ts` | meals + meal_components, batch decrement (transactional), component edits, undo |
 | recipes | `services/recipes.ts` | recipes, recipe_ingredients, batches |
 | remembered meals | `services/remembered-meals.ts` | remembered_meals |
 | simple logs | `services/simple-logs.ts` | hydration, weight, measurements |

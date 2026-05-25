@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { logIntake } from './intake.js';
+import { logMeal } from './meals.js';
 import { logHydration, logWeight } from './simple-logs.js';
 import { logLabPanel } from './biomarkers.js';
 import { correlate, isCorrelateAvailable, listCorrelateMetrics } from './correlate.js';
@@ -36,7 +36,7 @@ describe('correlate', () => {
     for (let i = 0; i < 8; i++) {
       const day = `2026-05-${String(10 + i).padStart(2, '0')}`;
       const ts = `${day}T12:00:00Z`;
-      logIntake(ctx, { ts, items: [{ ref: 'food', food_id: food.id, grams: 100 * (i + 1) }] });
+      logMeal(ctx, { ts, components: [{ ref: 'food', food_id: food.id, grams: 100 * (i + 1) }] });
       logWeight(ctx, { ts, kg: 70 + i * 0.1 });
     }
     const result = correlate(ctx, {
@@ -64,7 +64,7 @@ describe('correlate', () => {
     });
     for (let i = 0; i < 14; i++) {
       const day = `2026-05-${String(1 + i).padStart(2, '0')}`;
-      logIntake(ctx, { ts: `${day}T12:00:00Z`, items: [{ ref: 'food', food_id: food.id, grams: 100 + i * 5 }] });
+      logMeal(ctx, { ts: `${day}T12:00:00Z`, components: [{ ref: 'food', food_id: food.id, grams: 100 + i * 5 }] });
     }
     logLabPanel(ctx, {
       drawn_at: '2026-05-03T08:00:00Z',

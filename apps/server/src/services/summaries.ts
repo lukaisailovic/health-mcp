@@ -31,7 +31,7 @@ const dayTotals = (ctx: Ctx, date: string): DayTotals => {
         COALESCE(SUM(sodium_mg),0) AS sodium_mg,
         COUNT(*) AS entry_count,
         AVG(confidence) AS avg_confidence
-       FROM intake_entries WHERE date = ?`,
+       FROM intake_v WHERE date = ?`,
     )
     .get(date) as Omit<DayTotals, 'date' | 'hydration_ml'>;
   const hyd = ctx.db

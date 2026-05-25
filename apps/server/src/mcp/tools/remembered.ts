@@ -1,4 +1,4 @@
-import { intakeItemSchema, mealTypeSchema } from '@health-mcp/shared';
+import { mealComponentInputSchema, mealTypeSchema } from '@health-mcp/shared';
 import { z } from 'zod';
 import {
   forgetMeal,
@@ -18,19 +18,20 @@ export const rememberedTools = [
   tool({
     name: 'remember_meal',
     description:
-      'Label a meal for fast re-logging. Provide canonical_text (for agent re-estimation), items (resolved), or both.',
+      'Label a meal for fast re-logging. Provide canonical_text (for agent re-estimation), components (resolved), or both. default_name is used as the meal name when re-logged.',
     group: 'meal',
     inputSchema: z
       .object({
         label: z.string().min(1),
         aliases: z.array(z.string()).optional(),
         default_meal_type: mealTypeSchema.optional(),
+        default_name: z.string().min(1).optional(),
         canonical_text: z.string().optional(),
-        items: z.array(intakeItemSchema).optional(),
+        components: z.array(mealComponentInputSchema).optional(),
         notes: z.string().optional(),
       })
-      .refine((v) => v.canonical_text || v.items, {
-        message: 'one of canonical_text or items required',
+      .refine((v) => v.canonical_text || v.components, {
+        message: 'one of canonical_text or components required',
       }),
     handler: (args, ctx) => rememberMeal(ctx, args),
   }),
@@ -62,8 +63,9 @@ export const rememberedTools = [
       label: z.string().optional(),
       aliases: z.array(z.string()).optional(),
       default_meal_type: mealTypeSchema.nullable().optional(),
+      default_name: z.string().nullable().optional(),
       canonical_text: z.string().nullable().optional(),
-      items: z.array(intakeItemSchema).nullable().optional(),
+      components: z.array(mealComponentInputSchema).nullable().optional(),
       notes: z.string().nullable().optional(),
     }),
     handler: (args, ctx) => updateRememberedMeal(ctx, args),
@@ -80,12 +82,13 @@ export const rememberedTools = [
   tool({
     name: 'log_remembered_meal',
     description:
-      'Re-log a remembered meal. If items_json is present it creates intake entries; otherwise returns canonical_text for agent re-estimation.',
+      'Re-log a remembered meal. If components_json is present it creates a meal directly; otherwise returns canonical_text for agent re-estimation.',
     group: 'meal',
     inputSchema: z.object({
       id_or_label: z.string().min(1),
       ts: z.string().optional(),
       meal_type: mealTypeSchema.optional(),
+      name: z.string().min(1).optional(),
       scale: z.number().positive().optional(),
     }),
     handler: (args, ctx) => logRememberedMeal(ctx, args),

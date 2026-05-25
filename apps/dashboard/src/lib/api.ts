@@ -8,11 +8,12 @@ import type {
   GoalsDto,
   HealthProbe,
   HydrationEntryDto,
-  IntakeEntryDto,
   LabPanelDetailDto,
   LabPanelDto,
   LabResultDto,
   LatestBiomarkerRowDto,
+  MealComponentInput,
+  MealDto,
   MeasurementDto,
   RangeSummaryDto,
   RecipeDto,
@@ -118,18 +119,24 @@ export const api = {
     deleteCustom: (id: string) => del<{ id: string }>(`/api/foods/${encodeURIComponent(id)}`),
   },
 
-  intake: {
+  meals: {
     list: (params: { date?: string; start?: string; end?: string; meal_type?: string; limit?: number } = {}) =>
-      get<IntakeEntryDto[]>(`/api/intake${qs(params)}`),
-    log: (body: unknown) =>
-      post<{ entries: IntakeEntryDto[]; batch_remaining: Array<{ batch_id: string; remaining_grams: number }> }>(
-        '/api/intake',
+      get<MealDto[]>(`/api/meals${qs(params)}`),
+    get: (id: string) => get<MealDto>(`/api/meals/${encodeURIComponent(id)}`),
+    log: (body: unknown) => post<MealDto>('/api/meals', body),
+    update: (id: string, body: Record<string, unknown>) =>
+      patch<MealDto>(`/api/meals/${encodeURIComponent(id)}`, body),
+    delete: (id: string) => del<{ id: string }>(`/api/meals/${encodeURIComponent(id)}`),
+    undo: () => post<MealDto | null>('/api/meals/undo'),
+    addComponent: (mealId: string, component: MealComponentInput) =>
+      post<MealDto>(`/api/meals/${encodeURIComponent(mealId)}/components`, { component }),
+    updateComponent: (mealId: string, componentId: string, body: Record<string, unknown>) =>
+      patch<MealDto>(
+        `/api/meals/${encodeURIComponent(mealId)}/components/${encodeURIComponent(componentId)}`,
         body,
       ),
-    update: (id: string, body: Record<string, unknown>) =>
-      patch<IntakeEntryDto>(`/api/intake/${encodeURIComponent(id)}`, body),
-    delete: (id: string) => del<{ id: string; batch_id: string | null }>(`/api/intake/${encodeURIComponent(id)}`),
-    undo: () => post<IntakeEntryDto | null>('/api/intake/undo'),
+    removeComponent: (mealId: string, componentId: string) =>
+      del<MealDto>(`/api/meals/${encodeURIComponent(mealId)}/components/${encodeURIComponent(componentId)}`),
   },
 
   hydration: {

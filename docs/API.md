@@ -73,23 +73,31 @@ DELETE /api/foods/:id
 - `PATCH` accepts any subset. `nutrients_per_100g` must be passed whole if supplied.
 - `DELETE` only works on `source = 'manual'` foods.
 
-## Intake
+## Meals
+
+A meal owns one-or-more components. Macros live on components; meal totals are computed on read. See [Data model — meals](./DATA_MODEL.md#meals--meal_components).
 
 ```http
-GET    /api/intake?date=YYYY-MM-DD&start=&end=&meal_type=&limit=
-POST   /api/intake
-PATCH  /api/intake/:id
-DELETE /api/intake/:id
-POST   /api/intake/undo
+GET    /api/meals?date=YYYY-MM-DD&start=&end=&meal_type=&limit=
+GET    /api/meals/:id
+POST   /api/meals
+PATCH  /api/meals/:id
+DELETE /api/meals/:id
+POST   /api/meals/undo
+
+POST   /api/meals/:id/components                   # { component: {...} }
+PATCH  /api/meals/:id/components/:componentId      # { grams?, servings?, notes?, confidence? }
+DELETE /api/meals/:id/components/:componentId
 ```
 
-**POST body** (atomic — all items + batch decrements happen in one transaction):
+**POST `/api/meals` body** (atomic — meal + components + batch decrements in one transaction):
 
 ```json
 {
   "meal_type": "breakfast",
   "ts": "2026-05-24T08:30:00Z",
-  "items": [
+  "name": "Brunch — Five Guys",
+  "components": [
     { "ref": "food", "food_id": "cuid…", "grams": 150 },
     { "ref": "recipe_serving", "recipe_id": "cuid…", "servings": 1.5 },
     { "ref": "batch", "batch_id": "cuid…", "grams": 200 },
@@ -104,14 +112,20 @@ POST   /api/intake/undo
 }
 ```
 
-- `ts` default: now. `meal_type` default: derived from `ts` against TZ-local windows.
-- Each item may carry `confidence` (`0..1`, default `1`), `source_trace` (`exact|estimate|barcode|manual|agent_inference`), and `notes`.
-- Returns `{ entries: IntakeEntry[], batch_remaining: [{ batch_id, remaining_grams }] }`.
-- A batch ref that would push `remaining_grams` negative fails the entire call with `batch_insufficient: 400` — no partial writes.
+- `ts` default: now. `meal_type` default: derived from `ts` against TZ-local windows. `name` is optional — the dashboard falls back to slot label or single-component name.
+- Each component may carry `confidence` (`0..1`, default `1`), `source_trace` (`exact|estimate|barcode|manual|agent_inference`), and `notes`.
+- `POST`, `GET /api/meals/:id`, and the list endpoint all return `MealDto` (or `MealDto[]`) — meal header with nested `components: MealComponentDto[]` and computed `totals: { kcal, protein_g, …, avg_confidence }`.
+- A batch component that would push `remaining_grams` negative fails the entire call with `batch_insufficient: 400` — no partial writes.
 
-**PATCH** accepts `grams?`, `servings?`, `meal_type?`, `notes?`, `tags?`, `confidence?`. Macros are re-derived when grams/servings change. Batch deltas update `remaining_grams`.
+**`PATCH /api/meals/:id`** updates the meal header only — `meal_type?`, `name?`, `notes?`, `tags?`. No macro impact.
 
-**`POST /api/intake/undo`** removes the most recent entry created within the last 10 minutes (refunds the batch if applicable). Returns `null` if nothing qualifies.
+**`PATCH /api/meals/:id/components/:componentId`** updates a single component — `grams?` (food/batch), `servings?` (recipe_serving), `notes?`, `confidence?`. Re-derives macros. Custom components reject grams changes (`custom_component_grams_unchangeable: 400`) — delete and re-add.
+
+**`POST /api/meals/:id/components`** appends a new component to an existing meal. Body: `{ component: <discriminated union, same shape as POST /api/meals.components[i]> }`.
+
+**`DELETE /api/meals/:id`** cascade-deletes components and refunds any batch grams. **`DELETE /api/meals/:id/components/:componentId`** removes a single component (refunds batch grams if applicable); the meal remains even if empty.
+
+**`POST /api/meals/undo`** removes the most recent meal created within the last 10 minutes (refunds all batch grams). Returns `null` if nothing qualifies.
 
 ## Hydration / weight / measurements
 
@@ -230,15 +244,17 @@ POST   /api/remembered-meals
 GET    /api/remembered-meals/:id_or_label
 PATCH  /api/remembered-meals/:id
 DELETE /api/remembered-meals/:id_or_label
-POST   /api/remembered-meals/:id_or_label/log     # { ts?, meal_type?, scale? }
+POST   /api/remembered-meals/:id_or_label/log     # { ts?, meal_type?, name?, scale? }
 ```
 
 A remembered meal carries either:
 - `canonical_text` — short freeform string for the agent to re-estimate ("2 eggs and a banana"), or
-- `items` — a resolved `IntakeItem[]` (same shape as `POST /api/intake`'s `items`),
-- or both. If both are present, `items` wins on log.
+- `components` — a resolved `MealComponentInput[]` (same shape as `POST /api/meals`'s `components`),
+- or both. If both are present, `components` wins on log.
 
-`POST .../log`: if `items` is set, it inserts intake entries (with `scale` multiplying every `grams`); if only `canonical_text`, it returns the text for the agent to re-estimate and call `/api/intake`. Either path bumps `use_count` and `last_used_at`.
+The body also accepts `default_name` (used as the new meal's `name` when `components` is set, unless `name` is provided at log time) and `default_meal_type`.
+
+`POST .../log`: if `components` is set, it creates a meal via `logMeal` (with `scale` multiplying every grams/servings); if only `canonical_text`, it returns the text for the agent to re-estimate and call `/api/meals`. Either path bumps `use_count` and `last_used_at`.
 
 ## Biomarkers and labs
 

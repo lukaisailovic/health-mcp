@@ -60,7 +60,7 @@ const baseItemFields = {
   notes: z.string().optional(),
 };
 
-export const intakeItemSchema = z.discriminatedUnion('ref', [
+export const mealComponentInputSchema = z.discriminatedUnion('ref', [
   z.object({
     ref: z.literal('food'),
     food_id: z.string().min(1),
@@ -86,26 +86,35 @@ export const intakeItemSchema = z.discriminatedUnion('ref', [
     ...baseItemFields,
   }),
 ]);
-export type IntakeItem = z.infer<typeof intakeItemSchema>;
+export type MealComponentInput = z.infer<typeof mealComponentInputSchema>;
 
-export const logIntakeInputSchema = z.object({
-  meal_type: mealTypeSchema.optional(),
+export const logMealInputSchema = z.object({
   ts: isoTimestamp.optional(),
-  items: z.array(intakeItemSchema).min(1),
+  meal_type: mealTypeSchema.optional(),
+  name: z.string().min(1).optional(),
   notes: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  components: z.array(mealComponentInputSchema).min(1),
 });
-export type LogIntakeInput = z.infer<typeof logIntakeInputSchema>;
+export type LogMealInput = z.infer<typeof logMealInputSchema>;
 
-export const updateIntakeInputSchema = z.object({
+export const updateMealInputSchema = z.object({
+  id: z.string().min(1),
+  meal_type: mealTypeSchema.optional(),
+  name: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  tags: z.array(z.string()).nullable().optional(),
+});
+export type UpdateMealInput = z.infer<typeof updateMealInputSchema>;
+
+export const updateMealComponentInputSchema = z.object({
   id: z.string().min(1),
   grams: z.number().positive().optional(),
   servings: z.number().positive().optional(),
-  meal_type: mealTypeSchema.optional(),
   notes: z.string().nullable().optional(),
-  tags: z.array(z.string()).optional(),
   confidence: z.number().min(0).max(1).optional(),
 });
+export type UpdateMealComponentInput = z.infer<typeof updateMealComponentInputSchema>;
 
 export const goalsSchema = z.object({
   kcal: z.number().nonnegative().nullable().optional(),

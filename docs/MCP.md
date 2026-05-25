@@ -58,15 +58,21 @@ Below is the full surface. Schemas are condensed — the wire format is JSON, al
 | `update_custom_food` | `{ id, name?, brand?, serving_grams?, nutrients_per_100g? }` | Manual foods only. |
 | `delete_custom_food` | `{ id }` | Manual foods only. |
 
-### `intake`
+### `meal`
+
+A meal is the unit of logging: one or more components (food / recipe_serving / batch / custom) eaten at one timestamp, tagged with one meal_type slot.
 
 | Tool | Params | Notes |
 |---|---|---|
-| `log_intake` | `{ meal_type?, ts?, items: Item[], notes?, tags? }` | See [Intake item shape](#intake-item-shape). Atomic. |
-| `update_intake` | `{ id, grams?, servings?, meal_type?, notes?, tags?, confidence? }` | Re-derives macros on grams/servings change for food/batch/recipe_serving entries. Custom entries reject grams changes (`custom_intake_grams_unchangeable`) — delete and re-log instead. |
-| `delete_intake` | `{ id }` | Refunds batch `remaining_grams` if applicable. |
-| `list_intake` | `{ date?, start?, end?, meal_type?, limit? }` | |
-| `undo_last_intake` | `{}` | Pops most recent entry within last 10 minutes; returns `null` if none. |
+| `log_meal` | `{ meal_type?, ts?, name?, components: MealComponent[], notes?, tags? }` | See [Meal component shape](#meal-component-shape). Atomic — meal + components + batch decrements in one transaction. |
+| `list_meals` | `{ date?, start?, end?, meal_type?, limit? }` | Returns `MealDto[]` with nested components and computed totals. |
+| `get_meal` | `{ id }` | Single meal with components. |
+| `update_meal` | `{ id, meal_type?, name?, notes?, tags? }` | Header only — no macro impact. |
+| `delete_meal` | `{ id }` | Cascades to components; refunds batch grams. |
+| `undo_last_meal` | `{}` | Pops the most recent meal created within last 10 minutes; refunds batches; returns `null` if none. |
+| `add_meal_component` | `{ meal_id, component: MealComponent }` | Appends a component; re-derives macros at insert; decrements batch if applicable. |
+| `update_meal_component` | `{ id, grams?, servings?, notes?, confidence? }` | Re-derives macros. `grams` only valid for food/batch; `servings` only for recipe_serving; custom rejects grams changes (`custom_component_grams_unchangeable`). |
+| `remove_meal_component` | `{ id }` | Removes one component (refunds batch grams if applicable). The meal remains even if empty. |
 
 ### `recipe` / `batch`
 
@@ -87,16 +93,18 @@ A batch needs either a `recipe_id` (macros scaled to `total_grams`) or `ingredie
 
 ### `meal` (remembered meals)
 
+Reusable meal templates. Shape mirrors `log_meal` components.
+
 | Tool | Params | Gating |
 |---|---|---|
-| `remember_meal` | `{ label, aliases?, default_meal_type?, canonical_text?, items?, notes? }` | always exposed |
+| `remember_meal` | `{ label, aliases?, default_meal_type?, default_name?, canonical_text?, components?, notes? }` | always exposed |
 | `list_remembered_meals` | `{ query?, limit? }` | non-empty table |
 | `get_remembered_meal` | `{ id_or_label }` | non-empty table |
-| `update_remembered_meal` | `{ id, label?, aliases?, default_meal_type?, canonical_text?, items?, notes? }` | non-empty table |
+| `update_remembered_meal` | `{ id, label?, aliases?, default_meal_type?, default_name?, canonical_text?, components?, notes? }` | non-empty table |
 | `forget_meal` | `{ id_or_label }` | non-empty table |
-| `log_remembered_meal` | `{ id_or_label, ts?, meal_type?, scale? }` | non-empty table |
+| `log_remembered_meal` | `{ id_or_label, ts?, meal_type?, name?, scale? }` | non-empty table |
 
-`remember_meal` requires at least one of `canonical_text` or `items`. If `items` is present, `log_remembered_meal` creates intake entries directly; otherwise it returns the canonical text for the agent to re-estimate.
+`remember_meal` requires at least one of `canonical_text` or `components`. If `components` is present, `log_remembered_meal` creates a meal directly via `logMeal`; otherwise it returns the canonical text for the agent to re-estimate. `default_name` (falling back to `label`) is used as the new meal's `name`.
 
 ### `hydration` / `weight` / `measurement` / `goal`
 
@@ -201,12 +209,12 @@ See [Biomarkers](./BIOMARKERS.md) for status semantics (`optimal` → `in_ref` �
 
 All gated on Whoop being linked.
 
-## Intake item shape
+## Meal component shape
 
-The `items` parameter of `log_intake` is a Zod **discriminated union** on `ref`:
+The `components` parameter of `log_meal` (and `add_meal_component`'s nested `component`) is a Zod **discriminated union** on `ref`:
 
 ```ts
-type Item =
+type MealComponent =
   | { ref: 'food';           food_id: string;   grams: number;
       confidence?, source_trace?, notes? }
   | { ref: 'recipe_serving'; recipe_id: string; servings: number;
@@ -225,7 +233,7 @@ type CustomFoodSpec =
   | { name: string; absolute: { kcal, protein_g, carb_g, fat_g, fiber_g?, sugar_g?, sat_fat_g?, sodium_mg? } };
 ```
 
-Whole call is atomic — either all items + all batch decrements land, or none of them. A batch ref that would push `remaining_grams` below zero fails with `batch_insufficient`.
+Whole `log_meal` call is atomic — meal header + all components + all batch decrements land together, or none of them. A batch component that would push `remaining_grams` below zero fails with `batch_insufficient`.
 
 ## Wiring into MCP clients
 
@@ -273,7 +281,7 @@ mcp_servers:
     timeout: 120
 ```
 
-Reload without restarting via `/reload-mcp`. For a local checkout, swap to `command: "node"` with `args: ["--import", "tsx", "/path/to/health-mcp/apps/server/src/index.ts", "--stdio"]`. To trim the exposed surface during prompt engineering, add `tools.include: [discover_capabilities, log_intake, daily_summary]` and Hermes will register only the named tools.
+Reload without restarting via `/reload-mcp`. For a local checkout, swap to `command: "node"` with `args: ["--import", "tsx", "/path/to/health-mcp/apps/server/src/index.ts", "--stdio"]`. To trim the exposed surface during prompt engineering, add `tools.include: [discover_capabilities, log_meal, daily_summary]` and Hermes will register only the named tools.
 
 ### OpenClaw
 

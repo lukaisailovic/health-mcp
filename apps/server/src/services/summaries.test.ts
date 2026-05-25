@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { closeCtx, makeTestCtx } from '../test-utils.js';
 import { createCustomFood } from './food.js';
 import { setGoals } from './goals.js';
-import { logIntake } from './intake.js';
+import { logMeal } from './meals.js';
 import { logHydration } from './simple-logs.js';
 import { dailySummary } from './summaries.js';
 
@@ -25,7 +25,7 @@ describe('summaries', () => {
         fat_g_per_100g: 3,
       },
     });
-    logIntake(ctx, { ts: today, items: [{ ref: 'food', food_id: food.id, grams: 200 }] });
+    logMeal(ctx, { ts: today, components: [{ ref: 'food', food_id: food.id, grams: 200 }] });
     logHydration(ctx, { ml: 500, ts: today });
     const s = dailySummary(ctx);
     expect(s.totals.kcal).toBeCloseTo(500, 5);

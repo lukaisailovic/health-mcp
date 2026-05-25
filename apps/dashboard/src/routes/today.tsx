@@ -12,7 +12,7 @@ import {
   Undo2,
 } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
-import { IntakeRow } from '@/components/intake-row';
+import { MealCard } from '@/components/meal-card';
 import { MacroRings } from '@/components/macro-rings';
 import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
@@ -204,9 +204,9 @@ const Today = () => {
     queryKey: ['summary', 'daily', date, '7d_avg'],
     queryFn: () => api.summary.daily({ date, compare_to: '7d_avg' }),
   });
-  const intake = useQuery({
-    queryKey: ['intake', date],
-    queryFn: () => api.intake.list({ date }),
+  const meals = useQuery({
+    queryKey: ['meals', date],
+    queryFn: () => api.meals.list({ date }),
   });
   const recovery = useQuery({
     queryKey: ['wearables', 'readiness', date],
@@ -222,11 +222,16 @@ const Today = () => {
   });
 
   const undo = useMutation({
-    mutationFn: () => api.intake.undo(),
+    mutationFn: () => api.meals.undo(),
     onSuccess: () => qc.invalidateQueries(),
   });
-  const removeIntake = useMutation({
-    mutationFn: (id: string) => api.intake.delete(id),
+  const deleteMeal = useMutation({
+    mutationFn: (id: string) => api.meals.delete(id),
+    onSuccess: () => qc.invalidateQueries(),
+  });
+  const removeComponent = useMutation({
+    mutationFn: ({ mealId, componentId }: { mealId: string; componentId: string }) =>
+      api.meals.removeComponent(mealId, componentId),
     onSuccess: () => qc.invalidateQueries(),
   });
 
@@ -396,9 +401,9 @@ const Today = () => {
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            {intake.isLoading ? (
+            {meals.isLoading ? (
               <Spinner />
-            ) : !intake.data?.length ? (
+            ) : !meals.data?.length ? (
               <Empty
                 icon={Activity}
                 title="No meals logged today"
@@ -406,12 +411,15 @@ const Today = () => {
               />
             ) : (
               <ul className="-mx-2 divide-y divide-kumo-line">
-                {intake.data.map((e) => (
-                  <IntakeRow
-                    key={e.id}
-                    entry={e}
-                    onDelete={(id) => removeIntake.mutate(id)}
-                    deleting={removeIntake.isPending}
+                {meals.data.map((m) => (
+                  <MealCard
+                    key={m.id}
+                    meal={m}
+                    onDeleteMeal={(id) => deleteMeal.mutate(id)}
+                    onRemoveComponent={(mealId, componentId) =>
+                      removeComponent.mutate({ mealId, componentId })
+                    }
+                    busy={deleteMeal.isPending || removeComponent.isPending}
                   />
                 ))}
               </ul>

@@ -3,8 +3,8 @@ import { biomarkerTools } from './biomarkers.js';
 import { correlateTools } from './correlate.js';
 import { buildDiscoverTool, pingTool } from './discover.js';
 import { foodTools } from './food.js';
-import { intakeTools } from './intake.js';
 import { logTools } from './logs.js';
+import { mealTools } from './meals.js';
 import { recipeTools } from './recipes.js';
 import { rememberedTools } from './remembered.js';
 import { summaryTools } from './summaries.js';
@@ -14,7 +14,7 @@ export const buildAllTools = (): AnyToolDef[] => {
   const tools: AnyToolDef[] = [
     pingTool,
     ...foodTools,
-    ...intakeTools,
+    ...mealTools,
     ...logTools,
     ...summaryTools,
     ...correlateTools,

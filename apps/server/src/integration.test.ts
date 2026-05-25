@@ -21,9 +21,8 @@ describe('integration: REST + MCP tool registry', () => {
     expect(body.auth_required).toBe(false);
   });
 
-  it('POST /api/intake creates and updates entries via REST', async () => {
+  it('POST /api/meals creates a meal via REST', async () => {
     const app = createHonoApp({ config: ctx.config, logger: ctx.logger, ctx, sdkVersion: '1.x' });
-    // create custom food via REST
     const foodRes = await app.request('/api/foods', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -40,16 +39,24 @@ describe('integration: REST + MCP tool registry', () => {
     expect(foodRes.status).toBe(200);
     const food = (await foodRes.json()) as { id: string };
 
-    const intakeRes = await app.request('/api/intake', {
+    const mealRes = await app.request('/api/meals', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ items: [{ ref: 'food', food_id: food.id, grams: 100 }] }),
+      body: JSON.stringify({
+        meal_type: 'breakfast',
+        components: [{ ref: 'food', food_id: food.id, grams: 100 }],
+      }),
     });
-    expect(intakeRes.status).toBe(200);
-    const intake = (await intakeRes.json()) as { entries: Array<{ id: string; kcal: number }> };
-    expect(intake.entries[0]?.kcal).toBeCloseTo(155, 3);
+    expect(mealRes.status).toBe(200);
+    const meal = (await mealRes.json()) as {
+      id: string;
+      totals: { kcal: number };
+      components: Array<{ kcal: number }>;
+    };
+    expect(meal.components[0]?.kcal).toBeCloseTo(155, 3);
+    expect(meal.totals.kcal).toBeCloseTo(155, 3);
 
-    const listRes = await app.request('/api/intake?limit=5');
+    const listRes = await app.request('/api/meals?limit=5');
     expect(listRes.status).toBe(200);
     const list = (await listRes.json()) as unknown[];
     expect(list.length).toBe(1);
@@ -75,7 +82,7 @@ describe('integration: REST + MCP tool registry', () => {
       { tools: Array<{ name: string }> }
     >;
     expect(Object.keys(groups)).toContain('food');
-    expect(Object.keys(groups)).toContain('intake');
+    expect(Object.keys(groups)).toContain('meal');
     expect(Object.keys(groups)).toContain('biomarker');
   });
 });

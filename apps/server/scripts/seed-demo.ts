@@ -118,17 +118,19 @@ const seedGoals = async (): Promise<void> => {
 
 // --- Intake ---------------------------------------------------------------
 
-type Meal = {
+type MealTemplate = {
   hour: number;
   type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  items: Array<{ name: string; grams: number }>;
+  name: string;
+  components: Array<{ name: string; grams: number }>;
 };
 
-const MEAL_TEMPLATES: Meal[] = [
+const MEAL_TEMPLATES: MealTemplate[] = [
   {
     hour: 8,
     type: 'breakfast',
-    items: [
+    name: 'Oats & yogurt',
+    components: [
       { name: 'Oats (rolled, dry)', grams: 60 },
       { name: 'Greek yogurt 2%', grams: 150 },
       { name: 'Banana', grams: 120 },
@@ -138,7 +140,8 @@ const MEAL_TEMPLATES: Meal[] = [
   {
     hour: 8,
     type: 'breakfast',
-    items: [
+    name: 'Egg toast & avocado',
+    components: [
       { name: 'Egg, whole', grams: 150 },
       { name: 'Sourdough bread', grams: 80 },
       { name: 'Avocado', grams: 60 },
@@ -147,7 +150,8 @@ const MEAL_TEMPLATES: Meal[] = [
   {
     hour: 13,
     type: 'lunch',
-    items: [
+    name: 'Chicken rice bowl',
+    components: [
       { name: 'Chicken breast, grilled', grams: 180 },
       { name: 'White rice, cooked', grams: 220 },
       { name: 'Spinach, raw', grams: 80 },
@@ -157,7 +161,8 @@ const MEAL_TEMPLATES: Meal[] = [
   {
     hour: 13,
     type: 'lunch',
-    items: [
+    name: 'Salmon & rice',
+    components: [
       { name: 'Salmon, baked', grams: 170 },
       { name: 'White rice, cooked', grams: 200 },
       { name: 'Spinach, raw', grams: 100 },
@@ -166,7 +171,8 @@ const MEAL_TEMPLATES: Meal[] = [
   {
     hour: 16,
     type: 'snack',
-    items: [
+    name: 'Almonds & dark chocolate',
+    components: [
       { name: 'Almonds', grams: 30 },
       { name: 'Dark chocolate 85%', grams: 20 },
     ],
@@ -174,7 +180,8 @@ const MEAL_TEMPLATES: Meal[] = [
   {
     hour: 20,
     type: 'dinner',
-    items: [
+    name: 'Chicken & avocado plate',
+    components: [
       { name: 'Chicken breast, grilled', grams: 160 },
       { name: 'Avocado', grams: 100 },
       { name: 'Spinach, raw', grams: 120 },
@@ -183,7 +190,7 @@ const MEAL_TEMPLATES: Meal[] = [
   },
 ];
 
-const seedIntake = async (foods: Food[]): Promise<void> => {
+const seedMeals = async (foods: Food[]): Promise<void> => {
   const foodByName = new Map(foods.map((f) => [f.name, f.id]));
   for (let daysAgo = DAYS - 1; daysAgo >= 0; daysAgo--) {
     const mealsToday = [
@@ -195,10 +202,11 @@ const seedIntake = async (foods: Food[]): Promise<void> => {
     for (const meal of mealsToday) {
       if (!meal) continue;
       if (meal.type === 'snack' && Math.random() < 0.35) continue;
-      await req('POST', '/api/intake', {
+      await req('POST', '/api/meals', {
         meal_type: meal.type,
+        name: meal.name,
         ts: isoAt(daysAgo, meal.hour, Math.floor(rand(0, 50))),
-        items: meal.items
+        components: meal.components
           .map((it) => {
             const id = foodByName.get(it.name);
             if (!id) return null;
@@ -435,7 +443,7 @@ const main = async (): Promise<void> => {
   const foods = await seedFoods();
 
   process.stdout.write('  intake (this can take a moment)…\n');
-  await seedIntake(foods);
+  await seedMeals(foods);
 
   process.stdout.write('  hydration…\n');
   await seedHydration();

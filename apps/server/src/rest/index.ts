@@ -26,13 +26,18 @@ import {
   updateCustomFood,
 } from '../services/food.js';
 import { getGoals, setGoals } from '../services/goals.js';
+import type { MealComponentInput, MealType } from '@health-mcp/shared';
 import {
-  deleteIntake,
-  listIntake,
-  logIntake,
-  undoLastIntake,
-  updateIntake,
-} from '../services/intake.js';
+  addMealComponent,
+  deleteMeal,
+  getMeal,
+  listMeals,
+  logMeal,
+  removeMealComponent,
+  undoLastMeal,
+  updateMeal,
+  updateMealComponent,
+} from '../services/meals.js';
 import {
   archiveBatch,
   createBatch,
@@ -127,24 +132,39 @@ export const mountRestRoutes = (app: Hono, ctx: WearableServiceCtx): void => {
   );
   app.delete('/api/foods/:id', (c) => wrap(c, () => deleteCustomFood(ctx, c.req.param('id'))));
 
-  // Intake
-  app.get('/api/intake', (c) =>
+  // Meals
+  app.get('/api/meals', (c) =>
     wrap(c, () =>
-      listIntake(ctx, {
+      listMeals(ctx, {
         date: c.req.query('date'),
         start: c.req.query('start'),
         end: c.req.query('end'),
-        meal_type: c.req.query('meal_type') as Parameters<typeof listIntake>[1]['meal_type'],
+        meal_type: c.req.query('meal_type') as MealType | undefined,
         limit: intParam(c.req.query('limit')),
       }),
     ),
   );
-  app.post('/api/intake', (c) => wrap(c, async () => logIntake(ctx, await parseBody(c))));
-  app.patch('/api/intake/:id', (c) =>
-    wrap(c, async () => updateIntake(ctx, { id: c.req.param('id'), ...(await mergeBody(c)) })),
+  app.post('/api/meals', (c) => wrap(c, async () => logMeal(ctx, await parseBody(c))));
+  app.post('/api/meals/undo', (c) => wrap(c, () => undoLastMeal(ctx)));
+  app.get('/api/meals/:id', (c) => wrap(c, () => getMeal(ctx, c.req.param('id'))));
+  app.patch('/api/meals/:id', (c) =>
+    wrap(c, async () => updateMeal(ctx, { id: c.req.param('id'), ...(await mergeBody(c)) })),
   );
-  app.delete('/api/intake/:id', (c) => wrap(c, () => deleteIntake(ctx, c.req.param('id'))));
-  app.post('/api/intake/undo', (c) => wrap(c, () => undoLastIntake(ctx)));
+  app.delete('/api/meals/:id', (c) => wrap(c, () => deleteMeal(ctx, c.req.param('id'))));
+  app.post('/api/meals/:id/components', (c) =>
+    wrap(c, async () => {
+      const body = await parseBody<{ component: MealComponentInput }>(c);
+      return addMealComponent(ctx, { meal_id: c.req.param('id'), component: body.component });
+    }),
+  );
+  app.patch('/api/meals/:id/components/:componentId', (c) =>
+    wrap(c, async () =>
+      updateMealComponent(ctx, { id: c.req.param('componentId'), ...(await mergeBody(c)) }),
+    ),
+  );
+  app.delete('/api/meals/:id/components/:componentId', (c) =>
+    wrap(c, () => removeMealComponent(ctx, c.req.param('componentId'))),
+  );
 
   // Hydration / weight / measurement
   app.get('/api/hydration', (c) =>

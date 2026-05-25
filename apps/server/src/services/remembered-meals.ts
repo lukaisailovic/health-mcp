@@ -1,6 +1,6 @@
-import type { IntakeItem, LogIntakeInput, MealType } from '@health-mcp/shared';
+import type { LogMealInput, MealComponentInput, MealDto, MealType } from '@health-mcp/shared';
 import { cuid } from '../util/id.js';
-import { logIntake } from './intake.js';
+import { logMeal } from './meals.js';
 import { type Ctx, ServiceError } from './types.js';
 
 export type RememberedMeal = {
@@ -8,8 +8,9 @@ export type RememberedMeal = {
   label: string;
   aliases: string | null;
   default_meal_type: string | null;
+  default_name: string | null;
   canonical_text: string | null;
-  items_json: string | null;
+  components_json: string | null;
   notes: string | null;
   last_used_at: string | null;
   use_count: number;
@@ -23,28 +24,30 @@ export const rememberMeal = (
     label: string;
     aliases?: string[];
     default_meal_type?: MealType;
+    default_name?: string;
     canonical_text?: string;
-    items?: IntakeItem[];
+    components?: MealComponentInput[];
     notes?: string;
   },
 ): RememberedMeal => {
-  if (!args.canonical_text && !args.items) {
-    throw new ServiceError('missing_payload', 'either canonical_text or items required', 400);
+  if (!args.canonical_text && !args.components) {
+    throw new ServiceError('missing_payload', 'either canonical_text or components required', 400);
   }
   const id = cuid();
   ctx.db
     .prepare(
       `INSERT INTO remembered_meals (
-        id, label, aliases, default_meal_type, canonical_text, items_json, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        id, label, aliases, default_meal_type, default_name, canonical_text, components_json, notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       id,
       args.label,
       args.aliases ? JSON.stringify(args.aliases) : null,
       args.default_meal_type ?? null,
+      args.default_name ?? null,
       args.canonical_text ?? null,
-      args.items ? JSON.stringify(args.items) : null,
+      args.components ? JSON.stringify(args.components) : null,
       args.notes ?? null,
     );
   return ctx.db.prepare('SELECT * FROM remembered_meals WHERE id = ?').get(id) as RememberedMeal;
@@ -97,8 +100,9 @@ export const updateRememberedMeal = (
     label?: string;
     aliases?: string[];
     default_meal_type?: MealType | null;
+    default_name?: string | null;
     canonical_text?: string | null;
-    items?: IntakeItem[] | null;
+    components?: MealComponentInput[] | null;
     notes?: string | null;
   },
 ): RememberedMeal => {
@@ -109,8 +113,9 @@ export const updateRememberedMeal = (
         label = COALESCE(?, label),
         aliases = COALESCE(?, aliases),
         default_meal_type = ?,
+        default_name = ?,
         canonical_text = ?,
-        items_json = ?,
+        components_json = ?,
         notes = ?,
         updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
        WHERE id = ?`,
@@ -119,12 +124,13 @@ export const updateRememberedMeal = (
       args.label ?? null,
       args.aliases ? JSON.stringify(args.aliases) : null,
       args.default_meal_type === undefined ? existing.default_meal_type : args.default_meal_type,
+      args.default_name === undefined ? existing.default_name : args.default_name,
       args.canonical_text === undefined ? existing.canonical_text : args.canonical_text,
-      args.items === undefined
-        ? existing.items_json
-        : args.items === null
+      args.components === undefined
+        ? existing.components_json
+        : args.components === null
           ? null
-          : JSON.stringify(args.items),
+          : JSON.stringify(args.components),
       args.notes === undefined ? existing.notes : args.notes,
       existing.id,
     );
@@ -139,39 +145,32 @@ export const forgetMeal = (ctx: Ctx, idOrLabel: string): { id: string } => {
 
 export const logRememberedMeal = (
   ctx: Ctx,
-  args: { id_or_label: string; ts?: string; meal_type?: MealType; scale?: number },
+  args: { id_or_label: string; ts?: string; meal_type?: MealType; name?: string; scale?: number },
 ):
-  | { kind: 'logged'; meal: RememberedMeal; result: ReturnType<typeof logIntake> }
-  | { kind: 'reestimate'; meal: RememberedMeal; canonical_text: string } => {
-  const meal = getRememberedMeal(ctx, args.id_or_label);
-  const tx = ctx.db.transaction(() => {
-    ctx.db
-      .prepare(
-        "UPDATE remembered_meals SET use_count = use_count + 1, last_used_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?",
-      )
-      .run(meal.id);
-  });
-  tx();
+  | { kind: 'logged'; remembered: RememberedMeal; meal: MealDto }
+  | { kind: 'reestimate'; remembered: RememberedMeal; canonical_text: string } => {
+  const remembered = getRememberedMeal(ctx, args.id_or_label);
+  ctx.db
+    .prepare(
+      "UPDATE remembered_meals SET use_count = use_count + 1, last_used_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?",
+    )
+    .run(remembered.id);
 
-  if (meal.items_json) {
-    const items = JSON.parse(meal.items_json) as IntakeItem[];
-    const scale = args.scale ?? 1;
-    const scaled: IntakeItem[] = items.map((item) => {
-      if (item.ref === 'recipe_serving') {
-        return { ...item, servings: item.servings * scale };
-      }
-      if (item.ref === 'food' || item.ref === 'batch' || item.ref === 'custom') {
-        return { ...item, grams: item.grams * scale };
-      }
-      return item;
-    });
-    const input: LogIntakeInput = {
-      items: scaled,
-      ts: args.ts,
-      meal_type: args.meal_type ?? (meal.default_meal_type as MealType | undefined),
-    };
-    const result = logIntake(ctx, input);
-    return { kind: 'logged', meal: getRememberedMeal(ctx, meal.id), result };
+  if (!remembered.components_json) {
+    return { kind: 'reestimate', remembered, canonical_text: remembered.canonical_text ?? '' };
   }
-  return { kind: 'reestimate', meal, canonical_text: meal.canonical_text ?? '' };
+  const components = JSON.parse(remembered.components_json) as MealComponentInput[];
+  const scale = args.scale ?? 1;
+  const scaled: MealComponentInput[] = components.map((c) => {
+    if (c.ref === 'recipe_serving') return { ...c, servings: c.servings * scale };
+    return { ...c, grams: c.grams * scale };
+  });
+  const input: LogMealInput = {
+    ts: args.ts,
+    meal_type: args.meal_type ?? (remembered.default_meal_type as MealType | undefined),
+    name: args.name ?? remembered.default_name ?? remembered.label,
+    components: scaled,
+  };
+  const meal = logMeal(ctx, input);
+  return { kind: 'logged', remembered: getRememberedMeal(ctx, remembered.id), meal };
 };

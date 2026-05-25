@@ -10,7 +10,7 @@ Designed for single-user, self-hosted use. SQLite-backed. Local-first. No AI pro
 
 - **Nutrition** — foods (manual + USDA + Open Food Facts), recipes, cooked batches with depletion across days, intake entries, hydration, weight, body measurements, daily macro goals.
 - **Biomarkers** — ~60 seeded biomarkers with LOINC codes and curated ranges, lab panels + results over time, three-range model (lab-supplied / per-marker default / curated optimal), unit conversion for the common dual-unit markers, trend + latest-value queries.
-- **Recipes & batches** — recipes scale to per-serving macros, batches deplete as you log intake against them, atomic batch updates inside `log_intake`.
+- **Recipes & batches** — recipes scale to per-serving macros, batches deplete as you log meals against them, atomic batch updates inside `log_meal`.
 - **Remembered meals** — label re-loggable meals (canonical text for agent re-estimation, or pre-resolved items).
 - **Wearables** — provider-agnostic abstraction with Whoop and Oura OAuth2 providers (raw + normalized tables, refresh-token rotation, per-provider mutex, signed-state callback).
 - **Three surfaces, one service layer** — MCP Streamable-HTTP at `/mcp`, MCP stdio mode behind `--stdio`, REST at `/api/*`, and the dashboard SPA at `/`. Service modules in `src/services/` are the only place business logic lives.
@@ -106,10 +106,10 @@ curl -X POST http://127.0.0.1:7777/api/foods \
   -H 'content-type: application/json' \
   -d '{"name":"Egg","nutrients_per_100g":{"kcal_per_100g":155,"protein_g_per_100g":13,"carb_g_per_100g":1.1,"fat_g_per_100g":11}}'
 
-# log intake (food id from above)
-curl -X POST http://127.0.0.1:7777/api/intake \
+# log a meal (food id from above)
+curl -X POST http://127.0.0.1:7777/api/meals \
   -H 'content-type: application/json' \
-  -d '{"items":[{"ref":"food","food_id":"<id>","grams":150}]}'
+  -d '{"meal_type":"breakfast","components":[{"ref":"food","food_id":"<id>","grams":150}]}'
 
 # daily summary
 curl http://127.0.0.1:7777/api/summary/daily
@@ -142,8 +142,9 @@ ping, discover_capabilities
 search_food, lookup_barcode, get_food
 create_custom_food, update_custom_food, delete_custom_food
 
-# intake
-log_intake, update_intake, delete_intake, list_intake, undo_last_intake
+# meals
+log_meal, list_meals, get_meal, update_meal, delete_meal, undo_last_meal,
+add_meal_component, update_meal_component, remove_meal_component
 
 # recipes + batches
 create_recipe, update_recipe, delete_recipe, list_recipes, get_recipe
@@ -222,7 +223,7 @@ The test suite runs file-backed SQLite in tmpdirs with the same pragmas as produ
 | P0 | shipped | Workspace, TS, Biome, Vitest, config/CLI, DB client + migrations, MCP Streamable-HTTP + stdio transports, `/health`+`/version`, `ping` tool. |
 | P1 | shipped | Nutrition: foods (USDA + OFF + manual), intake (food/custom), hydration, weight, measurements, goals, daily/weekly/range summaries. |
 | P2 | shipped | Biomarkers: ~60-marker seed, lab panels + results, unit conversion, latest + trend + out-of-range filters. |
-| P3 | shipped | Recipes, cooked batches with depletion, remembered meals. `log_intake` accepts `recipe_serving` + `batch` refs. |
+| P3 | shipped | Recipes, cooked batches with depletion, remembered meals. `log_meal` accepts `recipe_serving` + `batch` refs. |
 | P4 | shipped | Wearables abstraction, provider registry, file-backed auth store (mode 0600 + atomic writes + per-provider mutex), signed-state OAuth callback with single-use nonce, Whoop provider (rate-limited client, refresh rotation, raw + normalized sync). |
 | P5 | shipped | Dashboard SPA (Vite + TanStack Router + TanStack Query + shadcn primitives + Recharts), served from the same Hono app at `/` with SPA fallback. Auto-opens the browser on HTTP boot. |
 | P6 | shipped | `correlate` tool + `list_correlate_metrics` companion (capability-gated), Pearson/Spearman over Day/Week/Month buckets with `forward_fill` for sparse series and signed `lag_buckets`. USDA bulk JSON import subcommand (`health-mcp import-usda <dump.json>`). Lab PDF stays agent-side by design. Dashboard exposes correlate via an Insights page. |

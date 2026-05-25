@@ -149,7 +149,7 @@ type SourceConfig = {
 
 const SOURCES: Record<Exclude<MetricSource, 'lab_results'>, SourceConfig> = {
   intake: {
-    table: 'intake_entries',
+    table: 'intake_v',
     whereCol: 'date',
     bucketExprCol: 'date',
     rangeAsIso: false,
@@ -411,7 +411,7 @@ export const listCorrelateMetrics = (): Array<{ source: MetricSource; fields: st
 
 export const isCorrelateAvailable = (ctx: Ctx): boolean => {
   const intakeDays = ctx.db
-    .prepare('SELECT COUNT(DISTINCT date) AS n FROM intake_entries')
+    .prepare('SELECT COUNT(DISTINCT date) AS n FROM intake_v')
     .get() as { n: number };
   if (intakeDays.n < 7) return false;
   const wearableRows = ctx.db

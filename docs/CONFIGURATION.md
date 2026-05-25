@@ -66,8 +66,8 @@ See [Security](./SECURITY.md) for the full model.
 
 `HEALTH_MCP_TZ` is the **IANA name** (`Europe/Belgrade`, `America/New_York`, …). It controls:
 
-- The `date` column on `intake_entries`, `hydration_entries`, `weight_entries`, `measurements` — computed in this TZ at *write* time and stored as-is. `ts` is always UTC ISO and remains authoritative for ordering.
-- The default `meal_type` derivation in `log_intake` when neither `meal_type` nor `ts` is supplied: <11:00 local → `breakfast`, <15:00 → `lunch`, <20:00 → `dinner`, else `snack`.
+- The `date` column on `meals`, `hydration_entries`, `weight_entries`, `measurements` — computed in this TZ at *write* time and stored as-is. `ts` is always UTC ISO and remains authoritative for ordering.
+- The default `meal_type` derivation in `log_meal` when neither `meal_type` nor `ts` is supplied: <11:00 local → `breakfast`, <15:00 → `lunch`, <20:00 → `dinner`, else `snack`.
 
 If you change `HEALTH_MCP_TZ` after data already exists, historical `date` values are **not** retroactively updated. Run `health-mcp migrate --retz` to rebucket them.
 

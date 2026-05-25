@@ -1,3 +1,4 @@
+import type { MealType } from './schemas.js';
 import type { BiomarkerStatus, IntakeMacros, RefKind } from './types.js';
 
 export type HealthProbe = {
@@ -52,11 +53,10 @@ export type FoodDto = {
   created_at: string;
 };
 
-export type IntakeEntryDto = IntakeMacros & {
+export type MealComponentDto = IntakeMacros & {
   id: string;
-  ts: string;
-  date: string;
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'other';
+  meal_id: string;
+  position: number;
   ref_kind: RefKind;
   food_id: string | null;
   recipe_id: string | null;
@@ -68,8 +68,21 @@ export type IntakeEntryDto = IntakeMacros & {
   confidence: number;
   source_trace: string;
   notes: string | null;
-  tags: string | null;
   created_at: string;
+};
+
+export type MealDto = {
+  id: string;
+  ts: string;
+  date: string;
+  meal_type: MealType;
+  name: string | null;
+  notes: string | null;
+  tags: string | null;
+  components: MealComponentDto[];
+  totals: IntakeMacros & { avg_confidence: number | null };
+  created_at: string;
+  updated_at: string;
 };
 
 export type HydrationEntryDto = {
