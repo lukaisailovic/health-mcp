@@ -173,6 +173,41 @@ const computeRecipeTotal = (
   return totals;
 };
 
+export const recipeTotalsById = (ctx: Ctx, recipeId: string): Macros => {
+  const ingredients = ctx.db
+    .prepare('SELECT food_id, grams FROM recipe_ingredients WHERE recipe_id = ?')
+    .all(recipeId) as Array<{ food_id: string | null; grams: number }>;
+  return computeRecipeTotal(ctx, ingredients);
+};
+
+export type BatchTotals = Pick<
+  Batch,
+  | 'total_grams'
+  | 'kcal_total'
+  | 'protein_g_total'
+  | 'carb_g_total'
+  | 'fat_g_total'
+  | 'fiber_g_total'
+  | 'sugar_g_total'
+  | 'sat_fat_g_total'
+  | 'sodium_mg_total'
+>;
+
+export const batchMacrosForGrams = (batch: BatchTotals, grams: number): Macros =>
+  scaleMacros(
+    {
+      kcal: batch.kcal_total,
+      protein_g: batch.protein_g_total,
+      carb_g: batch.carb_g_total,
+      fat_g: batch.fat_g_total,
+      fiber_g: batch.fiber_g_total,
+      sugar_g: batch.sugar_g_total,
+      sat_fat_g: batch.sat_fat_g_total,
+      sodium_mg: batch.sodium_mg_total,
+    },
+    grams / batch.total_grams,
+  );
+
 export type Batch = {
   id: string;
   name: string | null;

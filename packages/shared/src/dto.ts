@@ -119,7 +119,8 @@ export type DailySummaryDto = {
   date: string;
   totals: IntakeMacros & {
     hydration_ml: number;
-    entry_count: number;
+    meal_count: number;
+    component_count: number;
     avg_confidence: number | null;
   };
   goals: GoalsDto;
@@ -135,19 +136,27 @@ export type DailySummaryDto = {
     kind: 'yesterday' | '7d_avg';
     totals: IntakeMacros & {
       hydration_ml: number;
-      entry_count: number;
+      meal_count: number;
+      component_count: number;
       avg_confidence: number | null;
       date: string;
     };
   };
 };
 
+export type RangeBucketDto = IntakeMacros & {
+  date: string;
+  hydration_ml: number;
+  meal_count: number;
+  component_count: number;
+};
+
 export type RangeSummaryDto = {
   bucket: 'day' | 'week';
   start: string;
   end: string;
-  days?: Array<IntakeMacros & { date: string; hydration_ml: number; entry_count: number }>;
-  weeks?: Array<IntakeMacros & { date: string; hydration_ml: number; entry_count: number }>;
+  days?: RangeBucketDto[];
+  weeks?: RangeBucketDto[];
 };
 
 export type RecipeDto = {

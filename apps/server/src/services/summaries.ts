@@ -13,7 +13,8 @@ export type DayTotals = {
   sat_fat_g: number;
   sodium_mg: number;
   hydration_ml: number;
-  entry_count: number;
+  meal_count: number;
+  component_count: number;
   avg_confidence: number | null;
 };
 
@@ -29,17 +30,21 @@ const dayTotals = (ctx: Ctx, date: string): DayTotals => {
         COALESCE(SUM(sugar_g),0) AS sugar_g,
         COALESCE(SUM(sat_fat_g),0) AS sat_fat_g,
         COALESCE(SUM(sodium_mg),0) AS sodium_mg,
-        COUNT(*) AS entry_count,
+        COUNT(*) AS component_count,
         AVG(confidence) AS avg_confidence
        FROM intake_v WHERE date = ?`,
     )
-    .get(date) as Omit<DayTotals, 'date' | 'hydration_ml'>;
+    .get(date) as Omit<DayTotals, 'date' | 'hydration_ml' | 'meal_count'>;
+  const meals = ctx.db
+    .prepare('SELECT COUNT(*) AS n FROM meals WHERE date = ?')
+    .get(date) as { n: number };
   const hyd = ctx.db
     .prepare('SELECT COALESCE(SUM(ml),0) AS ml FROM hydration_entries WHERE date = ?')
     .get(date) as { ml: number };
   return {
     date,
     ...intake,
+    meal_count: meals.n,
     hydration_ml: hyd.ml,
   };
 };
@@ -60,7 +65,8 @@ const SUMMABLE_KEYS = [
   'sat_fat_g',
   'sodium_mg',
   'hydration_ml',
-  'entry_count',
+  'meal_count',
+  'component_count',
 ] as const;
 
 const sumTotals = (rows: DayTotals[]): Omit<DayTotals, 'date' | 'avg_confidence'> => {

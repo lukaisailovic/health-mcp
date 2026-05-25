@@ -11,13 +11,12 @@ import { cuid } from '../util/id.js';
 import { deriveMealType, nowIso, toLocalDate } from '../util/tz.js';
 import {
   type Macros,
-  accumulateMacros,
-  emptyMacros,
   getFood,
   macrosForCustom,
   macrosForFoodGrams,
   scaleMacros,
 } from './food.js';
+import { type BatchTotals, batchMacrosForGrams, recipeTotalsById } from './recipes.js';
 import { type Ctx, ServiceError } from './types.js';
 
 type MealRow = {
@@ -69,17 +68,6 @@ type ComponentDerived = {
   macros: Macros;
 };
 
-const computeRecipeTotals = (ctx: Ctx, recipeId: string): Macros => {
-  const rows = ctx.db
-    .prepare(
-      'SELECT food_id, grams FROM recipe_ingredients WHERE recipe_id = ? AND food_id IS NOT NULL',
-    )
-    .all(recipeId) as { food_id: string; grams: number }[];
-  const totals = emptyMacros();
-  for (const r of rows) accumulateMacros(totals, macrosForFoodGrams(getFood(ctx, r.food_id), r.grams));
-  return totals;
-};
-
 const deriveComponent = (ctx: Ctx, input: MealComponentInput): ComponentDerived => {
   if (input.ref === 'food') {
     const food = getFood(ctx, input.food_id);
@@ -99,7 +87,6 @@ const deriveComponent = (ctx: Ctx, input: MealComponentInput): ComponentDerived 
       | { id: string; servings: number }
       | undefined;
     if (!recipe) throw new ServiceError('recipe_not_found', `recipe ${input.recipe_id} not found`, 404);
-    const totals = computeRecipeTotals(ctx, input.recipe_id);
     return {
       ref_kind: 'recipe_serving',
       food_id: null,
@@ -108,7 +95,7 @@ const deriveComponent = (ctx: Ctx, input: MealComponentInput): ComponentDerived 
       custom_name: null,
       grams: null,
       servings: input.servings,
-      macros: scaleMacros(totals, input.servings / recipe.servings),
+      macros: scaleMacros(recipeTotalsById(ctx, input.recipe_id), input.servings / recipe.servings),
     };
   }
   if (input.ref === 'batch') {
@@ -143,19 +130,7 @@ const deriveComponent = (ctx: Ctx, input: MealComponentInput): ComponentDerived 
       custom_name: null,
       grams: input.grams,
       servings: null,
-      macros: scaleMacros(
-        {
-          kcal: batch.kcal_total,
-          protein_g: batch.protein_g_total,
-          carb_g: batch.carb_g_total,
-          fat_g: batch.fat_g_total,
-          fiber_g: batch.fiber_g_total,
-          sugar_g: batch.sugar_g_total,
-          sat_fat_g: batch.sat_fat_g_total,
-          sodium_mg: batch.sodium_mg_total,
-        },
-        input.grams / batch.total_grams,
-      ),
+      macros: batchMacrosForGrams(batch, input.grams),
     };
   }
   return {
@@ -535,36 +510,14 @@ export const updateMealComponent = (ctx: Ctx, args: UpdateMealComponentInput): M
         .prepare(
           'SELECT total_grams, kcal_total, protein_g_total, carb_g_total, fat_g_total, fiber_g_total, sugar_g_total, sat_fat_g_total, sodium_mg_total FROM batches WHERE id = ?',
         )
-        .get(existing.batch_id) as {
-        total_grams: number;
-        kcal_total: number;
-        protein_g_total: number;
-        carb_g_total: number;
-        fat_g_total: number;
-        fiber_g_total: number | null;
-        sugar_g_total: number | null;
-        sat_fat_g_total: number | null;
-        sodium_mg_total: number | null;
-      };
-      macros = scaleMacros(
-        {
-          kcal: batch.kcal_total,
-          protein_g: batch.protein_g_total,
-          carb_g: batch.carb_g_total,
-          fat_g: batch.fat_g_total,
-          fiber_g: batch.fiber_g_total,
-          sugar_g: batch.sugar_g_total,
-          sat_fat_g: batch.sat_fat_g_total,
-          sodium_mg: batch.sodium_mg_total,
-        },
-        args.grams / batch.total_grams,
-      );
+        .get(existing.batch_id) as BatchTotals;
+      macros = batchMacrosForGrams(batch, args.grams);
       newGrams = args.grams;
     } else if (args.servings !== undefined && existing.ref_kind === 'recipe_serving' && existing.recipe_id) {
       const recipe = ctx.db
         .prepare('SELECT servings FROM recipes WHERE id = ?')
         .get(existing.recipe_id) as { servings: number };
-      macros = scaleMacros(computeRecipeTotals(ctx, existing.recipe_id), args.servings / recipe.servings);
+      macros = scaleMacros(recipeTotalsById(ctx, existing.recipe_id), args.servings / recipe.servings);
       newServings = args.servings;
     }
     ctx.db

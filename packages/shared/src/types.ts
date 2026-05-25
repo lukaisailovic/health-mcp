@@ -33,7 +33,8 @@ export type DailySummary = {
     fiber_g: number | null;
     hydration_ml: number | null;
   };
-  entry_count: number;
+  meal_count: number;
+  component_count: number;
   avg_confidence: number | null;
   compare?: {
     kind: 'yesterday' | '7d_avg';

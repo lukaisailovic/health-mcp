@@ -313,7 +313,10 @@ const Today = () => {
               </p>
             </div>
             <Badge variant="muted">
-              {fmtNum(s.totals.entry_count, 0)} {s.totals.entry_count === 1 ? 'entry' : 'entries'}
+              {fmtNum(s.totals.meal_count, 0)} {s.totals.meal_count === 1 ? 'meal' : 'meals'}
+              {s.totals.component_count > s.totals.meal_count ? (
+                <span className="text-kumo-subtle"> · {fmtNum(s.totals.component_count, 0)} items</span>
+              ) : null}
             </Badge>
           </CardHeader>
           <CardContent className="pt-3">
