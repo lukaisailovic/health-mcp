@@ -29,7 +29,9 @@ type FormState = {
   protein_g_per_100g: string;
   carb_g_per_100g: string;
   fat_g_per_100g: string;
+  sat_fat_g_per_100g: string;
   fiber_g_per_100g: string;
+  sugar_g_per_100g: string;
   sodium_mg_per_100g: string;
 };
 
@@ -41,7 +43,9 @@ const empty: FormState = {
   protein_g_per_100g: '',
   carb_g_per_100g: '',
   fat_g_per_100g: '',
+  sat_fat_g_per_100g: '',
   fiber_g_per_100g: '',
+  sugar_g_per_100g: '',
   sodium_mg_per_100g: '',
 };
 
@@ -78,7 +82,9 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
         protein_g_per_100g: protein,
         carb_g_per_100g: carb,
         fat_g_per_100g: fat,
+        sat_fat_g_per_100g: numOrUndef(form.sat_fat_g_per_100g),
         fiber_g_per_100g: numOrUndef(form.fiber_g_per_100g),
+        sugar_g_per_100g: numOrUndef(form.sugar_g_per_100g),
         sodium_mg_per_100g: numOrUndef(form.sodium_mg_per_100g),
       },
     });
@@ -125,7 +131,9 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
           {renderField('protein_g_per_100g', 'Protein (g)')}
           {renderField('carb_g_per_100g', 'Carbs (g)')}
           {renderField('fat_g_per_100g', 'Fat (g)')}
+          {renderField('sat_fat_g_per_100g', 'Saturated fat (g)')}
           {renderField('fiber_g_per_100g', 'Fiber (g)')}
+          {renderField('sugar_g_per_100g', 'Sugar (g)')}
           {renderField('sodium_mg_per_100g', 'Sodium (mg)')}
         </form>
         <DialogFooter>

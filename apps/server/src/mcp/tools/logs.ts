@@ -1,3 +1,4 @@
+import { goalFieldSchema } from '@health-mcp/shared';
 import { z } from 'zod';
 import { getGoals, setGoals } from '../../services/goals.js';
 import {
@@ -108,15 +109,17 @@ export const logTools = [
   }),
   tool({
     name: 'set_goals',
-    description: 'Update one or more daily targets. Pass null to clear.',
+    description:
+      'Update one or more daily targets. Each macro accepts {min, max} bounds, a plain number (interpreted per macro: protein/fiber/hydration → floor, sat_fat → cap, kcal/carbs/fat → exact target), or null to clear.',
     group: 'goal',
     inputSchema: z.object({
-      kcal: z.number().nonnegative().nullable().optional(),
-      protein_g: z.number().nonnegative().nullable().optional(),
-      carb_g: z.number().nonnegative().nullable().optional(),
-      fat_g: z.number().nonnegative().nullable().optional(),
-      fiber_g: z.number().nonnegative().nullable().optional(),
-      hydration_ml: z.number().nonnegative().nullable().optional(),
+      kcal: goalFieldSchema.optional(),
+      protein_g: goalFieldSchema.optional(),
+      carb_g: goalFieldSchema.optional(),
+      fat_g: goalFieldSchema.optional(),
+      fiber_g: goalFieldSchema.optional(),
+      sat_fat_g: goalFieldSchema.optional(),
+      hydration_ml: goalFieldSchema.optional(),
       weight_kg_target: z.number().positive().nullable().optional(),
     }),
     handler: (args, ctx) => setGoals(ctx, args),

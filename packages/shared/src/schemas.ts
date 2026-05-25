@@ -116,15 +116,33 @@ export const updateMealComponentInputSchema = z.object({
 });
 export type UpdateMealComponentInput = z.infer<typeof updateMealComponentInputSchema>;
 
+export const goalBoundSchema = z
+  .object({
+    min: z.number().nonnegative().nullable().optional(),
+    max: z.number().nonnegative().nullable().optional(),
+  })
+  .refine((v) => v.min == null || v.max == null || v.min <= v.max, {
+    message: 'min must be <= max',
+  });
+export type GoalBoundInput = z.infer<typeof goalBoundSchema>;
+
+export const goalFieldSchema = z.union([
+  z.number().nonnegative(),
+  goalBoundSchema,
+  z.null(),
+]);
+
 export const goalsSchema = z.object({
-  kcal: z.number().nonnegative().nullable().optional(),
-  protein_g: z.number().nonnegative().nullable().optional(),
-  carb_g: z.number().nonnegative().nullable().optional(),
-  fat_g: z.number().nonnegative().nullable().optional(),
-  fiber_g: z.number().nonnegative().nullable().optional(),
-  hydration_ml: z.number().nonnegative().nullable().optional(),
+  kcal: goalFieldSchema.optional(),
+  protein_g: goalFieldSchema.optional(),
+  carb_g: goalFieldSchema.optional(),
+  fat_g: goalFieldSchema.optional(),
+  fiber_g: goalFieldSchema.optional(),
+  sat_fat_g: goalFieldSchema.optional(),
+  hydration_ml: goalFieldSchema.optional(),
   weight_kg_target: z.number().positive().nullable().optional(),
 });
+export type GoalsInput = z.infer<typeof goalsSchema>;
 
 export const recipeIngredientInputSchema = z
   .object({

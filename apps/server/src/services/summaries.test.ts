@@ -14,7 +14,12 @@ afterEach(() => closeCtx(ctx));
 
 describe('summaries', () => {
   it('daily summary aggregates intake + hydration and subtracts from goals', () => {
-    setGoals(ctx, { kcal: 2000, protein_g: 150, hydration_ml: 2500 });
+    setGoals(ctx, {
+      kcal: { min: 1900, max: 2100 },
+      protein_g: { min: 150 },
+      sat_fat_g: { max: 13 },
+      hydration_ml: { min: 2500 },
+    });
     const today = new Date().toISOString();
     const food = createCustomFood(ctx, {
       name: 'Bread',
@@ -30,7 +35,31 @@ describe('summaries', () => {
     const s = dailySummary(ctx);
     expect(s.totals.kcal).toBeCloseTo(500, 5);
     expect(s.totals.hydration_ml).toBe(500);
-    expect(s.remaining.kcal).toBeCloseTo(1500, 5);
-    expect(s.remaining.hydration_ml).toBe(2000);
+    expect(s.delta.kcal.status).toBe('under');
+    expect(s.delta.kcal.under).toBeCloseTo(1400, 5);
+    expect(s.delta.hydration_ml.status).toBe('under');
+    expect(s.delta.hydration_ml.under).toBe(2000);
+    expect(s.delta.sat_fat_g.status).toBe('in_range');
+  });
+
+  it('flags over-target macros via delta.over', () => {
+    setGoals(ctx, { sat_fat_g: { max: 5 } });
+    const food = createCustomFood(ctx, {
+      name: 'Butter',
+      nutrients_per_100g: {
+        kcal_per_100g: 717,
+        protein_g_per_100g: 1,
+        carb_g_per_100g: 0,
+        fat_g_per_100g: 81,
+        sat_fat_g_per_100g: 51,
+      },
+    });
+    logMeal(ctx, {
+      ts: new Date().toISOString(),
+      components: [{ ref: 'food', food_id: food.id, grams: 20 }],
+    });
+    const s = dailySummary(ctx);
+    expect(s.delta.sat_fat_g.status).toBe('over');
+    expect(s.delta.sat_fat_g.over).toBeGreaterThan(0);
   });
 });

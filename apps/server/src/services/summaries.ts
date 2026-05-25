@@ -1,6 +1,20 @@
+import type { GoalBound, GoalDelta } from '@health-mcp/shared/dto';
 import { nowIso, toLocalDate } from '../util/tz.js';
 import { getGoals } from './goals.js';
 import type { Ctx } from './types.js';
+
+const computeDelta = (actual: number, bound: GoalBound): GoalDelta => {
+  if (bound.min === null && bound.max === null) {
+    return { status: 'no_goal', under: null, over: null };
+  }
+  if (bound.min !== null && actual < bound.min) {
+    return { status: 'under', under: bound.min - actual, over: null };
+  }
+  if (bound.max !== null && actual > bound.max) {
+    return { status: 'over', under: null, over: actual - bound.max };
+  }
+  return { status: 'in_range', under: null, over: null };
+};
 
 export type DayTotals = {
   date: string;
@@ -89,13 +103,14 @@ export const dailySummary = (
   const date = args.date ?? toLocalDate(nowIso(), ctx.config.tz);
   const totals = dayTotals(ctx, date);
   const goals = getGoals(ctx);
-  const remaining = {
-    kcal: goals.kcal === null ? null : goals.kcal - totals.kcal,
-    protein_g: goals.protein_g === null ? null : goals.protein_g - totals.protein_g,
-    carb_g: goals.carb_g === null ? null : goals.carb_g - totals.carb_g,
-    fat_g: goals.fat_g === null ? null : goals.fat_g - totals.fat_g,
-    fiber_g: goals.fiber_g === null ? null : goals.fiber_g - totals.fiber_g,
-    hydration_ml: goals.hydration_ml === null ? null : goals.hydration_ml - totals.hydration_ml,
+  const delta = {
+    kcal: computeDelta(totals.kcal, goals.kcal),
+    protein_g: computeDelta(totals.protein_g, goals.protein_g),
+    carb_g: computeDelta(totals.carb_g, goals.carb_g),
+    fat_g: computeDelta(totals.fat_g, goals.fat_g),
+    fiber_g: computeDelta(totals.fiber_g, goals.fiber_g),
+    sat_fat_g: computeDelta(totals.sat_fat_g, goals.sat_fat_g),
+    hydration_ml: computeDelta(totals.hydration_ml, goals.hydration_ml),
   };
   let compare: { kind: 'yesterday' | '7d_avg'; totals: DayTotals } | undefined;
   if (args.compare_to === 'yesterday') {
@@ -119,7 +134,7 @@ export const dailySummary = (
     date,
     totals,
     goals,
-    remaining,
+    delta,
     compare,
   };
 };

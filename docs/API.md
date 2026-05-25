@@ -147,8 +147,10 @@ DELETE /api/measurements/:id
 
 ```http
 GET /api/goals
-PUT /api/goals      # any subset of: kcal, protein_g, carb_g, fat_g, fiber_g, hydration_ml, weight_kg_target — null clears
+PUT /api/goals      # any subset of: kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, hydration_ml — pass {min?, max?} bounds, a plain number (interpreted via per-macro default direction), or null to clear. weight_kg_target stays a single number.
 ```
+
+Each bounded macro returns `{ min: number | null, max: number | null }`. Default direction when a plain number is supplied: `protein_g`, `fiber_g`, `hydration_ml` → floor (`min`); `sat_fat_g` → cap (`max`); `kcal`, `carb_g`, `fat_g` → exact target (both `min` and `max`).
 
 ## Summaries
 
@@ -158,7 +160,7 @@ GET /api/summary/weekly?week_starting=YYYY-MM-DD
 GET /api/summary/range?start=&end=&bucket=day|week
 ```
 
-`daily` returns totals, current goals, remaining vs goals, optional compare block. `weekly` is `range` pinned to a week. `range` aggregates by day (default) or week.
+`daily` returns totals, current goals, a per-macro `delta: { status: 'under'|'in_range'|'over'|'no_goal', under: number|null, over: number|null }`, and an optional compare block. `weekly` is `range` pinned to a week. `range` aggregates by day (default) or week.
 
 ## Correlate
 

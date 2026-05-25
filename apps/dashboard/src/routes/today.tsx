@@ -248,26 +248,43 @@ const Today = () => {
 
   const s = summary.data;
   const macros = [
-    { label: 'kcal', current: s.totals.kcal, goal: s.goals.kcal, color: 'var(--color-kumo-brand)' },
+    {
+      label: 'kcal',
+      current: s.totals.kcal,
+      bound: s.goals.kcal,
+      status: s.delta.kcal.status,
+      color: 'var(--color-kumo-brand)',
+    },
     {
       label: 'protein',
       current: s.totals.protein_g,
-      goal: s.goals.protein_g,
+      bound: s.goals.protein_g,
+      status: s.delta.protein_g.status,
       color: 'var(--color-kumo-success)',
       unit: 'g',
     },
     {
       label: 'carbs',
       current: s.totals.carb_g,
-      goal: s.goals.carb_g,
+      bound: s.goals.carb_g,
+      status: s.delta.carb_g.status,
       color: 'var(--color-kumo-warning)',
       unit: 'g',
     },
     {
       label: 'fat',
       current: s.totals.fat_g,
-      goal: s.goals.fat_g,
+      bound: s.goals.fat_g,
+      status: s.delta.fat_g.status,
       color: 'var(--color-kumo-danger)',
+      unit: 'g',
+    },
+    {
+      label: 'sat fat',
+      current: s.totals.sat_fat_g ?? 0,
+      bound: s.goals.sat_fat_g,
+      status: s.delta.sat_fat_g.status,
+      color: 'var(--color-kumo-warning)',
       unit: 'g',
     },
   ];
@@ -354,12 +371,16 @@ const Today = () => {
                 <div className="mt-1.5 text-[26px] font-semibold leading-none tracking-tight tabular-nums text-kumo-strong">
                   {fmtNum(s.totals.hydration_ml)} ml
                 </div>
-                {s.goals.hydration_ml ? (
+                {s.goals.hydration_ml.min != null || s.goals.hydration_ml.max != null ? (
                   <div className="mt-1.5 flex flex-col gap-1 text-xs text-kumo-subtle">
-                    <span>goal {fmtNum(s.goals.hydration_ml)} ml</span>
+                    <span>
+                      {s.goals.hydration_ml.min != null
+                        ? `goal ≥ ${fmtNum(s.goals.hydration_ml.min)} ml`
+                        : `cap ≤ ${fmtNum(s.goals.hydration_ml.max ?? 0)} ml`}
+                    </span>
                     <ProgressBar
                       value={s.totals.hydration_ml}
-                      goal={s.goals.hydration_ml}
+                      goal={s.goals.hydration_ml.max ?? s.goals.hydration_ml.min ?? 0}
                       color="var(--color-kumo-brand)"
                     />
                   </div>

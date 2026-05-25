@@ -18,6 +18,7 @@ Migrations live in `apps/server/src/db/sql/000N-*.ts`. They run automatically on
 | `0006-oura.ts` | oura_* raw tables; seeds `wearable_providers` with `oura` |
 | `0007-biomarker-about.ts` | adds `why_it_matters`, `influences`, `how_to_improve` to `biomarkers` |
 | `0008-meals.ts` | drops `intake_entries` + old `remembered_meals`; creates `meals`, `meal_components`, `intake_v` view, new `remembered_meals` with `components_json` |
+| `0009-goals-bounds.ts` | rewrites `goals` to per-macro `_min` / `_max` columns; adds `sat_fat_g` bounds; back-fills old single-value goals via per-macro default direction |
 
 ## Nutrition
 
@@ -51,7 +52,7 @@ Flat read-only view consumed by `summaries.ts` (`SUM(kcal) … WHERE date = ?`) 
 Thin event tables. All carry `(id, ts, date, ..., notes, created_at)`. `measurements.kind` is freeform (e.g. `waist`, `chest`, `biceps`); `unit` is freeform but expected to be UCUM-ish (`cm`, `mm`, …).
 
 ### `goals`
-Singleton — `CHECK (id = 1)`. Seeded with a row of nulls by the first migration so `set_goals` is always an `UPDATE`. Columns: `kcal, protein_g, carb_g, fat_g, fiber_g, hydration_ml, weight_kg_target`.
+Singleton — `CHECK (id = 1)`. Seeded with a row of nulls by the first migration so `set_goals` is always an `UPDATE`. Each bounded macro stores two columns — `<macro>_min` and `<macro>_max` — so a goal can be a floor (only `_min`), a cap (only `_max`), or a target band (both). Bounded macros: `kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, hydration_ml`. `weight_kg_target` stays a single number. Migration `0009-goals-bounds` translates the old single-value columns: floor for protein/fiber/hydration, exact target (both bounds equal) for kcal/carbs/fat.
 
 ### `recipes`, `recipe_ingredients`
 - `recipes(id, name, servings, notes?, created_at, updated_at)`

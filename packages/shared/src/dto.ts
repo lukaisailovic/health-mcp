@@ -23,13 +23,24 @@ export type HealthProbe = {
   };
 };
 
+export type GoalBound = { min: number | null; max: number | null };
+
+export type GoalStatus = 'under' | 'in_range' | 'over' | 'no_goal';
+
+export type GoalDelta = {
+  status: GoalStatus;
+  under: number | null;
+  over: number | null;
+};
+
 export type GoalsDto = {
-  kcal: number | null;
-  protein_g: number | null;
-  carb_g: number | null;
-  fat_g: number | null;
-  fiber_g: number | null;
-  hydration_ml: number | null;
+  kcal: GoalBound;
+  protein_g: GoalBound;
+  carb_g: GoalBound;
+  fat_g: GoalBound;
+  fiber_g: GoalBound;
+  sat_fat_g: GoalBound;
+  hydration_ml: GoalBound;
   weight_kg_target: number | null;
   updated_at: string;
 };
@@ -124,13 +135,14 @@ export type DailySummaryDto = {
     avg_confidence: number | null;
   };
   goals: GoalsDto;
-  remaining: {
-    kcal: number | null;
-    protein_g: number | null;
-    carb_g: number | null;
-    fat_g: number | null;
-    fiber_g: number | null;
-    hydration_ml: number | null;
+  delta: {
+    kcal: GoalDelta;
+    protein_g: GoalDelta;
+    carb_g: GoalDelta;
+    fat_g: GoalDelta;
+    fiber_g: GoalDelta;
+    sat_fat_g: GoalDelta;
+    hydration_ml: GoalDelta;
   };
   compare?: {
     kind: 'yesterday' | '7d_avg';
