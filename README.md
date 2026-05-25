@@ -8,10 +8,10 @@ Designed for single-user, self-hosted use. SQLite-backed. Local-first. No AI pro
 
 ## What works today
 
-- **Nutrition** — foods (manual + USDA + Open Food Facts), recipes, cooked batches with depletion across days, intake entries, hydration, weight, body measurements, daily macro goals.
+- **Nutrition** — foods (manual + USDA + Open Food Facts), recipes, cooked batches with depletion across days, meals (one or more components per meal), hydration, weight, body measurements, daily macro goals.
 - **Biomarkers** — ~60 seeded biomarkers with LOINC codes and curated ranges, lab panels + results over time, three-range model (lab-supplied / per-marker default / curated optimal), unit conversion for the common dual-unit markers, trend + latest-value queries.
 - **Recipes & batches** — recipes scale to per-serving macros, batches deplete as you log meals against them, atomic batch updates inside `log_meal`.
-- **Remembered meals** — label re-loggable meals (canonical text for agent re-estimation, or pre-resolved items).
+- **Remembered meals** — label re-loggable meals (canonical text for agent re-estimation, or pre-resolved components).
 - **Wearables** — provider-agnostic abstraction with Whoop and Oura OAuth2 providers (raw + normalized tables, refresh-token rotation, per-provider mutex, signed-state callback).
 - **Three surfaces, one service layer** — MCP Streamable-HTTP at `/mcp`, MCP stdio mode behind `--stdio`, REST at `/api/*`, and the dashboard SPA at `/`. Service modules in `src/services/` are the only place business logic lives.
 - **Capability-gated tools** — Whoop and wearable tools are hidden until a provider is linked; remembered-meal read tools are hidden until at least one is saved. Keeps the agent's tool surface small.
