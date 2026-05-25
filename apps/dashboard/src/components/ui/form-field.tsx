@@ -7,7 +7,6 @@ type FormFieldProps = {
   htmlFor?: string;
   description?: ReactNode;
   error?: ReactNode;
-  suffix?: ReactNode;
   className?: string;
   children: ReactNode;
 } & Omit<HTMLAttributes<HTMLDivElement>, 'children'>;
@@ -17,21 +16,13 @@ export const FormField = ({
   htmlFor,
   description,
   error,
-  suffix,
   className,
   children,
   ...rest
 }: FormFieldProps) => (
   <div className={cn('flex flex-col gap-2', className)} {...rest}>
     <Label htmlFor={htmlFor}>{label}</Label>
-    {suffix ? (
-      <div className="flex items-center gap-2">
-        <div className="flex-1">{children}</div>
-        <span className="shrink-0 text-xs text-kumo-subtle">{suffix}</span>
-      </div>
-    ) : (
-      children
-    )}
+    {children}
     {error ? (
       <p className="text-xs text-kumo-danger" role="alert">
         {error}
