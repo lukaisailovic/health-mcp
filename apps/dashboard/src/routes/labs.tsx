@@ -44,28 +44,28 @@ const BiomarkerTrendChart = ({ id }: { id: string }) => {
   return (
     <ResponsiveContainer width="100%" height={220}>
       <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-        <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
-        <XAxis dataKey="ts" fontSize={10} stroke="hsl(var(--muted-foreground))" />
-        <YAxis fontSize={10} stroke="hsl(var(--muted-foreground))" width={36} />
+        <CartesianGrid stroke="var(--color-kumo-line)" strokeDasharray="3 3" />
+        <XAxis dataKey="ts" fontSize={10} stroke="var(--text-color-kumo-subtle)" />
+        <YAxis fontSize={10} stroke="var(--text-color-kumo-subtle)" width={36} />
         <Tooltip
           contentStyle={{
-            background: 'hsl(var(--card))',
-            border: '1px solid hsl(var(--border))',
+            background: 'var(--color-kumo-base)',
+            border: '1px solid var(--color-kumo-line)',
             borderRadius: 8,
             fontSize: 12,
           }}
           formatter={(v: number) => [`${fmtNum(v, 2)} ${b?.default_unit_ucum ?? ''}`, b?.name ?? '']}
         />
         {b?.optimal_low != null ? (
-          <ReferenceLine y={b.optimal_low} stroke="hsl(var(--ok))" strokeDasharray="3 3" />
+          <ReferenceLine y={b.optimal_low} stroke="var(--color-kumo-success)" strokeDasharray="3 3" />
         ) : null}
         {b?.optimal_high != null ? (
-          <ReferenceLine y={b.optimal_high} stroke="hsl(var(--ok))" strokeDasharray="3 3" />
+          <ReferenceLine y={b.optimal_high} stroke="var(--color-kumo-success)" strokeDasharray="3 3" />
         ) : null}
         <Line
           type="monotone"
           dataKey="value"
-          stroke="hsl(var(--primary))"
+          stroke="var(--color-kumo-brand)"
           strokeWidth={2}
           dot={{ r: 3 }}
           isAnimationActive={false}
@@ -133,11 +133,11 @@ const Labs = () => {
                       type="button"
                       key={row.biomarker.id}
                       onClick={() => setSelected(row.biomarker.id)}
-                      className="flex items-center justify-between gap-2 rounded-md border p-3 text-left text-sm hover:bg-accent"
+                      className="flex items-center justify-between gap-2 rounded-md border border-kumo-line p-3 text-left text-sm transition-colors hover:bg-kumo-info-tint"
                     >
                       <div className="min-w-0 space-y-1">
                         <div className="truncate font-medium">{row.biomarker.name}</div>
-                        <div className="text-xs tabular-nums text-muted-foreground">
+                        <div className="text-xs tabular-nums text-kumo-subtle">
                           {row.result.value_numeric != null
                             ? `${fmtNum(row.result.value_numeric, 2)} ${row.result.unit_ucum}`
                             : (row.result.value_text ?? '—')}
@@ -164,11 +164,11 @@ const Labs = () => {
             ) : !panels.data?.length ? (
               <Empty title="No panels logged" />
             ) : (
-              <ul className="divide-y">
+              <ul className="divide-y divide-kumo-line">
                 {panels.data.map((p) => (
                   <li key={p.id} className="py-2 text-sm">
                     <div className="font-medium">{p.name ?? p.lab_name ?? 'Panel'}</div>
-                    <div className="text-xs text-muted-foreground">{fmtDate(p.drawn_at)}</div>
+                    <div className="text-xs text-kumo-subtle">{fmtDate(p.drawn_at)}</div>
                   </li>
                 ))}
               </ul>

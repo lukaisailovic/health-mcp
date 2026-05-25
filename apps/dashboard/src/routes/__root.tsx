@@ -39,7 +39,7 @@ const RootGate = () => {
       <div className="grid min-h-screen place-items-center">
         <div className="space-y-1 text-center">
           <p className="text-sm font-medium">Server unreachable</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-kumo-subtle">
             Is health-mcp running? Default URL is http://localhost:7777
           </p>
         </div>
@@ -56,7 +56,7 @@ export const Route = createRootRoute({
   component: RootGate,
   notFoundComponent: () => (
     <div className="grid min-h-screen place-items-center">
-      <p className="text-sm text-muted-foreground">Not found.</p>
+      <p className="text-sm text-kumo-subtle">Not found.</p>
     </div>
   ),
 });

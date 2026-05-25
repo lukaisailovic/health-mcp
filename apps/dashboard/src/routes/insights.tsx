@@ -85,7 +85,7 @@ const parseFilter = (raw: string): Record<string, string> | undefined => {
 };
 
 const selectClass =
-  't-input h-9 w-full rounded-md border border-input bg-surface px-2 text-sm shadow-soft transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  't-input h-9 w-full rounded-md border border-kumo-line bg-kumo-elevated px-2 text-sm transition-colors hover:border-kumo-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kumo-focus';
 
 const correlationTone = (r: number | null): 'ok' | 'warn' | 'bad' | 'default' => {
   if (r === null) return 'default';
@@ -116,21 +116,21 @@ const Stat = ({
   tone?: 'ok' | 'warn' | 'bad' | 'default';
   sub?: string;
 }) => (
-  <div className="rounded-lg border bg-surface px-4 py-3">
-    <div className="text-[10px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+  <div className="rounded-lg border border-kumo-line bg-kumo-elevated px-4 py-3">
+    <div className="text-[10px] font-medium uppercase tracking-[0.1em] text-kumo-subtle">
       {label}
     </div>
     <div
       className={cn(
         'mt-1 text-2xl font-semibold tabular-nums tracking-tight',
-        tone === 'ok' && 'text-ok',
-        tone === 'warn' && 'text-warn',
-        tone === 'bad' && 'text-bad',
+        tone === 'ok' && 'text-kumo-success',
+        tone === 'warn' && 'text-kumo-warning',
+        tone === 'bad' && 'text-kumo-danger',
       )}
     >
       {value}
     </div>
-    {sub ? <div className="mt-0.5 text-[11px] text-muted-foreground">{sub}</div> : null}
+    {sub ? <div className="mt-0.5 text-[11px] text-kumo-subtle">{sub}</div> : null}
   </div>
 );
 
@@ -143,7 +143,7 @@ const ChipToggle = <T extends string>({
   options: readonly T[];
   onChange: (v: T) => void;
 }) => (
-  <div className="inline-flex w-full rounded-md border bg-surface p-0.5 shadow-soft">
+  <div className="inline-flex w-full rounded-md border border-kumo-line bg-kumo-elevated p-0.5">
     {options.map((opt) => {
       const active = value === opt;
       return (
@@ -154,8 +154,8 @@ const ChipToggle = <T extends string>({
           className={cn(
             'flex-1 rounded-[5px] px-2.5 py-1 text-xs font-medium capitalize transition-colors',
             active
-              ? 'bg-card text-foreground shadow-soft ring-1 ring-foreground/5 dark:ring-white/5'
-              : 'text-muted-foreground hover:text-foreground',
+              ? 'bg-kumo-base text-kumo-default ring-1 ring-kumo-line'
+              : 'text-kumo-subtle hover:text-kumo-default',
           )}
         >
           {opt}
@@ -180,17 +180,17 @@ const SpecPicker = ({
   sources: Array<{ source: string; fields: string[] }>;
   fieldsFor: (source: string) => string[];
 }) => (
-  <div className="space-y-2 rounded-lg border bg-surface-2 p-3">
+  <div className="space-y-2 rounded-lg border border-kumo-line bg-kumo-tint p-3">
     <div className="flex items-center gap-2">
       <span
         className={cn(
           'grid h-5 w-5 place-items-center rounded-md text-[10px] font-semibold',
-          badgeColor === 'primary' ? 'bg-primary/15 text-primary' : 'bg-ok-bg text-ok',
+          badgeColor === 'primary' ? 'bg-kumo-info-tint text-kumo-brand' : 'bg-kumo-success-tint text-kumo-success',
         )}
       >
         {label}
       </span>
-      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <span className="text-xs font-medium uppercase tracking-wide text-kumo-subtle">
         Series {label}
       </span>
     </div>
@@ -243,31 +243,31 @@ const Explainer = () => (
   <Card>
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
-        <HelpCircle className="h-4 w-4 text-primary" />
+        <HelpCircle className="h-4 w-4 text-kumo-brand" />
         How Insights works
       </CardTitle>
     </CardHeader>
-    <CardContent className="space-y-3 text-sm text-muted-foreground">
+    <CardContent className="space-y-3 text-sm text-kumo-subtle">
       <p>
         Pick any two time series — calories, sleep score, HRV, hydration, labs — and we compute the{' '}
-        <span className="font-medium text-foreground">correlation</span> over a date range.
+        <span className="font-medium text-kumo-default">correlation</span> over a date range.
         The result is a number{' '}
-        <span className="font-mono text-foreground">r ∈ [−1, 1]</span> telling you how tightly the two
+        <span className="font-mono text-kumo-default">r ∈ [−1, 1]</span> telling you how tightly the two
         move together.
       </p>
       <ul className="grid gap-2 sm:grid-cols-3">
-        <li className="rounded-md border bg-surface px-3 py-2 text-xs">
-          <span className="font-semibold text-ok">|r| ≥ 0.5</span> · moves together a lot
+        <li className="rounded-md border border-kumo-line bg-kumo-elevated px-3 py-2 text-xs">
+          <span className="font-semibold text-kumo-success">|r| ≥ 0.5</span> · moves together a lot
         </li>
-        <li className="rounded-md border bg-surface px-3 py-2 text-xs">
-          <span className="font-semibold text-warn">0.3 – 0.5</span> · weak link
+        <li className="rounded-md border border-kumo-line bg-kumo-elevated px-3 py-2 text-xs">
+          <span className="font-semibold text-kumo-warning">0.3 – 0.5</span> · weak link
         </li>
-        <li className="rounded-md border bg-surface px-3 py-2 text-xs">
-          <span className="font-semibold text-bad">&lt; 0.3</span> · essentially unrelated
+        <li className="rounded-md border border-kumo-line bg-kumo-elevated px-3 py-2 text-xs">
+          <span className="font-semibold text-kumo-danger">&lt; 0.3</span> · essentially unrelated
         </li>
       </ul>
       <p className="text-xs">
-        Use <span className="font-medium text-foreground">lag</span> when one signal should
+        Use <span className="font-medium text-kumo-default">lag</span> when one signal should
         precede the other — e.g. yesterday&apos;s calories vs. today&apos;s sleep is lag 1 (day).
         Correlation is not causation; treat this as a hint, not a verdict.
       </p>
@@ -334,6 +334,7 @@ const Insights = () => {
 
   const chartData = run.data?.pairs ?? [];
   const rTone = correlationTone(run.data?.r ?? null);
+  const sources = metrics.data ?? [];
 
   return (
     <>
@@ -348,7 +349,7 @@ const Insights = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-warn" /> Quick examples
+                <Lightbulb className="h-4 w-4 text-kumo-warning" /> Quick examples
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -358,13 +359,13 @@ const Insights = () => {
                     key={ex.title}
                     type="button"
                     onClick={() => applyExample(ex)}
-                    className="group flex flex-col items-start gap-1 rounded-lg border bg-surface p-3 text-left transition-all hover:-translate-y-px hover:border-border-strong hover:shadow-lift"
+                    className="group flex flex-col items-start gap-1 rounded-lg border border-kumo-line bg-kumo-elevated p-3 text-left transition-[transform,border-color] hover:-translate-y-px hover:border-kumo-strong"
                   >
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-kumo-default">
                       {ex.title}
-                      <ArrowRight className="h-3 w-3 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                      <ArrowRight className="h-3 w-3 -translate-x-1 opacity-0 transition-[transform,opacity] group-hover:translate-x-0 group-hover:opacity-100" />
                     </span>
-                    <span className="text-xs text-muted-foreground">{ex.question}</span>
+                    <span className="text-xs text-kumo-subtle">{ex.question}</span>
                   </button>
                 ))}
               </div>
@@ -376,7 +377,7 @@ const Insights = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" /> Configure
+                <Sparkles className="h-4 w-4 text-kumo-brand" /> Configure
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -386,7 +387,7 @@ const Insights = () => {
                   badgeColor="primary"
                   spec={a}
                   onChange={setA}
-                  sources={metrics.data ?? []}
+                  sources={sources}
                   fieldsFor={fieldsFor}
                 />
                 <SpecPicker
@@ -394,11 +395,11 @@ const Insights = () => {
                   badgeColor="ok"
                   spec={b}
                   onChange={setB}
-                  sources={metrics.data ?? []}
+                  sources={sources}
                   fieldsFor={fieldsFor}
                 />
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="i-start">Start</Label>
                     <Input
                       id="i-start"
@@ -407,7 +408,7 @@ const Insights = () => {
                       onChange={(e) => setStart(e.target.value)}
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Label htmlFor="i-end">End</Label>
                     <Input
                       id="i-end"
@@ -416,18 +417,18 @@ const Insights = () => {
                       onChange={(e) => setEnd(e.target.value)}
                     />
                   </div>
-                  <div className="col-span-2 space-y-1.5">
+                  <div className="col-span-2 space-y-2">
                     <Label>Bucket size</Label>
                     <ChipToggle value={bucket} options={BUCKETS} onChange={setBucket} />
                   </div>
-                  <div className="col-span-2 space-y-1.5">
+                  <div className="col-span-2 space-y-2">
                     <Label>Method</Label>
                     <ChipToggle value={method} options={METHODS} onChange={setMethod} />
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[11px] text-kumo-subtle">
                       Pearson assumes linear; Spearman is rank-based and robust to outliers.
                     </p>
                   </div>
-                  <div className="col-span-2 space-y-1.5">
+                  <div className="col-span-2 space-y-2">
                     <Label htmlFor="i-lag">Lag (in {bucket}s)</Label>
                     <Input
                       id="i-lag"
@@ -436,7 +437,7 @@ const Insights = () => {
                       value={lag}
                       onChange={(e) => setLag(Number(e.target.value) || 0)}
                     />
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[11px] text-kumo-subtle">
                       Positive lag shifts A back, so it tests whether A leads B.
                     </p>
                   </div>
@@ -445,7 +446,7 @@ const Insights = () => {
                   {run.isPending ? <Spinner /> : 'Compute correlation'}
                 </Button>
                 {run.isError ? (
-                  <p className="text-xs text-bad">{(run.error as Error).message}</p>
+                  <p className="text-xs text-kumo-danger">{(run.error as Error).message}</p>
                 ) : null}
               </form>
             </CardContent>
@@ -483,11 +484,11 @@ const Insights = () => {
                     />
                   </div>
                   {chartData.length > 0 ? (
-                    <div className="rounded-lg border bg-surface p-2 sm:p-3">
+                    <div className="rounded-lg border border-kumo-line bg-kumo-elevated p-2 sm:p-3">
                       <ResponsiveContainer width="100%" height={260}>
                         <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
                           <CartesianGrid
-                            stroke="hsl(var(--border))"
+                            stroke="var(--color-kumo-line)"
                             strokeDasharray="2 4"
                             vertical={false}
                             opacity={0.6}
@@ -497,7 +498,7 @@ const Insights = () => {
                             fontSize={10}
                             axisLine={false}
                             tickLine={false}
-                            stroke="hsl(var(--muted-foreground))"
+                            stroke="var(--text-color-kumo-subtle)"
                             tickMargin={6}
                           />
                           <YAxis
@@ -505,7 +506,7 @@ const Insights = () => {
                             fontSize={10}
                             axisLine={false}
                             tickLine={false}
-                            stroke="hsl(var(--primary))"
+                            stroke="var(--color-kumo-brand)"
                             width={36}
                           />
                           <YAxis
@@ -514,21 +515,20 @@ const Insights = () => {
                             fontSize={10}
                             axisLine={false}
                             tickLine={false}
-                            stroke="hsl(var(--ok))"
+                            stroke="var(--color-kumo-success)"
                             width={36}
                           />
                           <Tooltip
                             contentStyle={{
-                              background: 'hsl(var(--card))',
-                              border: '1px solid hsl(var(--border))',
+                              background: 'var(--color-kumo-base)',
+                              border: '1px solid var(--color-kumo-line)',
                               borderRadius: 10,
-                              boxShadow: 'var(--shadow-lift)',
                               fontSize: 12,
                             }}
-                            labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 500 }}
-                            itemStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                            labelStyle={{ color: 'var(--text-color-kumo-default)', fontWeight: 500 }}
+                            itemStyle={{ color: 'var(--text-color-kumo-subtle)' }}
                             cursor={{
-                              stroke: 'hsl(var(--border-strong))',
+                              stroke: 'var(--color-kumo-line)',
                               strokeDasharray: '3 3',
                             }}
                           />
@@ -537,7 +537,7 @@ const Insights = () => {
                             type="monotone"
                             dataKey="a"
                             name={`${a.source}.${a.field}`}
-                            stroke="hsl(var(--primary))"
+                            stroke="var(--color-kumo-brand)"
                             dot={false}
                             strokeWidth={2}
                             activeDot={{ r: 4 }}
@@ -547,27 +547,27 @@ const Insights = () => {
                             type="monotone"
                             dataKey="b"
                             name={`${b.source}.${b.field}`}
-                            stroke="hsl(var(--ok))"
+                            stroke="var(--color-kumo-success)"
                             dot={false}
                             strokeWidth={2}
                             activeDot={{ r: 4 }}
                           />
                         </LineChart>
                       </ResponsiveContainer>
-                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-kumo-subtle">
                         <span className="flex items-center gap-1.5">
-                          <span className="h-2 w-2 rounded-full bg-primary" /> {a.source}.{a.field}
+                          <span className="h-2 w-2 rounded-full bg-kumo-brand" /> {a.source}.{a.field}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <span className="h-2 w-2 rounded-full bg-ok" /> {b.source}.{b.field}
+                          <span className="h-2 w-2 rounded-full bg-kumo-success" /> {b.source}.{b.field}
                         </span>
                       </div>
                     </div>
                   ) : null}
                   {run.data.r !== null && run.data.n >= 7 ? (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-kumo-subtle">
                       Reading: {a.source}.{a.field} shows a{' '}
-                      <span className="font-medium text-foreground">{correlationLabel(run.data.r)}</span>{' '}
+                      <span className="font-medium text-kumo-default">{correlationLabel(run.data.r)}</span>{' '}
                       relationship with {b.source}.{b.field}
                       {run.data.lag_buckets > 0
                         ? ` at lag ${run.data.lag_buckets} ${run.data.bucket}`

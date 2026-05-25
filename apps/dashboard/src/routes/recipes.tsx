@@ -25,16 +25,16 @@ const RecipeDetail = ({ id }: { id: string }) => {
         <CardTitle>{recipe.name}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-3 rounded-md bg-muted/50 p-4 text-xs">
+        <div className="grid grid-cols-2 gap-3 rounded-md bg-kumo-fill p-4 text-xs">
           <div>
-            <div className="uppercase tracking-wide text-muted-foreground">Total</div>
+            <div className="uppercase tracking-wide text-kumo-subtle">Total</div>
             <div className="mt-0.5 font-semibold tabular-nums">
               {fmtNum(total.kcal, 0)} kcal · P {fmtNum(total.protein_g, 1)} · C{' '}
               {fmtNum(total.carb_g, 1)} · F {fmtNum(total.fat_g, 1)}
             </div>
           </div>
           <div>
-            <div className="uppercase tracking-wide text-muted-foreground">
+            <div className="uppercase tracking-wide text-kumo-subtle">
               Per serving ({recipe.servings})
             </div>
             <div className="mt-0.5 font-semibold tabular-nums">
@@ -43,13 +43,13 @@ const RecipeDetail = ({ id }: { id: string }) => {
             </div>
           </div>
         </div>
-        <ul className="divide-y">
+        <ul className="divide-y divide-kumo-line">
           {ingredients.map((i) => (
             <li key={i.id} className="flex items-center justify-between py-2 text-sm">
               <span className="truncate">
                 {i.free_text_name ?? <code className="text-xs">{i.food_id}</code>}
               </span>
-              <span className="text-xs tabular-nums text-muted-foreground">{fmtNum(i.grams, 0)} g</span>
+              <span className="text-xs tabular-nums text-kumo-subtle">{fmtNum(i.grams, 0)} g</span>
             </li>
           ))}
         </ul>
@@ -95,7 +95,7 @@ const Recipes = () => {
                         onClick={() => setSelected(r.id)}
                       >
                         <span className="truncate">{r.name}</span>
-                        <span className="ml-2 shrink-0 text-xs text-muted-foreground">
+                        <span className="ml-2 shrink-0 text-xs text-kumo-subtle">
                           {r.servings} svg
                         </span>
                       </Button>

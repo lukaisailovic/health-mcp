@@ -1,19 +1,25 @@
-import { type InputHTMLAttributes, forwardRef } from 'react';
+import { Input as KumoInput } from '@cloudflare/kumo';
+import type { ComponentProps, ForwardedRef } from 'react';
+import { forwardRef } from 'react';
 import { cn } from '@/lib/cn';
 
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
-  ({ className, type, ...props }, ref) => {
-    return (
-      <input
-        type={type}
-        className={cn(
-          't-input flex h-9 w-full rounded-md border border-input bg-surface px-3 py-2 text-sm shadow-soft transition-[box-shadow,border-color] file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/70 hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50',
-          className,
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
-  },
+type KumoInputProps = ComponentProps<typeof KumoInput>;
+
+export type InputProps = KumoInputProps;
+
+const InputBase = (
+  { className, size = 'sm', ...props }: InputProps,
+  ref: ForwardedRef<HTMLInputElement>,
+) => (
+  // biome-ignore lint/suspicious/noExplicitAny: Kumo Input ref typing through forwardRef
+  <KumoInput
+    ref={ref as never}
+    size={size}
+    className={cn('t-input', className)}
+    {...props}
+  />
 );
+
+export const Input: ReturnType<typeof forwardRef<HTMLInputElement, InputProps>> =
+  forwardRef(InputBase);
 Input.displayName = 'Input';

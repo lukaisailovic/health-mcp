@@ -7,19 +7,19 @@ import { cn } from '@/lib/cn';
 type Tone = 'default' | 'ok' | 'warn' | 'bad' | 'primary';
 
 const toneIconBg: Record<Tone, string> = {
-  default: 'bg-muted text-muted-foreground',
-  primary: 'bg-primary/15 text-primary',
-  ok: 'bg-ok-bg text-ok',
-  warn: 'bg-warn-bg text-warn',
-  bad: 'bg-bad-bg text-bad',
+  default: 'bg-kumo-fill text-kumo-default',
+  primary: 'bg-kumo-info-tint text-kumo-info',
+  ok: 'bg-kumo-success-tint text-kumo-success',
+  warn: 'bg-kumo-warning-tint text-kumo-warning',
+  bad: 'bg-kumo-danger-tint text-kumo-danger',
 };
 
 const toneValueColor: Record<Tone, string> = {
-  default: 'text-foreground',
-  primary: 'text-foreground',
-  ok: 'text-ok',
-  warn: 'text-warn',
-  bad: 'text-bad',
+  default: 'text-kumo-strong',
+  primary: 'text-kumo-strong',
+  ok: 'text-kumo-success',
+  warn: 'text-kumo-warning',
+  bad: 'text-kumo-danger',
 };
 
 export const StatCard = ({
@@ -37,17 +37,13 @@ export const StatCard = ({
   tone?: Tone;
   className?: string;
 }) => {
-  const stringValue = typeof value === 'string' || typeof value === 'number' ? String(value) : null;
+  const stringValue =
+    typeof value === 'string' || typeof value === 'number' ? String(value) : null;
   return (
-    <Card
-      className={cn(
-        'group transition-[transform,box-shadow] duration-200 hover:-translate-y-px hover:shadow-lift',
-        className,
-      )}
-    >
+    <Card className={cn('transition-colors hover:bg-kumo-elevated', className)}>
       <div className="flex items-start justify-between gap-3 px-5 py-4">
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          <div className="text-[11px] font-medium uppercase tracking-[0.08em] text-kumo-subtle">
             {label}
           </div>
           <div
@@ -58,10 +54,15 @@ export const StatCard = ({
           >
             {stringValue !== null ? <AnimatedNumber value={stringValue} /> : value}
           </div>
-          {hint ? <div className="mt-1.5 text-xs text-muted-foreground">{hint}</div> : null}
+          {hint ? <div className="mt-1.5 text-xs text-kumo-subtle">{hint}</div> : null}
         </div>
         {Icon ? (
-          <div className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-lg', toneIconBg[tone])}>
+          <div
+            className={cn(
+              'grid h-8 w-8 shrink-0 place-items-center rounded-md',
+              toneIconBg[tone],
+            )}
+          >
             <Icon className="h-4 w-4" />
           </div>
         ) : null}

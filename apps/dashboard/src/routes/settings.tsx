@@ -33,7 +33,7 @@ const TokenSection = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row sm:items-end">
-          <div className="flex-1 space-y-1.5">
+          <div className="flex-1 space-y-2">
             <Label htmlFor="token">token</Label>
             <Input
               id="token"
@@ -60,9 +60,9 @@ const TokenSection = () => {
             </Button>
           </div>
         </form>
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 text-xs text-kumo-subtle">
           Stored in your browser&apos;s localStorage only. Sent as
-          <code className="mx-1 rounded bg-muted px-1.5 py-0.5">Authorization: Bearer</code>
+          <code className="mx-1 rounded bg-kumo-fill px-1.5 py-0.5">Authorization: Bearer</code>
           on every /api/* call.
         </p>
       </CardContent>
@@ -71,8 +71,8 @@ const TokenSection = () => {
 };
 
 const ProbeRow = ({ label, value }: { label: string; value: ReactNode }) => (
-  <li className="flex items-center justify-between gap-3 border-t border-border/60 py-2 first:border-t-0">
-    <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+  <li className="flex items-center justify-between gap-3 border-t border-kumo-line py-2 first:border-t-0">
+    <span className="text-xs uppercase tracking-wide text-kumo-subtle">{label}</span>
     <span className="truncate text-right text-sm tabular-nums">{value}</span>
   </li>
 );
@@ -97,13 +97,13 @@ const ServerSection = () => {
                 <span
                   className={cn(
                     'absolute inline-flex h-full w-full rounded-full opacity-70',
-                    ok ? 'bg-ok animate-ping' : 'bg-bad',
+                    ok ? 'bg-kumo-success animate-ping' : 'bg-kumo-danger',
                   )}
                 />
                 <span
                   className={cn(
                     'relative inline-flex h-1.5 w-1.5 rounded-full',
-                    ok ? 'bg-ok' : 'bg-bad',
+                    ok ? 'bg-kumo-success' : 'bg-kumo-danger',
                   )}
                 />
               </span>
@@ -125,9 +125,9 @@ const ServerSection = () => {
         {probe.isLoading ? (
           <Spinner />
         ) : probe.isError ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-kumo-subtle">
             Unreachable. Is health-mcp running on{' '}
-            <code className="rounded bg-muted px-1 py-0.5">localhost:7777</code>?
+            <code className="rounded bg-kumo-fill px-1 py-0.5">localhost:7777</code>?
           </p>
         ) : probe.data ? (
           <ul className="space-y-0">
@@ -135,7 +135,7 @@ const ServerSection = () => {
             <ProbeRow
               label="database"
               value={
-                <span className={cn('capitalize', probe.data.db === 'up' ? 'text-ok' : 'text-bad')}>
+                <span className={cn('capitalize', probe.data.db === 'up' ? 'text-kumo-success' : 'text-kumo-danger')}>
                   {probe.data.db}
                 </span>
               }
@@ -145,7 +145,7 @@ const ServerSection = () => {
               label="auth required"
               value={
                 <span className="inline-flex items-center gap-1.5">
-                  {probe.data.auth_required ? <ShieldCheck className="h-3.5 w-3.5 text-ok" /> : null}
+                  {probe.data.auth_required ? <ShieldCheck className="h-3.5 w-3.5 text-kumo-success" /> : null}
                   {probe.data.auth_required ? 'yes' : 'no'}
                 </span>
               }

@@ -28,19 +28,13 @@ const Ring = ({
     <div className="flex flex-col items-center gap-2">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90 overflow-visible">
-          <defs>
-            <linearGradient id={`ring-${macro.label}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={macro.color} stopOpacity={1} />
-              <stop offset="100%" stopColor={macro.color} stopOpacity={0.6} />
-            </linearGradient>
-          </defs>
           <circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
             fill="none"
             strokeWidth={stroke}
-            className="stroke-muted"
+            stroke="var(--color-kumo-fill)"
           />
           <circle
             cx={size / 2}
@@ -51,11 +45,8 @@ const Ring = ({
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (1 - ratio)}
-            stroke={`url(#ring-${macro.label})`}
-            style={{
-              transition: 'stroke-dashoffset 480ms cubic-bezier(0.22, 1, 0.36, 1)',
-              filter: `drop-shadow(0 0 6px ${macro.color}40)`,
-            }}
+            stroke={macro.color}
+            style={{ transition: 'stroke-dashoffset 480ms cubic-bezier(0.22, 1, 0.36, 1)' }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
@@ -63,22 +54,22 @@ const Ring = ({
             <AnimatedNumber value={fmtNum(macro.current, valueDigits)} />
           </span>
           {macro.goal !== null ? (
-            <span className="mt-1 text-[10px] font-medium tabular-nums text-muted-foreground">
+            <span className="mt-1 text-[10px] font-medium tabular-nums text-kumo-subtle">
               {Math.round(ratio * 100)}% · {fmtNum(macro.goal, 0)}
               {macro.unit ?? ''}
             </span>
           ) : null}
         </div>
       </div>
-      <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+      <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-kumo-subtle">
         {macro.label}
       </span>
     </div>
   );
 };
 
-const HERO_VALUE_CLASS = 'text-2xl font-semibold tabular-nums';
-const SMALL_VALUE_CLASS = 'text-base font-semibold tabular-nums';
+const HERO_VALUE_CLASS = 'text-2xl font-semibold tabular-nums text-kumo-strong';
+const SMALL_VALUE_CLASS = 'text-base font-semibold tabular-nums text-kumo-strong';
 
 export const MacroRings = ({ macros }: { macros: Macro[] }) => {
   if (macros.length === 0) return null;

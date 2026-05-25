@@ -1,4 +1,4 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { Dialog } from '@cloudflare/kumo';
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
 import {
   Activity,
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 
 type NavItem = { to: string; label: string; icon: LucideIcon };
@@ -59,17 +60,18 @@ const NavLink = ({
 }) => (
   <Link
     to={item.to}
-    data-active={active}
     onClick={onNavigate}
     className={cn(
-      'nav-item flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground sm:py-1.5',
-      active && 'text-foreground',
+      'group flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+      active
+        ? 'bg-kumo-fill text-kumo-strong'
+        : 'text-kumo-subtle hover:bg-kumo-tint hover:text-kumo-default',
     )}
   >
     <item.icon
       className={cn(
         'h-4 w-4 shrink-0 transition-colors',
-        active ? 'text-primary' : 'text-muted-foreground',
+        active ? 'text-kumo-brand' : 'text-kumo-subtle group-hover:text-kumo-default',
       )}
     />
     <span>{item.label}</span>
@@ -88,7 +90,7 @@ const NavGroup = ({
   onNavigate?: () => void;
 }) => (
   <div className="flex flex-col gap-0.5">
-    <div className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
+    <div className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-[0.12em] text-kumo-subtle">
       {label}
     </div>
     {items.map((item) => (
@@ -106,16 +108,14 @@ const Brand = ({ onNavigate }: { onNavigate?: () => void }) => (
   <Link
     to="/today"
     onClick={onNavigate}
-    className="group flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface/60"
+    className="flex items-center gap-2.5 rounded-md px-3 py-2.5 transition-colors hover:bg-kumo-tint"
   >
-    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-primary to-ok shadow-soft">
-      <Activity className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
+    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-kumo-brand">
+      <Activity className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
     </div>
     <div className="flex flex-col leading-none">
-      <span className="text-sm font-semibold tracking-tight">health-mcp</span>
-      <span className="mt-0.5 text-[10px] text-muted-foreground">
-        your data, your model
-      </span>
+      <span className="text-sm font-semibold tracking-tight text-kumo-strong">health-mcp</span>
+      <span className="mt-0.5 text-[10px] text-kumo-subtle">your data, your model</span>
     </div>
   </Link>
 );
@@ -128,28 +128,13 @@ const NavSections = ({ path, onNavigate }: { path: string; onNavigate?: () => vo
   </>
 );
 
-const SettingsLink = ({ path, onNavigate }: { path: string; onNavigate?: () => void }) => {
-  const active = path.startsWith('/settings');
-  return (
-    <Link
-      to="/settings"
-      data-active={active}
-      onClick={onNavigate}
-      className={cn(
-        'nav-item flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground sm:py-1.5',
-        active && 'text-foreground',
-      )}
-    >
-      <Settings
-        className={cn(
-          'h-4 w-4 shrink-0',
-          active ? 'text-primary' : 'text-muted-foreground',
-        )}
-      />
-      <span>Settings</span>
-    </Link>
-  );
-};
+const SettingsLink = ({ path, onNavigate }: { path: string; onNavigate?: () => void }) => (
+  <NavLink
+    item={NAV_SETTINGS}
+    active={isActivePath(path, NAV_SETTINGS.to)}
+    onNavigate={onNavigate}
+  />
+);
 
 const currentSectionLabel = (path: string): string =>
   ALL_NAV.find((n) => isActivePath(path, n.to))?.label ?? 'health-mcp';
@@ -160,34 +145,42 @@ const MobileNav = ({ path }: { path: string }) => {
     setOpen(false);
   }, [path]);
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
-      <DialogPrimitive.Trigger
-        aria-label="Open navigation"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <Menu className="h-5 w-5" />
-      </DialogPrimitive.Trigger>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="t-modal-overlay fixed inset-0 z-50 bg-black/55 backdrop-blur-sm" />
-        <DialogPrimitive.Content
-          className="t-drawer fixed inset-y-0 left-0 z-50 flex h-full w-[82%] max-w-[300px] flex-col gap-1 bg-card px-3 py-4 shadow-lift ring-1 ring-foreground/5"
-        >
-          <div className="flex items-center justify-between">
-            <Brand onNavigate={() => setOpen(false)} />
-            <DialogPrimitive.Close
-              aria-label="Close navigation"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </DialogPrimitive.Close>
-          </div>
-          <nav className="mt-2 flex flex-1 flex-col gap-1 overflow-y-auto">
-            <NavSections path={path} onNavigate={() => setOpen(false)} />
-          </nav>
-          <SettingsLink path={path} onNavigate={() => setOpen(false)} />
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger
+        render={(p) => (
+          <Button
+            {...p}
+            variant="ghost"
+            shape="square"
+            size="sm"
+            icon={<Menu className="h-5 w-5" />}
+            aria-label="Open navigation"
+          />
+        )}
+      />
+      <Dialog className="left-0 top-0 h-full w-[82%] max-w-[300px] translate-x-0 translate-y-0 rounded-none p-3">
+        <div className="flex items-center justify-between">
+          <Brand onNavigate={() => setOpen(false)} />
+          <Dialog.Close
+            aria-label="Close navigation"
+            render={(p) => (
+              <Button
+                {...p}
+                variant="ghost"
+                shape="square"
+                size="sm"
+                icon={<X className="h-4 w-4" />}
+                aria-label="Close"
+              />
+            )}
+          />
+        </div>
+        <nav className="mt-2 flex flex-1 flex-col gap-1 overflow-y-auto">
+          <NavSections path={path} onNavigate={() => setOpen(false)} />
+        </nav>
+        <SettingsLink path={path} onNavigate={() => setOpen(false)} />
+      </Dialog>
+    </Dialog.Root>
   );
 };
 
@@ -196,7 +189,7 @@ export const AppShell = () => {
   const sectionLabel = currentSectionLabel(path);
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[244px_1fr]">
-      <aside className="sticky top-0 hidden h-screen flex-col gap-1 px-3 py-4 backdrop-blur-sm lg:flex">
+      <aside className="sticky top-0 hidden h-screen flex-col gap-1 border-r border-kumo-line bg-kumo-canvas px-3 py-4 lg:flex">
         <Brand />
         <nav className="mt-3 flex flex-1 flex-col gap-1 overflow-y-auto">
           <NavSections path={path} />
@@ -204,15 +197,17 @@ export const AppShell = () => {
         <SettingsLink path={path} />
       </aside>
       <main className="flex min-h-screen flex-col overflow-x-hidden">
-        <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-border/60 bg-background/85 px-3 py-2 backdrop-blur lg:hidden">
+        <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-kumo-line bg-kumo-canvas/85 px-3 py-2 backdrop-blur lg:hidden">
           <MobileNav path={path} />
-          <span className="truncate text-sm font-semibold tracking-tight">{sectionLabel}</span>
+          <span className="truncate text-sm font-semibold tracking-tight text-kumo-strong">
+            {sectionLabel}
+          </span>
           <Link
             to="/today"
             aria-label="Home"
-            className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-primary to-ok shadow-soft"
+            className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-md bg-kumo-brand"
           >
-            <Activity className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
+            <Activity className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
           </Link>
         </header>
         <div

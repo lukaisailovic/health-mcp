@@ -1,82 +1,69 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { Dialog as KumoDialog } from '@cloudflare/kumo';
 import { X } from 'lucide-react';
-import {
-  type ComponentPropsWithoutRef,
-  type ElementRef,
-  type HTMLAttributes,
-  forwardRef,
-} from 'react';
+import type { ComponentProps, ComponentPropsWithoutRef, HTMLAttributes, ReactNode } from 'react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/cn';
 
-export const Dialog = DialogPrimitive.Root;
-export const DialogTrigger = DialogPrimitive.Trigger;
-export const DialogPortal = DialogPrimitive.Portal;
-export const DialogClose = DialogPrimitive.Close;
+export const Dialog = KumoDialog.Root;
+export const DialogTrigger = KumoDialog.Trigger;
+export const DialogClose = KumoDialog.Close;
 
-export const DialogOverlay = forwardRef<
-  ElementRef<typeof DialogPrimitive.Overlay>,
-  ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    ref={ref}
-    className={cn('t-modal-overlay fixed inset-0 z-50 bg-black/55 backdrop-blur-sm', className)}
-    {...props}
-  />
-));
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
+type KumoDialogProps = ComponentProps<typeof KumoDialog>;
 
-export const DialogContent = forwardRef<
-  ElementRef<typeof DialogPrimitive.Content>,
-  ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        't-modal card-highlight fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-card p-6 shadow-lift ring-1 ring-foreground/5 dark:ring-white/5',
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground opacity-70 ring-offset-background transition-opacity hover:bg-surface hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </DialogPortal>
-));
-DialogContent.displayName = DialogPrimitive.Content.displayName;
+type DialogContentProps = KumoDialogProps & {
+  hideClose?: boolean;
+  children?: ReactNode;
+};
+
+export const DialogContent = ({ className, children, hideClose, ...props }: DialogContentProps) => (
+  <KumoDialog className={cn('p-6', className)} {...props}>
+    {children}
+    {hideClose ? null : (
+      <KumoDialog.Close
+        aria-label="Close"
+        render={(closeProps) => (
+          <Button
+            {...(closeProps as ComponentPropsWithoutRef<typeof Button>)}
+            variant="ghost"
+            shape="square"
+            size="sm"
+            className="absolute right-3 top-3"
+            icon={<X className="h-4 w-4" />}
+            aria-label="Close"
+          />
+        )}
+      />
+    )}
+  </KumoDialog>
+);
 
 export const DialogHeader = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col space-y-1.5 text-left', className)} {...props} />
+  <div className={cn('mb-4 flex flex-col gap-1.5', className)} {...props} />
 );
 
 export const DialogFooter = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex justify-end gap-2', className)} {...props} />
+  <div className={cn('mt-6 flex justify-end gap-2', className)} {...props} />
 );
 
-export const DialogTitle = forwardRef<
-  ElementRef<typeof DialogPrimitive.Title>,
-  ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn('text-lg font-semibold leading-none tracking-tight', className)}
+export const DialogTitle = ({
+  className,
+  ...props
+}: ComponentProps<typeof KumoDialog.Title>) => (
+  <KumoDialog.Title
+    className={cn(
+      'text-lg font-semibold leading-none tracking-tight text-kumo-strong',
+      className,
+    )}
     {...props}
   />
-));
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
+);
 
-export const DialogDescription = forwardRef<
-  ElementRef<typeof DialogPrimitive.Description>,
-  ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn('text-sm text-muted-foreground', className)}
+export const DialogDescription = ({
+  className,
+  ...props
+}: ComponentProps<typeof KumoDialog.Description>) => (
+  <KumoDialog.Description
+    className={cn('text-sm text-kumo-subtle', className)}
     {...props}
   />
-));
-DialogDescription.displayName = DialogPrimitive.Description.displayName;
+);

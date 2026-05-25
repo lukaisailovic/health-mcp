@@ -1,27 +1,38 @@
-import { type VariantProps, cva } from 'class-variance-authority';
-import type { HTMLAttributes } from 'react';
+import { Badge as KumoBadge } from '@cloudflare/kumo';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
-const badgeVariants = cva(
-  'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors',
-  {
-    variants: {
-      variant: {
-        default: 'border-transparent bg-primary/15 text-primary',
-        secondary: 'border-transparent bg-secondary text-secondary-foreground',
-        outline: 'border-border text-muted-foreground',
-        ok: 'border-transparent bg-ok-bg text-ok',
-        warn: 'border-transparent bg-warn-bg text-warn',
-        bad: 'border-transparent bg-bad-bg text-bad',
-        muted: 'border-transparent bg-muted text-muted-foreground',
-      },
-    },
-    defaultVariants: { variant: 'default' },
-  },
-);
+type LegacyVariant =
+  | 'default'
+  | 'primary'
+  | 'secondary'
+  | 'outline'
+  | 'muted'
+  | 'ok'
+  | 'warn'
+  | 'bad';
 
-export type BadgeProps = HTMLAttributes<HTMLDivElement> & VariantProps<typeof badgeVariants>;
+type KumoBadgeProps = ComponentPropsWithoutRef<typeof KumoBadge>;
+type KumoVariant = NonNullable<KumoBadgeProps['variant']>;
 
-export const Badge = ({ className, variant, ...props }: BadgeProps) => (
-  <div className={cn(badgeVariants({ variant }), className)} {...props} />
+const VARIANT_MAP: Record<LegacyVariant, KumoVariant> = {
+  default: 'primary',
+  primary: 'primary',
+  secondary: 'secondary',
+  outline: 'outline',
+  muted: 'neutral',
+  ok: 'success',
+  warn: 'warning',
+  bad: 'error',
+};
+
+export type BadgeProps = Omit<KumoBadgeProps, 'variant'> & {
+  variant?: LegacyVariant;
+  children?: ReactNode;
+};
+
+export const Badge = ({ className, variant = 'default', children, ...props }: BadgeProps) => (
+  <KumoBadge variant={VARIANT_MAP[variant]} className={cn(className)} {...props}>
+    {children}
+  </KumoBadge>
 );

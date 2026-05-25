@@ -40,13 +40,13 @@ const ChartCard = ({
 }) => {
   const { latest, avg } = useMemo(() => summarize(data), [data]);
   return (
-    <Card className="transition-shadow hover:shadow-lift">
+    <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-2">
         <div className="space-y-0.5">
           <CardTitle className="capitalize">{title}</CardTitle>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-kumo-subtle">
             avg{' '}
-            <span className="font-medium text-foreground tabular-nums">
+            <span className="font-medium text-kumo-default tabular-nums">
               {avg !== null ? `${fmtNum(avg, 1)}${unit ? ` ${unit}` : ''}` : '—'}
             </span>
           </p>
@@ -59,7 +59,7 @@ const ChartCard = ({
             {latest !== null ? fmtNum(latest, 1) : '—'}
           </div>
           {unit ? (
-            <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div className="mt-0.5 text-[10px] uppercase tracking-wider text-kumo-subtle">
               {unit}
             </div>
           ) : null}
@@ -86,7 +86,7 @@ const RangeToggle = ({
   days: number;
   onChange: (n: number) => void;
 }) => (
-  <div className="inline-flex rounded-lg border bg-surface p-0.5 shadow-soft">
+  <div className="inline-flex rounded-md bg-kumo-fill p-0.5">
     {RANGES.map((r) => {
       const active = days === r.days;
       return (
@@ -95,10 +95,10 @@ const RangeToggle = ({
           type="button"
           onClick={() => onChange(r.days)}
           className={cn(
-            'inline-flex h-7 items-center justify-center rounded-md px-3 text-xs font-medium transition-all',
+            'inline-flex h-7 items-center justify-center rounded px-3 text-xs font-medium transition-colors',
             active
-              ? 'bg-card text-foreground shadow-soft ring-1 ring-foreground/5 dark:ring-white/5'
-              : 'text-muted-foreground hover:text-foreground',
+              ? 'bg-kumo-base text-kumo-default'
+              : 'text-kumo-subtle hover:text-kumo-default',
           )}
         >
           {r.label}
@@ -160,7 +160,7 @@ const Trends = () => {
         title="Trends"
         description={
           <span>
-            Last <span className="font-medium text-foreground">{days}</span> days ·{' '}
+            Last <span className="font-medium text-kumo-default">{days}</span> days ·{' '}
             <span className="font-mono text-xs">{start}</span> →{' '}
             <span className="font-mono text-xs">{end}</span>
           </span>
@@ -168,17 +168,17 @@ const Trends = () => {
         actions={<RangeToggle days={days} onChange={setDays} />}
       />
       <div className="grid gap-4 lg:grid-cols-2">
-        <ChartCard id="kcal" title="kcal" data={kcal} color="hsl(var(--primary))" />
-        <ChartCard id="protein" title="protein" data={protein} color="hsl(var(--ok))" unit="g" />
-        <ChartCard id="carbs" title="carbs" data={carbs} color="hsl(var(--warn))" unit="g" />
-        <ChartCard id="fat" title="fat" data={fat} color="hsl(var(--bad))" unit="g" />
-        <ChartCard id="weight" title="weight" data={weights} color="hsl(var(--primary))" unit="kg" />
-        <ChartCard id="recovery" title="recovery" data={recoveries} color="hsl(var(--ok))" />
+        <ChartCard id="kcal" title="kcal" data={kcal} color="var(--color-kumo-brand)" />
+        <ChartCard id="protein" title="protein" data={protein} color="var(--color-kumo-success)" unit="g" />
+        <ChartCard id="carbs" title="carbs" data={carbs} color="var(--color-kumo-warning)" unit="g" />
+        <ChartCard id="fat" title="fat" data={fat} color="var(--color-kumo-danger)" unit="g" />
+        <ChartCard id="weight" title="weight" data={weights} color="var(--color-kumo-brand)" unit="kg" />
+        <ChartCard id="recovery" title="recovery" data={recoveries} color="var(--color-kumo-success)" />
         <ChartCard
           id="sleep"
           title="sleep score"
           data={sleeps}
-          color="hsl(var(--primary))"
+          color="var(--color-kumo-brand)"
         />
       </div>
     </>

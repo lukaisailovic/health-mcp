@@ -67,15 +67,15 @@ const Wearables = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-kumo-subtle">
                     auth: {p.auth_strategy} · scopes: {p.scopes.length ? p.scopes.join(' ') : '—'}
                   </div>
                   {st?.resources?.length ? (
                     <ul className="space-y-1 text-xs">
                       {st.resources.map((r) => (
                         <li key={r.resource} className="flex items-center justify-between">
-                          <span className="capitalize text-muted-foreground">{r.resource}</span>
-                          <span className="tabular-nums text-muted-foreground">
+                          <span className="capitalize text-kumo-subtle">{r.resource}</span>
+                          <span className="tabular-nums text-kumo-subtle">
                             {r.last_synced_at ? fmtRelative(r.last_synced_at) : 'never'}
                           </span>
                         </li>
@@ -111,7 +111,7 @@ const Wearables = () => {
                         <Link2 className="h-3.5 w-3.5" /> connect
                       </Button>
                     ) : (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-kumo-subtle">
                         Not yet supported in dashboard.
                       </span>
                     )}

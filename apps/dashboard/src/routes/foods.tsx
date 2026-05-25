@@ -84,7 +84,7 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
     });
   };
   const field = (key: keyof FormState, label: string, type: 'text' | 'number' = 'number') => (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <Label htmlFor={key}>{label}</Label>
       <Input
         id={key}
@@ -96,11 +96,13 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
   );
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-3.5 w-3.5" /> New custom food
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={(p) => (
+          <Button {...p} size="sm" icon={<Plus className="h-3.5 w-3.5" />}>
+            New custom food
+          </Button>
+        )}
+      />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create custom food</DialogTitle>
@@ -109,7 +111,7 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
           <div className="col-span-2">{field('name', 'name', 'text')}</div>
           <div className="col-span-2 sm:col-span-1">{field('brand', 'brand', 'text')}</div>
           <div className="col-span-2 sm:col-span-1">{field('serving_grams', 'serving (g)')}</div>
-          <div className="col-span-2 mt-2 border-t pt-3 text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="col-span-2 mt-2 border-t border-kumo-line pt-3 text-xs uppercase tracking-wide text-kumo-subtle">
             per 100 g
           </div>
           {field('kcal_per_100g', 'kcal')}
@@ -163,7 +165,7 @@ const Foods = () => {
             }}
           >
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-kumo-subtle" />
               <Input
                 placeholder="Search foods…"
                 value={query}
@@ -187,7 +189,7 @@ const Foods = () => {
           ) : !search.data?.length ? (
             <Empty icon={Salad} title="No matches" description="Try a different query or create a custom food." />
           ) : (
-            <ul className="divide-y">
+            <ul className="divide-y divide-kumo-line">
               {search.data.map((f) => (
                 <li key={f.id} className="grid grid-cols-[1fr_auto] items-center gap-3 py-3">
                   <div className="min-w-0">
@@ -197,10 +199,10 @@ const Foods = () => {
                       </Badge>
                       <span className="truncate text-sm font-medium">{f.name}</span>
                       {f.brand ? (
-                        <span className="truncate text-xs text-muted-foreground">{f.brand}</span>
+                        <span className="truncate text-xs text-kumo-subtle">{f.brand}</span>
                       ) : null}
                     </div>
-                    <div className="mt-0.5 flex gap-3 text-xs tabular-nums text-muted-foreground">
+                    <div className="mt-0.5 flex gap-3 text-xs tabular-nums text-kumo-subtle">
                       <span>{fmtNum(f.kcal_per_100g, 0)} kcal/100g</span>
                       <span>P {fmtNum(f.protein_g, 1)}</span>
                       <span>C {fmtNum(f.carb_g, 1)}</span>
@@ -211,10 +213,11 @@ const Foods = () => {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label="Delete custom food"
                       disabled={remove.isPending}
                       onClick={() => remove.mutate(f.id)}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                   ) : null}
                 </li>

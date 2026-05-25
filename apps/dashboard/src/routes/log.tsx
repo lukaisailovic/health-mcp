@@ -47,10 +47,10 @@ const Log = () => {
           ) : !intake.data?.length ? (
             <Empty icon={History} title="No entries" description="Nothing logged on this date." />
           ) : (
-            <ul className="divide-y divide-border/60">
+            <ul className="divide-y divide-kumo-line">
               {intake.data.map((e) => (
                 <li key={e.id} className="flex items-start gap-3 py-3">
-                  <span className="mt-0.5 w-14 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+                  <span className="mt-0.5 w-14 shrink-0 font-mono text-xs tabular-nums text-kumo-subtle">
                     {fmtTime(e.ts)}
                   </span>
                   <div className="min-w-0 flex-1 space-y-1">
@@ -62,7 +62,7 @@ const Log = () => {
                         {e.custom_name ?? `${e.ref_kind} · ${fmtNum(e.grams ?? e.servings, 1)}`}
                       </span>
                     </div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums text-muted-foreground">
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs tabular-nums text-kumo-subtle">
                       <span>{fmtNum(e.kcal, 0)} kcal</span>
                       <span>P {fmtNum(e.protein_g, 1)} g</span>
                       <span>C {fmtNum(e.carb_g, 1)} g</span>
@@ -73,11 +73,12 @@ const Log = () => {
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label="Delete entry"
                     className="-mr-1 h-7 w-7 shrink-0"
                     disabled={remove.isPending}
                     onClick={() => remove.mutate(e.id)}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>
                 </li>
               ))}

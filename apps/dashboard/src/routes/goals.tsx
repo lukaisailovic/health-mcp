@@ -73,7 +73,7 @@ const Goals = () => {
         <CardContent>
           <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FIELDS.map((f) => (
-              <div key={f.key} className="space-y-1.5">
+              <div key={f.key} className="space-y-2">
                 <Label htmlFor={f.key}>{f.label}</Label>
                 <div className="flex items-center gap-2">
                   <Input
@@ -83,13 +83,13 @@ const Goals = () => {
                     value={form[f.key] ?? ''}
                     onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
                   />
-                  <span className="shrink-0 text-xs text-muted-foreground">{f.unit}</span>
+                  <span className="shrink-0 text-xs text-kumo-subtle">{f.unit}</span>
                 </div>
               </div>
             ))}
             <div className="col-span-full flex items-center justify-end gap-2">
               {save.isSuccess ? (
-                <span className="text-xs text-muted-foreground">saved</span>
+                <span className="text-xs text-kumo-subtle">saved</span>
               ) : null}
               <Button type="submit" disabled={save.isPending}>
                 Save goals

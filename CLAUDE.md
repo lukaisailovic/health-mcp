@@ -5,36 +5,41 @@ Behavioral guide for Claude Code working in this repo. Extends `~/.claude/CLAUDE
 Architecture and design rationale: [`PLAN.md`](./PLAN.md) — read before non-trivial work.
 Human-facing project overview: [`README.md`](./README.md).
 
-## Preferred MCPs
+## Preferred MCPs and tooling
 
 Reach for these before generic alternatives.
 
-### Spell UI MCP — initial and always-preferred for UI work
-- Docs: https://spell.sh/docs/mcp
-- Setup (once `apps/dashboard` exists):
+### Kumo UI (Cloudflare) — the dashboard component library
+- Package: `@cloudflare/kumo` — installed in `apps/dashboard`. Built on Base UI + Tailwind v4.
+- Docs CLI (use it instead of guessing component APIs):
   ```
-  cd apps/dashboard
-  pnpm dlx shadcn@latest mcp init
+  npx @cloudflare/kumo ls            # list all 42 components grouped by category
+  npx @cloudflare/kumo doc Button    # full prop schema + examples for one component
+  npx @cloudflare/kumo docs          # dump every component's docs (very long)
   ```
-  then add `"registries": { "@spell": "https://spell.sh/r/{name}.json" }` to `components.json`.
+- Setup wiring (already done in this repo, keep intact):
+  - `apps/dashboard/src/styles.css` imports `@cloudflare/kumo/styles/tailwind` **before** `tailwindcss` and has `@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}"` so Tailwind picks up the utilities Kumo uses.
+  - `apps/dashboard/vite.config.ts` registers `@tailwindcss/vite`.
+  - `apps/dashboard/index.html` sets `data-mode="dark"|"light"` on `<html>` from `localStorage.theme` / `prefers-color-scheme`. Toggle theme by writing that attribute (and persisting to `localStorage`).
 - Policy:
-  - Default to Spell for buttons, badges, charts, text effects, backgrounds, interactive cards, feedback.
-  - Fall back to vanilla `@/components/ui` (shadcn) only when Spell doesn't ship the component (data tables, command palettes, complex forms).
-  - Never hand-roll a component that exists in Spell or shadcn.
+  - **Always check `npx @cloudflare/kumo doc <Name>` first** when reaching for a new Kumo primitive — examples + prop shape live there.
+  - Prefer the granular `@cloudflare/kumo/components/<name>` entry point when bundle size matters; the barrel import (`@cloudflare/kumo`) is fine for general use.
+  - Use semantic Kumo tokens (`bg-kumo-base`, `text-kumo-strong`, `text-kumo-subtle`, `ring-kumo-line`, `bg-kumo-{success,warning,danger,info}-tint`, etc.) instead of raw colors. They handle light + dark automatically via `light-dark()`.
+  - **Compound APIs differ from shadcn**: triggers use a `render={(props) => …}` prop, not `asChild`. Dialog has `Dialog.Root`, `Dialog.Trigger`, then the `<Dialog>` panel (not `<DialogContent>` from shadcn). Tabs takes a `tabs={[{value,label}]}` array, not `<TabsList>/<TabsTrigger>`.
 
-### shadcn MCP — the underlying surface
-Spell rides on it. Use it for any registry component add/update.
+### Local wrapper layer — `apps/dashboard/src/components/ui/`
+Thin adapters around Kumo that preserve the legacy shadcn-shaped imports used throughout routes (`Button`, `Card`, `Input`, `Badge`, `Dialog{Content,Title,…}`, `Tabs`, `Label`, `Empty`, `Spinner`, `TrendArea`). When adding a new primitive, prefer adding a wrapper here over importing Kumo directly in routes — the wrappers normalize Tailwind-classed variants (e.g. `variant="ok"` → `variant="success"`).
 
 ### `@modelcontextprotocol/inspector` — for testing the MCP server we are building
-Use when iterating on MCP tool schemas during P0–P4. Don't confuse with Spell/shadcn MCPs above (those are for the dashboard).
+Use when iterating on MCP tool schemas during P0–P4. Different concern from Kumo (that's the dashboard).
 
-When a new preferred MCP is added to this project, append it under this section.
+When a new preferred MCP/tooling is added to this project, append it under this section.
 
 ## Skills — invoke when triggers match
 
 - `/code-guidelines` — **load before writing or modifying any code** (global rule).
 - `/github-cli` — all GitHub operations (global rule).
-- `/design-values` — when designing or reviewing dashboard UI/UX. Pairs naturally with Spell.
+- `/design-values` — when designing or reviewing dashboard UI/UX. Pairs naturally with Kumo.
 - `/run` — when verifying a UI change in the actual app.
 - `/verify` — end-to-end validation of a feature/PR.
 - `/local-review` — before pushing.
@@ -59,12 +64,18 @@ When touching `apps/dashboard`, default to these patterns and skill sources:
 
 Order of preference for dashboard UI components:
 
-1. **Spell UI** (https://spell.sh) — via the shadcn MCP `@spell` registry, when present.
-2. **Vanilla shadcn/ui primitives** — local to `apps/dashboard/src/components/ui/`, hand-imported (Radix + Tailwind) when Spell doesn't ship a piece.
-3. **Recharts** — for charts.
-4. **Plain divs + Tailwind** — for layout glue only.
+1. **Kumo UI** (`@cloudflare/kumo`) — first choice for any primitive (button, badge, card surfaces, dialog, tabs, label, empty state, loader, meter, sidebar, table, popover, dropdown, command palette, …). 42 components total — list them with `npx @cloudflare/kumo ls`.
+2. **Local wrappers** at `apps/dashboard/src/components/ui/` — extend / adapt Kumo when routes expect the legacy shadcn-style API. New routes can import Kumo directly.
+3. **Recharts** — for line/area/bar charts. Styled with Kumo CSS variables (`var(--color-kumo-line)`, `var(--text-color-kumo-subtle)`, etc.) — see `src/components/ui/chart.tsx`.
+4. **Plain divs + Tailwind utilities** — for layout glue only.
 
-Never hand-roll a component that exists in Spell or shadcn.
+Never hand-roll a component that exists in Kumo.
+
+### Dark mode
+
+- Root attribute: `<html data-mode="dark">` (or `"light"`). The inline script in `index.html` sets it before paint to avoid flash; persist user choice in `localStorage.theme`.
+- Tailwind variant: write `dark:` modifiers as usual — they resolve via the `@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));` declaration in `src/styles.css`.
+- Kumo's semantic tokens already adapt via CSS `light-dark()` — most code should not need `dark:` overrides if it uses Kumo tokens.
 
 ## Project-specific rules
 

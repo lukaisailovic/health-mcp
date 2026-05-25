@@ -13,15 +13,18 @@ import { fmtNum } from '@/lib/format';
 export type SeriesPoint = { date: string; value: number | null };
 
 const tooltipStyle = {
-  background: 'hsl(var(--card))',
-  border: '1px solid hsl(var(--border))',
-  borderRadius: 10,
-  boxShadow: 'var(--shadow-lift)',
+  background: 'var(--color-kumo-base)',
+  border: '1px solid var(--color-kumo-line)',
+  borderRadius: 8,
   fontSize: 12,
   padding: '8px 10px',
 };
-const tooltipLabelStyle = { color: 'hsl(var(--foreground))', fontWeight: 500, marginBottom: 2 };
-const tooltipItemStyle = { color: 'hsl(var(--muted-foreground))' };
+const tooltipLabelStyle = {
+  color: 'var(--text-color-kumo-default)',
+  fontWeight: 500,
+  marginBottom: 2,
+};
+const tooltipItemStyle = { color: 'var(--text-color-kumo-subtle)' };
 
 export const formatTooltipDate = (v: string): string => {
   if (typeof v !== 'string' || v.length < 7) return v;
@@ -31,7 +34,6 @@ export const formatTooltipDate = (v: string): string => {
 const compactY = (v: number): string => {
   const abs = Math.abs(v);
   if (abs >= 1000) return `${(v / 1000).toFixed(abs >= 10000 ? 0 : 1)}k`;
-  if (abs >= 100) return v.toFixed(0);
   return v.toFixed(0);
 };
 
@@ -59,12 +61,12 @@ export const TrendArea = ({
         <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <defs>
             <linearGradient id={`g-${id}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.32} />
-              <stop offset="100%" stopColor={color} stopOpacity={0.0} />
+              <stop offset="0%" stopColor={color} stopOpacity={0.28} />
+              <stop offset="100%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid
-            stroke="hsl(var(--border))"
+            stroke="var(--color-kumo-line)"
             strokeDasharray="2 4"
             vertical={false}
             opacity={0.6}
@@ -74,7 +76,7 @@ export const TrendArea = ({
             fontSize={10}
             axisLine={false}
             tickLine={false}
-            stroke="hsl(var(--muted-foreground))"
+            stroke="var(--text-color-kumo-subtle)"
             tickMargin={6}
             tickFormatter={formatTooltipDate}
             minTickGap={28}
@@ -83,7 +85,7 @@ export const TrendArea = ({
             fontSize={10}
             axisLine={false}
             tickLine={false}
-            stroke="hsl(var(--muted-foreground))"
+            stroke="var(--text-color-kumo-subtle)"
             width={40}
             tickMargin={4}
             tickFormatter={compactY}
@@ -92,9 +94,9 @@ export const TrendArea = ({
           {avg !== null ? (
             <ReferenceLine
               y={avg}
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--text-color-kumo-subtle)"
               strokeDasharray="3 3"
-              opacity={0.45}
+              opacity={0.4}
             />
           ) : null}
           <Tooltip
@@ -102,7 +104,7 @@ export const TrendArea = ({
             labelStyle={tooltipLabelStyle}
             itemStyle={tooltipItemStyle}
             cursor={{
-              stroke: 'hsl(var(--border-strong))',
+              stroke: 'var(--color-kumo-line)',
               strokeDasharray: '3 3',
             }}
             formatter={(v: number) => [`${fmtNum(v, 1)}${unit ? ` ${unit}` : ''}`, title]}
@@ -114,7 +116,12 @@ export const TrendArea = ({
             strokeWidth={2}
             fill={`url(#g-${id})`}
             dot={false}
-            activeDot={{ r: 4, fill: color, stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+            activeDot={{
+              r: 4,
+              fill: color,
+              stroke: 'var(--color-kumo-base)',
+              strokeWidth: 2,
+            }}
             isAnimationActive={hasData}
             animationDuration={420}
           />
@@ -122,7 +129,7 @@ export const TrendArea = ({
       </ResponsiveContainer>
       {hasData ? null : (
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
-          <span className="text-xs text-muted-foreground/70">No data in this range</span>
+          <span className="text-xs text-kumo-subtle">No data in this range</span>
         </div>
       )}
     </div>

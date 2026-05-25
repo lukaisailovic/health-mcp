@@ -16,6 +16,17 @@ import { fmtNum, fmtTime, todayIso } from '@/lib/format';
 
 const HYDRATION_STEPS = [250, 500, 750];
 
+const scoreTone = (
+  score: number | null | undefined,
+  good: number,
+  ok: number,
+): 'ok' | 'warn' | 'bad' | 'default' => {
+  if (score == null) return 'default';
+  if (score >= good) return 'ok';
+  if (score >= ok) return 'warn';
+  return 'bad';
+};
+
 const HydrationQuickAdd = () => {
   const qc = useQueryClient();
   const [custom, setCustom] = useState('');
@@ -74,7 +85,7 @@ const ProgressBar = ({
 }) => {
   const ratio = goal && goal > 0 ? Math.min(1, value / goal) : 0;
   return (
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-kumo-fill">
       <div
         className="h-full rounded-full transition-[width] duration-500"
         style={{ width: `${ratio * 100}%`, background: color }}
@@ -136,36 +147,34 @@ const Today = () => {
 
   const s = summary.data;
   const macros = [
-    { label: 'kcal', current: s.totals.kcal, goal: s.goals.kcal, color: 'hsl(var(--primary))' },
+    { label: 'kcal', current: s.totals.kcal, goal: s.goals.kcal, color: 'var(--color-kumo-brand)' },
     {
       label: 'protein',
       current: s.totals.protein_g,
       goal: s.goals.protein_g,
-      color: 'hsl(var(--ok))',
+      color: 'var(--color-kumo-success)',
       unit: 'g',
     },
     {
       label: 'carbs',
       current: s.totals.carb_g,
       goal: s.goals.carb_g,
-      color: 'hsl(var(--warn))',
+      color: 'var(--color-kumo-warning)',
       unit: 'g',
     },
     {
       label: 'fat',
       current: s.totals.fat_g,
       goal: s.goals.fat_g,
-      color: 'hsl(var(--bad))',
+      color: 'var(--color-kumo-danger)',
       unit: 'g',
     },
   ];
   const r = recovery.data?.[0];
   const sl = sleep.data?.[0];
   const w = weight.data?.[0];
-  const recoveryTone =
-    r?.score == null ? 'default' : r.score >= 67 ? 'ok' : r.score >= 34 ? 'warn' : 'bad';
-  const sleepTone =
-    sl?.score == null ? 'default' : sl.score >= 70 ? 'ok' : sl.score >= 50 ? 'warn' : 'bad';
+  const recoveryTone = scoreTone(r?.score, 67, 34);
+  const sleepTone = scoreTone(sl?.score, 70, 50);
 
   return (
     <>
@@ -174,7 +183,7 @@ const Today = () => {
         description={
           <span className="flex items-center gap-2">
             <span>{formatDateLong(s.date)}</span>
-            <span className="text-muted-foreground/50">·</span>
+            <span className="text-kumo-subtle">·</span>
             <span className="font-mono text-xs">{s.date}</span>
           </span>
         }
@@ -195,10 +204,10 @@ const Today = () => {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="space-y-1">
               <CardTitle className="flex items-center gap-2">
-                <Flame className="h-4 w-4 text-primary" />
+                <Flame className="h-4 w-4 text-kumo-brand" />
                 Macros vs goals
               </CardTitle>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-kumo-subtle">
                 Live totals from today's intake — tap a ring to break it down.
               </p>
             </div>
@@ -224,7 +233,7 @@ const Today = () => {
                   <ProgressBar
                     value={s.totals.hydration_ml}
                     goal={s.goals.hydration_ml}
-                    color="hsl(var(--primary))"
+                    color="var(--color-kumo-brand)"
                   />
                 </span>
               ) : null
@@ -255,10 +264,10 @@ const Today = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
-              <Droplets className="h-4 w-4 text-primary" />
+              <Droplets className="h-4 w-4 text-kumo-brand" />
               Hydration
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-kumo-subtle">
               Quick add — common pours or a custom amount.
             </p>
           </CardHeader>
@@ -271,9 +280,9 @@ const Today = () => {
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <CardTitle>Meals</CardTitle>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-kumo-subtle">
                 avg confidence{' '}
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-kumo-default">
                   {s.totals.avg_confidence === null
                     ? '—'
                     : fmtNum(s.totals.avg_confidence, 2)}
@@ -291,21 +300,21 @@ const Today = () => {
                 description="Ask your agent to log via MCP, or use Foods / Recipes to add manually."
               />
             ) : (
-              <ul className="-mx-2 divide-y divide-border/60">
+              <ul className="-mx-2 divide-y divide-kumo-line">
                 {intake.data.map((e) => (
                   <li
                     key={e.id}
-                    className="group rounded-md px-2 py-2.5 text-sm transition-colors hover:bg-surface-2"
+                    className="group rounded-md px-2 py-2.5 text-sm transition-colors hover:bg-kumo-tint"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex min-w-0 flex-1 items-center gap-2">
-                        <span className="font-mono text-xs tabular-nums text-muted-foreground shrink-0">
+                        <span className="font-mono text-xs tabular-nums text-kumo-subtle shrink-0">
                           {fmtTime(e.ts)}
                         </span>
                         <Badge variant="muted" className="font-normal capitalize">
                           {e.meal_type}
                         </Badge>
-                        <span className="truncate text-foreground">
+                        <span className="truncate text-kumo-default">
                           {e.custom_name ??
                             (e.ref_kind === 'food'
                               ? `food · ${fmtNum(e.grams, 0)} g`
@@ -317,15 +326,16 @@ const Today = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Delete entry"
                         className="-mr-1 h-7 w-7 shrink-0 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
                         disabled={removeIntake.isPending}
                         onClick={() => removeIntake.mutate(e.id)}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
                     </div>
-                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 pl-[3.25rem] text-xs tabular-nums text-muted-foreground">
-                      <span className="font-medium text-foreground">
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 pl-[3.25rem] text-xs tabular-nums text-kumo-subtle">
+                      <span className="font-medium text-kumo-default">
                         {fmtNum(e.kcal, 0)} kcal
                       </span>
                       <span>P {fmtNum(e.protein_g, 1)}</span>
