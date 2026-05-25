@@ -227,7 +227,11 @@ type CustomFoodSpec =
 
 Whole call is atomic — either all items + all batch decrements land, or none of them. A batch ref that would push `remaining_grams` below zero fails with `batch_insufficient`.
 
-## Wiring into Claude Desktop
+## Wiring into MCP clients
+
+Set `HEALTH_MCP_WHOOP_CLIENT_ID` / `_SECRET` / `HEALTH_MCP_OURA_*` in each entry's `env` block to enable wearables. The first OAuth link still needs HTTP mode — start the HTTP server once, link Whoop/Oura, then stdio mode can sync on demand using the persisted refresh tokens.
+
+### Claude Desktop
 
 `claude_desktop_config.json` entry (stdio mode):
 
@@ -255,7 +259,62 @@ Or once published to npm:
 }
 ```
 
-Set `HEALTH_MCP_WHOOP_CLIENT_ID` / `_SECRET` / `HEALTH_MCP_OURA_*` in the entry's `env` block to enable wearables. The first OAuth link still needs HTTP mode — start the HTTP server once, link Whoop/Oura, then stdio mode can sync on demand using the persisted refresh tokens.
+### Hermes Agent
+
+Hermes reads its `mcp_servers` block from `config.yaml`:
+
+```yaml
+mcp_servers:
+  health:
+    command: "npx"
+    args: ["-y", "@lukaisailovic/health-mcp", "--stdio"]
+    env:
+      HEALTH_MCP_DATA_DIR: "/path/to/storage"
+    timeout: 120
+```
+
+Reload without restarting via `/reload-mcp`. For a local checkout, swap to `command: "node"` with `args: ["--import", "tsx", "/path/to/health-mcp/apps/server/src/index.ts", "--stdio"]`. To trim the exposed surface during prompt engineering, add `tools.include: [discover_capabilities, log_intake, daily_summary]` and Hermes will register only the named tools.
+
+### OpenClaw
+
+OpenClaw keeps MCP servers under `mcp.servers` in its JSON config:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "health": {
+        "command": "npx",
+        "args": ["-y", "@lukaisailovic/health-mcp", "--stdio"]
+      }
+    }
+  }
+}
+```
+
+Or register via the CLI without hand-editing the file:
+
+```bash
+openclaw mcp set health '{"command":"npx","args":["-y","@lukaisailovic/health-mcp","--stdio"]}'
+openclaw mcp list
+```
+
+To point OpenClaw at an HTTP-mode server instead (start it once with `pnpm start`; default `http://127.0.0.1:7777/mcp`):
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "health": {
+        "url": "http://127.0.0.1:7777/mcp",
+        "transport": "streamable-http"
+      }
+    }
+  }
+}
+```
+
+Add `"headers": { "Authorization": "Bearer <HEALTH_MCP_TOKEN>" }` when the server is started with `HEALTH_MCP_TOKEN` set (required if it binds off-loopback).
 
 ## Inspector
 

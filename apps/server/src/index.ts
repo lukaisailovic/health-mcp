@@ -96,7 +96,7 @@ const main = async () => {
   }
 
   const authStore = new AuthStore({
-    authDir: config.authDir,
+    authDir: config.dataDir,
     allowInsecure: config.allowInsecureAuth,
   });
 

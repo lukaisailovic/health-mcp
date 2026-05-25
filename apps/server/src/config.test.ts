@@ -34,4 +34,10 @@ describe('config', () => {
     const c = parseConfig(['--host', '0.0.0.0', '--token', strong]);
     expect(() => enforceSecurityInvariants(c)).not.toThrow();
   });
+
+  it('--data-dir relocates dbPath', () => {
+    const c = parseConfig(['--data-dir', '/custom/storage']);
+    expect(c.dataDir).toBe('/custom/storage');
+    expect(c.dbPath).toBe('/custom/storage/data.db');
+  });
 });

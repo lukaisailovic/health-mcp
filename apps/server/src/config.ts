@@ -9,8 +9,8 @@ export type Config = {
   stdio: boolean;
   port: number;
   host: string;
+  dataDir: string;
   dbPath: string;
-  authDir: string;
   token: string | null;
   dashboard: boolean;
   publicDir: string | null;
@@ -73,7 +73,7 @@ export const parseConfig = (argv: string[] = process.argv.slice(2)): Config => {
       stdio: { type: 'boolean' },
       port: { type: 'string' },
       host: { type: 'string' },
-      db: { type: 'string' },
+      'data-dir': { type: 'string' },
       token: { type: 'string' },
       'no-dashboard': { type: 'boolean' },
       'public-dir': { type: 'string' },
@@ -108,8 +108,6 @@ export const parseConfig = (argv: string[] = process.argv.slice(2)): Config => {
     return v === undefined ? null : (v as T);
   };
 
-  const dataDir = join(homedir(), '.health-mcp');
-
   const resolveString = (
     flagVal: string | undefined,
     envKey: string,
@@ -136,8 +134,11 @@ export const parseConfig = (argv: string[] = process.argv.slice(2)): Config => {
   const host =
     resolveString(parsed.values.host as string | undefined, 'HOST', 'host') ?? DEFAULTS.host;
 
-  const dbPath =
-    resolveString(parsed.values.db as string | undefined, 'DB', 'db') ?? join(dataDir, 'data.db');
+  const dataDir =
+    resolveString(parsed.values['data-dir'] as string | undefined, 'DATA_DIR', 'data_dir') ??
+    join(homedir(), '.health-mcp');
+
+  const dbPath = join(dataDir, 'data.db');
 
   const token = resolveString(parsed.values.token as string | undefined, 'TOKEN', 'token');
 
@@ -187,8 +188,8 @@ export const parseConfig = (argv: string[] = process.argv.slice(2)): Config => {
     stdio: Boolean(stdio),
     port,
     host,
+    dataDir,
     dbPath,
-    authDir: dataDir,
     token,
     dashboard,
     publicDir,
@@ -265,7 +266,7 @@ Options:
   --stdio                  run as MCP stdio server (disables HTTP, dashboard, scheduler)
   --port <n>               HTTP port (default 7777)
   --host <addr>            bind host (default 127.0.0.1)
-  --db <path>              SQLite path (default ~/.health-mcp/data.db)
+  --data-dir <path>        persistent state dir (default ~/.health-mcp)
   --token <secret>         require Bearer auth (HTTP mode only)
   --no-dashboard           disable the static dashboard
   --public-dir <path>      override location of dashboard build (defaults to packaged ./public)

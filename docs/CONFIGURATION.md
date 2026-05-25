@@ -14,7 +14,7 @@ Resolution order, highest precedence first:
 | Transport | `HEALTH_MCP_STDIO` | `--stdio` | `stdio` | `false` (HTTP) |
 | Port | `HEALTH_MCP_PORT` | `--port` | `port` | `7777` |
 | Bind host | `HEALTH_MCP_HOST` | `--host` | `host` | `127.0.0.1` |
-| SQLite path | `HEALTH_MCP_DB` | `--db` | `db` | `~/.health-mcp/data.db` |
+| Storage dir | `HEALTH_MCP_DATA_DIR` | `--data-dir` | `data_dir` | `~/.health-mcp` |
 | Bearer token | `HEALTH_MCP_TOKEN` | `--token` | `token` | unset (loopback-only) |
 | Dashboard | `HEALTH_MCP_DASHBOARD` | `--no-dashboard` | `dashboard` | `true` |
 | Dashboard build dir | `HEALTH_MCP_PUBLIC_DIR` | `--public-dir` | `public_dir` | packaged `./public` |
@@ -89,12 +89,14 @@ Pass with `--config ./config.json` or set `HEALTH_MCP_CONFIG=./config.json`.
 
 ## Files created at runtime
 
+Paths below are relative to the storage dir (`HEALTH_MCP_DATA_DIR`, default `~/.health-mcp`).
+
 | Path | Mode | Purpose |
 |---|---|---|
-| `~/.health-mcp/` | `0700` | Parent directory |
-| `~/.health-mcp/data.db` | `0600` | SQLite (the only datastore) |
-| `~/.health-mcp/data.db-wal` | inherited | SQLite WAL file (managed by better-sqlite3) |
-| `~/.health-mcp/data.db-shm` | inherited | SQLite shared memory |
-| `~/.health-mcp/auth.json` | `0600` | Wearable OAuth tokens — treated as a secret |
+| `<data-dir>/` | `0700` | Parent directory |
+| `<data-dir>/data.db` | `0600` | SQLite (the only datastore) |
+| `<data-dir>/data.db-wal` | inherited | SQLite WAL file (managed by better-sqlite3) |
+| `<data-dir>/data.db-shm` | inherited | SQLite shared memory |
+| `<data-dir>/auth.json` | `0600` | Wearable OAuth tokens — treated as a secret |
 
 `data.db` and `auth.json` are deliberately separate so the DB can be exported, copied, or shared without leaking provider credentials.

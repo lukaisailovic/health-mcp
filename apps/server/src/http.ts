@@ -28,7 +28,7 @@ export const createHonoApp = (opts: {
       host: config.host,
       port: config.port,
       db_path: config.dbPath,
-      auth_path: join(config.authDir, 'auth.json'),
+      auth_path: join(config.dataDir, 'auth.json'),
       dashboard: config.dashboard,
       log_level: config.logLevel,
       auto_migrate: config.autoMigrate,

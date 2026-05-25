@@ -70,7 +70,7 @@ CLI flag > env var > config file > default.
 | Transport | `HEALTH_MCP_STDIO` | `--stdio` | HTTP |
 | Port | `HEALTH_MCP_PORT` | `--port` | `7777` |
 | Bind host | `HEALTH_MCP_HOST` | `--host` | `127.0.0.1` |
-| SQLite path | `HEALTH_MCP_DB` | `--db` | `~/.health-mcp/data.db` |
+| Storage dir | `HEALTH_MCP_DATA_DIR` | `--data-dir` | `~/.health-mcp` |
 | Bearer token | `HEALTH_MCP_TOKEN` | `--token` | unset (loopback-only) |
 | Dashboard | `HEALTH_MCP_DASHBOARD` | `--no-dashboard` | enabled (not yet built) |
 | Timezone | `HEALTH_MCP_TZ` | `--tz` | system TZ |

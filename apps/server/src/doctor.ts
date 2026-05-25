@@ -20,7 +20,7 @@ export const runDoctor = async (opts: {
   )[0]?.journal_mode;
   out.pragma_fk = (db.pragma('foreign_keys') as Array<{ foreign_keys: number }>)[0]?.foreign_keys;
 
-  const authPath = join(config.authDir, 'auth.json');
+  const authPath = join(config.dataDir, 'auth.json');
   out.auth_path = authPath;
   out.auth_present = existsSync(authPath);
   if (out.auth_present) {
