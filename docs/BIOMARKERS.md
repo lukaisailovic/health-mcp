@@ -22,12 +22,13 @@ Three ranges, walked in this order to decide a result's `status`:
 - `optimal` — has optimal range and value is inside it.
 - `in_ref` — has a reference range (snapshot or default) and value is inside it.
 - `out_of_ref` — has any range and value is outside.
-- `unknown` — non-numeric value, or no ranges at all.
+- `unknown` — non-numeric value, no ranges at all, or the stored unit doesn't match the biomarker's default unit (so range comparison would be meaningless).
 
 The status walk:
-1. If the biomarker has an optimal range and value is inside → `optimal`.
-2. Otherwise, fall back to the lab snapshot range, then the default. If a range exists and value is inside → `in_ref`. If outside → `out_of_ref`.
-3. If neither optimal nor reference ranges exist → `unknown`. (If only an optimal range exists and the value falls outside it, status is `out_of_ref`.)
+1. If the result's `unit_ucum` doesn't match the biomarker's `default_unit_ucum` → `unknown` (the ranges live in the default unit; comparing across units would lie).
+2. If the biomarker has an optimal range and value is inside → `optimal`.
+3. Otherwise, fall back to the lab snapshot range, then the default. If a range exists and value is inside → `in_ref`. If outside → `out_of_ref`.
+4. If neither optimal nor reference ranges exist → `unknown`. (If only an optimal range exists and the value falls outside it, status is `out_of_ref`.)
 
 `latest_biomarkers` returns one row per biomarker with `{ biomarker, result, status, delta_vs_prev }`.
 
@@ -50,7 +51,7 @@ The wire format is plain SQL rows + Zod schemas. No FHIR resources cross the wal
 - `unit_ucum` is rewritten to the default
 - the original (e.g. `original: 5.1 mmol/L`) is appended to `notes`
 
-If `unit_ucum` differs but the pair is **not** in the table, value is stored as-supplied and `unit_mismatch` is added to `notes`. The trend/latest tools do not silently combine mismatched units; they surface the warning.
+If `unit_ucum` differs but the pair is **not** in the table, value is stored as-supplied and `unit_mismatch` is added to `notes`. `statusForResult` returns `unknown` for these rows so `biomarker_trend` and `latest_biomarkers` never compare a mismatched-unit value against the default-unit ranges.
 
 Conversions wired today (bidirectional unless noted):
 

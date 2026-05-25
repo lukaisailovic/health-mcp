@@ -63,7 +63,7 @@ Below is the full surface. Schemas are condensed — the wire format is JSON, al
 | Tool | Params | Notes |
 |---|---|---|
 | `log_intake` | `{ meal_type?, ts?, items: Item[], notes?, tags? }` | See [Intake item shape](#intake-item-shape). Atomic. |
-| `update_intake` | `{ id, grams?, servings?, meal_type?, notes?, tags?, confidence? }` | Re-derives macros on grams/servings change. |
+| `update_intake` | `{ id, grams?, servings?, meal_type?, notes?, tags?, confidence? }` | Re-derives macros on grams/servings change for food/batch/recipe_serving entries. Custom entries reject grams changes (`custom_intake_grams_unchangeable`) — delete and re-log instead. |
 | `delete_intake` | `{ id }` | Refunds batch `remaining_grams` if applicable. |
 | `list_intake` | `{ date?, start?, end?, meal_type?, limit? }` | |
 | `undo_last_intake` | `{}` | Pops most recent entry within last 10 minutes; returns `null` if none. |
