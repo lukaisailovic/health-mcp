@@ -82,6 +82,29 @@ describe('intake / food', () => {
     expect(getBatch(ctx, batch.id).remaining_grams).toBe(100);
   });
 
+  it('update_intake rejects grams change on a custom entry', () => {
+    const r = logIntake(ctx, {
+      items: [
+        {
+          ref: 'custom',
+          grams: 100,
+          custom: {
+            name: 'Coffee',
+            kcal_per_100g: 60,
+            protein_g_per_100g: 1,
+            carb_g_per_100g: 2,
+            fat_g_per_100g: 5,
+          },
+        },
+      ],
+    });
+    const id = r.entries[0]!.id;
+    expect(() => updateIntake(ctx, { id, grams: 50 })).toThrow(ServiceError);
+    const after = listIntake(ctx, {}).find((e) => e.id === id)!;
+    expect(after.grams).toBe(100);
+    expect(after.kcal).toBe(60);
+  });
+
   it('update_intake re-derives macros when grams change', () => {
     const food = createCustomFood(ctx, {
       name: 'Egg',

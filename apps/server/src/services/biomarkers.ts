@@ -376,6 +376,7 @@ export const statusForResult = (ctx: Ctx, r: LabResult, b?: Biomarker): Biomarke
       | Biomarker
       | undefined);
   if (!biomarker) return 'unknown';
+  if (r.unit_ucum.toLowerCase() !== biomarker.default_unit_ucum.toLowerCase()) return 'unknown';
   const hasOptimal = biomarker.optimal_low !== null || biomarker.optimal_high !== null;
   if (hasOptimal) {
     const lo = biomarker.optimal_low ?? Number.NEGATIVE_INFINITY;
@@ -417,7 +418,9 @@ export const latestBiomarkers = (
     ${args.category ? `JOIN biomarker_category_map bcm ON bcm.biomarker_id = lr.biomarker_id ${filterCategory}` : ''}
     WHERE rn = 1
   `;
-  const rows = ctx.db.prepare(sql).all(...params) as LabResult[];
+  const rows = (ctx.db.prepare(sql).all(...params) as Array<LabResult & { rn?: number }>).map(
+    ({ rn: _rn, ...rest }) => rest as LabResult,
+  );
   const out: Array<{
     biomarker: Biomarker;
     result: LabResult;

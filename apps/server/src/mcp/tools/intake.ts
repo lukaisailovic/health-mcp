@@ -21,7 +21,7 @@ export const intakeTools = [
   tool({
     name: 'update_intake',
     description:
-      'Update grams/servings/meal_type/notes on an intake entry; re-derives macros when grams/servings change.',
+      'Update grams/servings/meal_type/notes on an intake entry. Re-derives macros for food/batch/recipe_serving entries when grams or servings change. Custom entries cannot have grams changed — delete and re-log instead.',
     group: 'intake',
     inputSchema: z.object({
       id: z.string().min(1),

@@ -70,6 +70,32 @@ describe('biomarkers', () => {
     expect(glucose?.delta_vs_prev).toBe(-5);
   });
 
+  it('unit-mismatch results report status=unknown, not a numeric range hit', () => {
+    logLabResult(ctx, {
+      biomarker: 'Glucose',
+      value_numeric: 5.1,
+      unit_ucum: 'banana/L',
+      taken_at: '2026-01-10T08:00:00Z',
+    });
+    const trend = biomarkerTrend(ctx, { biomarker: 'Glucose' });
+    expect(trend[0]?.status).toBe('unknown');
+    const latest = latestBiomarkers(ctx).find((r) => r.biomarker.name === 'Glucose');
+    expect(latest?.status).toBe('unknown');
+  });
+
+  it('latest_biomarkers does not leak the SQL row-number column', () => {
+    logLabResult(ctx, {
+      biomarker: 'Glucose',
+      value_numeric: 90,
+      taken_at: '2026-01-10T08:00:00Z',
+    });
+    const latest = latestBiomarkers(ctx);
+    expect(latest.length).toBeGreaterThan(0);
+    for (const row of latest) {
+      expect(row.result).not.toHaveProperty('rn');
+    }
+  });
+
   it('biomarker_trend returns time-ordered points', () => {
     logLabResult(ctx, {
       biomarker: 'Glucose',

@@ -321,6 +321,13 @@ export const updateIntake = (
     let newGrams = existing.grams;
     let newServings = existing.servings;
     let recalcMacros = false;
+    if (args.grams !== undefined && existing.ref_kind === 'custom') {
+      throw new ServiceError(
+        'custom_intake_grams_unchangeable',
+        'cannot change grams on a custom intake entry; delete and re-log with new grams',
+        400,
+      );
+    }
     if (args.grams !== undefined && existing.ref_kind !== 'recipe_serving') {
       if (existing.ref_kind === 'batch' && existing.batch_id && existing.grams !== null) {
         const delta = args.grams - existing.grams;

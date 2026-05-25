@@ -11,9 +11,12 @@ const toContent = (value: unknown): Array<{ type: 'text'; text: string }> => {
   return [{ type: 'text', text: JSON.stringify(value, null, 2) }];
 };
 
-const shapeOf = (schema: ZodTypeAny): ZodRawShape => {
-  const anySchema = schema as unknown as { shape?: ZodRawShape };
-  return anySchema.shape ?? {};
+export const shapeOf = (schema: ZodTypeAny): ZodRawShape => {
+  let current: ZodTypeAny | undefined = schema;
+  while (current && !('shape' in current)) {
+    current = (current as unknown as { _def?: { schema?: ZodTypeAny } })._def?.schema;
+  }
+  return (current as unknown as { shape?: ZodRawShape } | undefined)?.shape ?? {};
 };
 
 const errorContent = (code: string, message: string) => ({
