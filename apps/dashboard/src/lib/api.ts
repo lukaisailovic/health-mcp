@@ -127,7 +127,6 @@ export const api = {
     update: (id: string, body: Record<string, unknown>) =>
       patch<MealDto>(`/api/meals/${encodeURIComponent(id)}`, body),
     delete: (id: string) => del<{ id: string }>(`/api/meals/${encodeURIComponent(id)}`),
-    undo: () => post<MealDto | null>('/api/meals/undo'),
     addComponent: (mealId: string, component: MealComponentInput) =>
       post<MealDto>(`/api/meals/${encodeURIComponent(mealId)}/components`, { component }),
     updateComponent: (mealId: string, componentId: string, body: Record<string, unknown>) =>

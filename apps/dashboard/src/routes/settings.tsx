@@ -92,14 +92,13 @@ const TokenSection = () => {
                   )}
                 </button>
               </div>
-              <Button type="submit" size="sm" disabled={!dirty}>
+              <Button type="submit" disabled={!dirty}>
                 Save & reload
               </Button>
               {hasSaved ? (
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
                   aria-label="Clear token"
                   onClick={() => {
                     clearToken();

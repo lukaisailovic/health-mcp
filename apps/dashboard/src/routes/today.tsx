@@ -9,7 +9,6 @@ import {
   Plus,
   Scale,
   Trash2,
-  Undo2,
 } from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 import { MealCard } from '@/components/meal-card';
@@ -220,10 +219,6 @@ const Today = () => {
     queryFn: () => api.weight.list({ date, limit: 1 }),
   });
 
-  const undo = useMutation({
-    mutationFn: () => api.meals.undo(),
-    onSuccess: () => qc.invalidateQueries(),
-  });
   const deleteMeal = useMutation({
     mutationFn: (id: string) => api.meals.delete(id),
     onSuccess: () => qc.invalidateQueries(),
@@ -303,16 +298,6 @@ const Today = () => {
             <span className="text-kumo-subtle">·</span>
             <span className="font-mono text-xs">{s.date}</span>
           </span>
-        }
-        actions={
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={undo.isPending}
-            onClick={() => undo.mutate()}
-          >
-            <Undo2 className="h-3.5 w-3.5" /> undo last
-          </Button>
         }
       />
 
