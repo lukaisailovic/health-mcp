@@ -17,7 +17,7 @@ Three optional text columns on `biomarkers` carry educational copy that renders 
 - `influences` — what physiologically or behaviorally moves it up/down.
 - `how_to_improve` — actionable interventions, or `NULL` when there is no user-actionable lever (e.g. RBC indices, tightly homeostatic electrolytes).
 
-Seed content for the curated catalog lives in `apps/server/src/biomarkers/seed-biomarkers.json` and is backfilled by migration `0007-biomarker-about`. `create_biomarker` and `update_biomarker` accept the same three fields for custom entries.
+Seed content for the curated catalog lives in `apps/server/src/biomarkers/seed-biomarkers.json` and is loaded by migration `0001-init`. `create_biomarker` and `update_biomarker` accept the same three fields for custom entries.
 
 ## Three-tier range model
 

@@ -1,6 +1,6 @@
 # Wearables
 
-Provider-agnostic abstraction over OAuth wearables. Today: **Whoop** (P4) and **Oura** (P7). Future: Fitbit, Polar, Garmin (OAuth1), Apple Health (file_import).
+Provider-agnostic abstraction over OAuth wearables. Today: **Whoop** and **Oura**. Future: Fitbit, Polar, Garmin (OAuth1), Apple Health (file_import).
 
 Read the [Data model — Wearables](./DATA_MODEL.md#wearables) section first if you haven't — it explains the raw / normalized two-tier split.
 

@@ -1,14 +1,6 @@
 import type { Logger } from '../logger.js';
 import type { Db } from './client.js';
 import { migration0001 } from './sql/0001-init.js';
-import { migration0002 } from './sql/0002-biomarkers.js';
-import { migration0003 } from './sql/0003-recipes-batches.js';
-import { migration0004 } from './sql/0004-wearables.js';
-import { migration0005 } from './sql/0005-seed-biomarkers.js';
-import { migration0006 } from './sql/0006-oura.js';
-import { migration0007 } from './sql/0007-biomarker-about.js';
-import { migration0008 } from './sql/0008-meals.js';
-import { migration0009 } from './sql/0009-goals-bounds.js';
 
 export type Migration = {
   id: string;
@@ -16,17 +8,7 @@ export type Migration = {
   run?: (db: Db) => void;
 };
 
-const migrations: Migration[] = [
-  migration0001,
-  migration0002,
-  migration0003,
-  migration0004,
-  migration0005,
-  migration0006,
-  migration0007,
-  migration0008,
-  migration0009,
-];
+const migrations: Migration[] = [migration0001];
 
 const ensureTable = (db: Db) => {
   db.exec(`

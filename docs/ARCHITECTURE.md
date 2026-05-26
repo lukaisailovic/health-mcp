@@ -2,38 +2,31 @@
 
 Single Node process. One service layer; three surfaces sit on top of it (MCP HTTP, MCP stdio, REST). SQLite is the only datastore. Wearable OAuth credentials live in a separate file outside the DB.
 
-```
-   HTTP mode (default)                            stdio mode (--stdio)
-   ──────────────────                             ────────────────────
-   ┌───────────────────────────────────┐          ┌──────────────────┐
-   │            Hono app               │          │  stdin / stdout  │
-   │                                   │          │  (parent: agent) │
-   │ GET  /health, /version            │          └────────┬─────────┘
-   │ GET  /                            │ ◄────►            │
-   │ POST /mcp        (Streamable HTTP)│                   │ MCP
-   │ GET  /api/*      (REST mirror)    │                   │ (StdioServer
-   │ GET  /auth/wearable/callback      │                   │  Transport)
-   └──────────────┬────────────────────┘                   │
-                  │                                        │
-                  └────────────────┬───────────────────────┘
-                                   │
-                          ┌────────▼────────┐
-                          │  service layer  │   apps/server/src/services/*.ts
-                          │  (single source │   pure functions
-                          │   of truth)     │
-                          └────────┬────────┘
-                                   │
-                ┌──────────────────┼──────────────────┐
-                │                  │                  │
-        ┌───────▼───────┐  ┌───────▼───────┐  ┌───────▼───────┐
-        │   SQLite      │  │ AuthStore     │  │ Wearable      │
-        │ better-sqlite3│  │ ~/.health-mcp/│  │ providers     │
-        │ WAL + FK ON   │  │   auth.json   │  │ (Whoop, Oura) │
-        └───────────────┘  └───────────────┘  └───────────────┘
+```mermaid
+flowchart TB
+  subgraph http["HTTP mode (default)"]
+    direction TB
+    hono["Hono app<br/>GET /health, /version<br/>GET / (dashboard)<br/>POST /mcp (Streamable HTTP)<br/>GET /api/* (REST mirror)<br/>GET /auth/wearable/callback"]
+  end
 
-   HTTP mode only: a croner job calls sync_wearables() on the configured cron.
-   stdio mode: no scheduler, no dashboard, no REST. Sync runs only when a tool is called.
+  subgraph stdio["stdio mode (--stdio)"]
+    direction TB
+    pipes["stdin / stdout<br/>(parent: agent)"]
+    transport["StdioServerTransport"]
+    pipes <-->|MCP| transport
+  end
+
+  services["service layer<br/>apps/server/src/services/*.ts<br/>(pure functions, single source of truth)"]
+
+  hono --> services
+  transport --> services
+
+  services --> db[("SQLite<br/>better-sqlite3<br/>WAL + FK ON")]
+  services --> auth[("AuthStore<br/>~/.health-mcp/auth.json")]
+  services --> providers{{"Wearable providers<br/>(Whoop, Oura)"}}
 ```
+
+HTTP mode only: a croner job calls `sync_wearables()` on the configured cron. Stdio mode has no scheduler, no dashboard, no REST — sync runs only when a tool is called.
 
 ## Mounts
 
