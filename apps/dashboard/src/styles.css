@@ -6,7 +6,7 @@
 
 @theme {
   --font-sans: Inter, system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   --text-color-kumo-brand: var(--color-kumo-brand);
 }
 
@@ -19,7 +19,7 @@
   }
 
   body {
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
   }
 
   ::-webkit-scrollbar {
@@ -41,32 +41,32 @@
     background: transparent;
   }
 
-  input[type='number']::-webkit-outer-spin-button,
-  input[type='number']::-webkit-inner-spin-button {
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     appearance: none;
     margin: 0;
   }
-  input[type='number'] {
+  input[type="number"] {
     -moz-appearance: textfield;
     appearance: textfield;
   }
 
-  input[type='date']::-webkit-calendar-picker-indicator,
-  input[type='time']::-webkit-calendar-picker-indicator,
-  input[type='datetime-local']::-webkit-calendar-picker-indicator {
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
     opacity: 0.55;
     transition: opacity 150ms ease;
   }
-  [data-mode='dark'] input[type='date']::-webkit-calendar-picker-indicator,
-  [data-mode='dark'] input[type='time']::-webkit-calendar-picker-indicator,
-  [data-mode='dark'] input[type='datetime-local']::-webkit-calendar-picker-indicator {
+  [data-mode="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+  [data-mode="dark"] input[type="time"]::-webkit-calendar-picker-indicator,
+  [data-mode="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     filter: invert(0.85);
   }
-  input[type='date']::-webkit-calendar-picker-indicator:hover,
-  input[type='time']::-webkit-calendar-picker-indicator:hover,
-  input[type='datetime-local']::-webkit-calendar-picker-indicator:hover {
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="time"]::-webkit-calendar-picker-indicator:hover,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
   }
 }
@@ -89,6 +89,8 @@
   --panel-translate-y: 12px;
   --panel-blur: 2px;
   --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --resize-dur: 300ms;
+  --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Page enter — opacity only to avoid layout shift on load */
@@ -154,8 +156,7 @@
   }
 }
 .t-input.is-shaking {
-  animation: shake-x calc(var(--shake-dur-a) + var(--shake-dur-b) * 3)
-    var(--shake-ease) both;
+  animation: shake-x calc(var(--shake-dur-a) + var(--shake-dur-b) * 3) var(--shake-ease) both;
 }
 
 /* Panel reveal (transitions-dev #07) */
@@ -176,11 +177,33 @@
   will-change: transform, opacity, filter;
 }
 
+/* Card resize — disclosure reveal (transitions-dev #01, grid-rows variant) */
+.t-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--resize-dur) var(--resize-ease);
+  will-change: grid-template-rows;
+}
+.t-reveal[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.t-reveal > * {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--resize-dur) var(--resize-ease);
+}
+.t-reveal[data-open="true"] > * {
+  opacity: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .route-enter,
   .t-number.is-animating > span,
   .t-input.is-shaking,
-  .t-panel-reveal {
+  .t-panel-reveal,
+  .t-reveal,
+  .t-reveal > * {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;
