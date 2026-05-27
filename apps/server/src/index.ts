@@ -10,8 +10,8 @@ import { openDb } from './db/client.js';
 import { runMigrations } from './db/migrations.js';
 import { runDoctor } from './doctor.js';
 import { runExport } from './export.js';
-import { runImportUsda } from './import-usda.js';
 import { createHonoApp } from './http.js';
+import { runImportUsda } from './import-usda.js';
 import { createLogger } from './logger.js';
 import { HealthMcpServer } from './mcp/server.js';
 import { startStdioServer } from './mcp/stdio.js';
@@ -104,26 +104,36 @@ const main = async () => {
   initRegistry(ctx);
 
   const tools = buildAllTools();
-  const health = new HealthMcpServer({ tools, ctx });
-  health.attach();
+  const createMcpServer = (): HealthMcpServer => {
+    const server = new HealthMcpServer({ tools, ctx });
+    server.attach();
+    return server;
+  };
 
-  const availabilityTimer = setInterval(() => {
-    try {
-      health.reevaluateAvailability();
-    } catch (err) {
-      logger.warn('reevaluate availability failed', { error: (err as Error).message });
-    }
-  }, 30_000);
-  availabilityTimer.unref();
+  const startAvailabilityTimer = (getServers: () => HealthMcpServer[]): void => {
+    const timer = setInterval(() => {
+      for (const server of getServers()) {
+        try {
+          server.reevaluateAvailability();
+        } catch (err) {
+          logger.warn('reevaluate availability failed', { error: (err as Error).message });
+        }
+      }
+    }, 30_000);
+    timer.unref();
+  };
 
   if (config.stdio) {
+    const health = createMcpServer();
+    startAvailabilityTimer(() => [health]);
     await startStdioServer(health, logger);
     return;
   }
 
   const app = createHonoApp({ config, logger, ctx, sdkVersion: '1.x' });
-  const mcpHandler = createMcpRouter({ server: health, token: config.token, logger });
-  const stop = await startHttpServer({ app, mcpHandler, config, logger });
+  const router = createMcpRouter({ createServer: createMcpServer, token: config.token, logger });
+  startAvailabilityTimer(router.activeServers);
+  const stop = await startHttpServer({ app, mcpHandler: router.handle, config, logger });
 
   const scheduler = startScheduler(ctx, config.whoopSyncCron, logger);
 

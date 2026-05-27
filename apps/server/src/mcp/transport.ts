@@ -5,7 +5,12 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import type { Logger } from '../logger.js';
 import type { HealthMcpServer } from './server.js';
 
-const transports = new Map<string, StreamableHTTPServerTransport>();
+type Session = { transport: StreamableHTTPServerTransport; server: HealthMcpServer };
+
+export type McpRouter = {
+  handle: (req: IncomingMessage, res: ServerResponse) => Promise<boolean>;
+  activeServers: () => HealthMcpServer[];
+};
 
 const constantTimeEq = (a: string, b: string): boolean => {
   if (a.length !== b.length) return false;
@@ -40,11 +45,13 @@ const readBody = (req: IncomingMessage): Promise<unknown> =>
   });
 
 export const createMcpRouter = (opts: {
-  server: HealthMcpServer;
+  createServer: () => HealthMcpServer;
   token: string | null;
   logger: Logger;
-}): ((req: IncomingMessage, res: ServerResponse) => Promise<boolean>) => {
-  return async (req, res) => {
+}): McpRouter => {
+  const sessions = new Map<string, Session>();
+
+  const handle = async (req: IncomingMessage, res: ServerResponse): Promise<boolean> => {
     const url = req.url ?? '/';
     if (!url.startsWith('/mcp')) return false;
     if (!authOk(req, opts.token)) {
@@ -54,18 +61,20 @@ export const createMcpRouter = (opts: {
     }
     const sessionId = req.headers['mcp-session-id'];
     const sidStr = Array.isArray(sessionId) ? sessionId[0] : sessionId;
-    let transport = sidStr ? transports.get(sidStr) : undefined;
-    if (!transport) {
-      transport = new StreamableHTTPServerTransport({
+    let session = sidStr ? sessions.get(sidStr) : undefined;
+    if (!session) {
+      const server = opts.createServer();
+      const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (id) => {
-          transports.set(id, transport!);
+          sessions.set(id, { transport, server });
         },
       });
       transport.onclose = () => {
-        if (transport?.sessionId) transports.delete(transport.sessionId);
+        if (transport.sessionId) sessions.delete(transport.sessionId);
       };
-      await opts.server.underlying().connect(transport);
+      await server.underlying().connect(transport);
+      session = { transport, server };
     }
     let body: unknown;
     if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
@@ -78,7 +87,9 @@ export const createMcpRouter = (opts: {
         return true;
       }
     }
-    await transport.handleRequest(req, res, body);
+    await session.transport.handleRequest(req, res, body);
     return true;
   };
+
+  return { handle, activeServers: () => Array.from(sessions.values(), (s) => s.server) };
 };
