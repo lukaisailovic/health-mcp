@@ -89,8 +89,6 @@
   --panel-translate-y: 12px;
   --panel-blur: 2px;
   --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --resize-dur: 300ms;
-  --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Page enter — opacity only to avoid layout shift on load */
@@ -177,33 +175,11 @@
   will-change: transform, opacity, filter;
 }
 
-/* Card resize — disclosure reveal (transitions-dev #01, grid-rows variant) */
-.t-reveal {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--resize-dur) var(--resize-ease);
-  will-change: grid-template-rows;
-}
-.t-reveal[data-open="true"] {
-  grid-template-rows: 1fr;
-}
-.t-reveal > * {
-  min-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity var(--resize-dur) var(--resize-ease);
-}
-.t-reveal[data-open="true"] > * {
-  opacity: 1;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .route-enter,
   .t-number.is-animating > span,
   .t-input.is-shaking,
-  .t-panel-reveal,
-  .t-reveal,
-  .t-reveal > * {
+  .t-panel-reveal {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;
