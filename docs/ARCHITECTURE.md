@@ -112,6 +112,6 @@ In stdio mode there is no scheduler. Syncs only happen when an agent calls `sync
 
 ## Dashboard
 
-`apps/dashboard/` — Vite + React + TanStack Router + TanStack Query + Tailwind + Kumo UI + Recharts. Built into `apps/dashboard/dist`; the server mounts it as static under `/` with SPA fallback. The build is committed to npm packaging so `npx @lukaisailovic/health-mcp` works out of the box.
+`apps/dashboard/` — Vite + React + TanStack Router + TanStack Query + Tailwind + Kumo UI + Recharts. Built into `apps/dashboard/dist`; the server mounts it as static under `/` with SPA fallback. The build is committed to npm packaging so `npx health-mcp` works out of the box.
 
 The dashboard reads `localStorage.health_mcp_token` on boot, calls `/health` (unauth) to learn whether a token is required, and either shows a Setup screen or starts fetching `/api/*` with `Authorization: Bearer …`. A global TanStack Query error boundary watches for 401s and bounces to Setup.

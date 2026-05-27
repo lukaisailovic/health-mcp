@@ -1,5 +1,5 @@
 {
-  "name": "@lukaisailovic/health-mcp",
+  "name": "health-mcp",
   "version": "0.1.0",
   "description": "Self-hosted MCP server for personal nutrition, biomarkers, and wearables data",
   "type": "module",

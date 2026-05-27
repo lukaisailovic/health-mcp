@@ -28,7 +28,7 @@ COPY apps/server ./apps/server
 
 RUN pnpm build \
  && pnpm --config.minimum-release-age=0 \
-        --filter @lukaisailovic/health-mcp deploy --prod --legacy /out
+        --filter health-mcp deploy --prod --legacy /out
 
 FROM node:${NODE_VERSION}-bookworm-slim AS runtime
 ENV NODE_ENV=production \

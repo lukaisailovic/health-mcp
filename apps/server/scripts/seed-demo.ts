@@ -4,7 +4,7 @@
  * SQLite (no public ingest API for those).
  *
  * Usage:
- *   pnpm --filter @lukaisailovic/health-mcp exec tsx scripts/seed-demo.ts
+ *   pnpm --filter health-mcp exec tsx scripts/seed-demo.ts
  *
  * Optional env:
  *   HEALTH_MCP_URL    base URL of the server (default http://127.0.0.1:7777)

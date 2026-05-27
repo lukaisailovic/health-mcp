@@ -261,7 +261,7 @@ Or once published to npm:
   "mcpServers": {
     "health": {
       "command": "npx",
-      "args": ["-y", "@lukaisailovic/health-mcp", "--stdio"]
+      "args": ["-y", "health-mcp", "--stdio"]
     }
   }
 }
@@ -275,7 +275,7 @@ Hermes reads its `mcp_servers` block from `config.yaml`:
 mcp_servers:
   health:
     command: "npx"
-    args: ["-y", "@lukaisailovic/health-mcp", "--stdio"]
+    args: ["-y", "health-mcp", "--stdio"]
     env:
       HEALTH_MCP_DATA_DIR: "/path/to/storage"
     timeout: 120
@@ -293,7 +293,7 @@ OpenClaw keeps MCP servers under `mcp.servers` in its JSON config:
     "servers": {
       "health": {
         "command": "npx",
-        "args": ["-y", "@lukaisailovic/health-mcp", "--stdio"]
+        "args": ["-y", "health-mcp", "--stdio"]
       }
     }
   }
@@ -303,7 +303,7 @@ OpenClaw keeps MCP servers under `mcp.servers` in its JSON config:
 Or register via the CLI without hand-editing the file:
 
 ```bash
-openclaw mcp set health '{"command":"npx","args":["-y","@lukaisailovic/health-mcp","--stdio"]}'
+openclaw mcp set health '{"command":"npx","args":["-y","health-mcp","--stdio"]}'
 openclaw mcp list
 ```
 

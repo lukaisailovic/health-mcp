@@ -8,18 +8,18 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "pnpm --filter @health-mcp/shared build && pnpm --filter @health-mcp/dashboard build && pnpm --filter @lukaisailovic/health-mcp build",
-    "build:server": "pnpm --filter @health-mcp/shared build && pnpm --filter @lukaisailovic/health-mcp build",
+    "build": "pnpm --filter @health-mcp/shared build && pnpm --filter @health-mcp/dashboard build && pnpm --filter health-mcp build",
+    "build:server": "pnpm --filter @health-mcp/shared build && pnpm --filter health-mcp build",
     "build:dashboard": "pnpm --filter @health-mcp/dashboard build",
-    "dev": "pnpm --filter @health-mcp/shared --filter @lukaisailovic/health-mcp --filter @health-mcp/dashboard --parallel dev",
-    "dev:server": "pnpm --filter @lukaisailovic/health-mcp dev",
+    "dev": "pnpm --filter @health-mcp/shared --filter health-mcp --filter @health-mcp/dashboard --parallel dev",
+    "dev:server": "pnpm --filter health-mcp dev",
     "dev:dashboard": "pnpm --filter @health-mcp/dashboard dev",
-    "start": "pnpm --filter @lukaisailovic/health-mcp start",
+    "start": "pnpm --filter health-mcp start",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "inspect": "pnpm --filter @lukaisailovic/health-mcp inspect"
+    "inspect": "pnpm --filter health-mcp inspect"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
