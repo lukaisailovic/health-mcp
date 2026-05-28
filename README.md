@@ -17,13 +17,9 @@ Everything runs on your machine. One SQLite file. No accounts, no SaaS, no telem
   <sub>The bundled dashboard's <strong>Today</strong> view: macros vs goals, sleep / recovery / weight / hydration, and the day's meals.</sub>
 </p>
 
-```mermaid
-flowchart LR
-  agent["MCP agent<br/>(Hermes, OpenClaw)"] <-->|MCP| server["health-mcp<br/>(one Node process)"]
-  server <--> db[("SQLite + auth.json")]
-  server <-->|OAuth2| wearables{{"Whoop / Oura"}}
-  server -->|":7777"| dashboard["Dashboard<br/>(browser)"]
-```
+<p align="center">
+  <img src="docs/architecture.png" alt="health-mcp architecture: an MCP agent and a browser dashboard both talk to the health-mcp Node process, which stores data in SQLite and syncs Whoop / Oura over OAuth2" width="900" />
+</p>
 
 Instead of building another photo-CV calorie app or a freeform-text parser, you let the agent handle the squishy parts ("I had two eggs and toast", "log this lab PDF", "what affects my sleep score?") and let this server handle the durable parts: typed schema, atomic transactions, range queries, a capability-gated tool surface, and a UI that doesn't lie about the data underneath.
 
