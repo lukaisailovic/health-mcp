@@ -51,7 +51,8 @@ Below is the full surface. Schemas are condensed — the wire format is JSON, al
 
 | Tool | Params | Notes |
 |---|---|---|
-| `search_food` | `{ query, source?: 'usda'\|'off'\|'manual', limit? }` | Typo- and punctuation-tolerant fuzzy match over local foods, ranked by likelihood; falls back to USDA when the local set is thin. |
+| `search_food` | `{ query, source?: 'usda'\|'off'\|'manual', limit? }` | Single-query catalog search. Typo- and punctuation-tolerant fuzzy match, ranked by likelihood; falls back to USDA when the local set is thin. Default `limit` is 5. |
+| `search_foods` | `{ queries: string[], source?: 'usda'\|'off'\|'manual', limit? }` | Batch variant of `search_food` — pass every component of a multi-component meal up front and only estimate macros for queries that come back empty. Returns `[{ query, results }]` preserving input order. Default `limit` is 5 per query. |
 | `lookup_barcode` | `{ barcode }` | Local cache then Open Food Facts. |
 | `get_food` | `{ id }` | |
 | `create_custom_food` | `{ name, brand?, serving_grams?, nutrients_per_100g: {...} }` | Per-100g shape. |

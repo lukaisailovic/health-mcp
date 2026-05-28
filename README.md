@@ -202,7 +202,7 @@ About 60 tools. `discover_capabilities` returns the live catalog grouped by area
 ping, discover_capabilities
 
 # food
-search_food, lookup_barcode, get_food
+search_food, search_foods, lookup_barcode, get_food
 create_custom_food, update_custom_food, delete_custom_food
 
 # meals

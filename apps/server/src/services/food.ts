@@ -103,7 +103,7 @@ export const searchFood = async (
   ctx: Ctx,
   args: { query: string; source?: 'usda' | 'off' | 'manual'; limit?: number },
 ): Promise<FoodRow[]> => {
-  const limit = args.limit ?? 20;
+  const limit = args.limit ?? 5;
   const local = searchFoodLocal(ctx, args.query, limit);
   if (local.length >= limit || args.source === 'manual') return local;
   if (args.source && args.source !== 'usda') return local;
@@ -137,6 +137,20 @@ export const searchFood = async (
     ctx.logger.warn('usda search failed', { error: (err as Error).message });
     return local;
   }
+};
+
+export type FoodQueryResult = { query: string; results: FoodRow[] };
+
+export const searchFoods = async (
+  ctx: Ctx,
+  args: { queries: string[]; source?: 'usda' | 'off' | 'manual'; limit?: number },
+): Promise<FoodQueryResult[]> => {
+  const unique = Array.from(new Set(args.queries));
+  const settled = await Promise.all(
+    unique.map((query) => searchFood(ctx, { query, source: args.source, limit: args.limit })),
+  );
+  const byQuery = new Map(unique.map((q, i) => [q, settled[i]!]));
+  return args.queries.map((query) => ({ query, results: byQuery.get(query) ?? [] }));
 };
 
 export const lookupBarcode = async (ctx: Ctx, barcode: string): Promise<FoodRow | null> => {

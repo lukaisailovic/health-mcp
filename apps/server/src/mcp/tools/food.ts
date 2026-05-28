@@ -5,6 +5,7 @@ import {
   getFood,
   lookupBarcode,
   searchFood,
+  searchFoods,
   updateCustomFood,
 } from '../../services/food.js';
 import { tool } from '../tool-registry.js';
@@ -13,7 +14,7 @@ export const foodTools = [
   tool({
     name: 'search_food',
     description:
-      'Search foods by name/brand, ranked by likelihood. Matches any word prefix and tolerates typos and punctuation ("bbq (sauce)", "tex bqq" → "TexMex BBQ Sauce"). Local SQLite first; falls back to USDA when the local set is thin and a USDA key is configured.',
+      'Search the catalog for one food. Use search_foods when logging a multi-component meal — pass every component up front and only estimate macros yourself for queries that return nothing. Ranks by likelihood, tolerates typos and punctuation ("bbq (sauce)", "tex bqq" → "TexMex BBQ Sauce"). Local SQLite first; falls back to USDA when the local set is thin and a USDA key is configured. Returns up to `limit` (default 5).',
     group: 'food',
     inputSchema: z.object({
       query: z.string().min(1),
@@ -21,6 +22,18 @@ export const foodTools = [
       limit: z.number().int().positive().max(100).optional(),
     }),
     handler: async (args, ctx) => searchFood(ctx, args),
+  }),
+  tool({
+    name: 'search_foods',
+    description:
+      'Batch variant of search_food for multi-component meals: search every component in one call before estimating any macros. Returns `[{ query, results }]` preserving input order. Same ranking, typo tolerance, and USDA fallback as search_food. Default `limit` is 5 results per query.',
+    group: 'food',
+    inputSchema: z.object({
+      queries: z.array(z.string().min(1)).min(1).max(20),
+      source: z.enum(['usda', 'off', 'manual']).optional(),
+      limit: z.number().int().positive().max(100).optional(),
+    }),
+    handler: async (args, ctx) => searchFoods(ctx, args),
   }),
   tool({
     name: 'lookup_barcode',
