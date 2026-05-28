@@ -6,13 +6,20 @@
 
 > Your personal health database. Your agent does the typing.
 
-A local-first server that stores your nutrition, biomarker, and wearable data. The whole thing is exposed as Model Context Protocol tools, so any MCP-aware agent (Hermes, OpenClaw, Claude Desktop) can read and write it. A web dashboard ships in the same process for when you want to look at the data instead of talk to it.
+A local-first server that stores your nutrition, biomarker, and wearable data. The whole thing is exposed as Model Context Protocol tools, so any MCP-aware agent (Hermes, OpenClaw) can read and write it. A web dashboard ships in the same process for when you want to look at the data instead of talk to it.
 
 Everything runs on your machine. One SQLite file. No accounts, no SaaS, no telemetry.
 
+<p align="center">
+  <img src="docs/dashboard-today.png" alt="health-mcp dashboard, Today view" width="900" />
+</p>
+<p align="center">
+  <sub>The bundled dashboard's <strong>Today</strong> view: macros vs goals, sleep / recovery / weight / hydration, and the day's meals.</sub>
+</p>
+
 ```mermaid
 flowchart LR
-  agent["MCP agent<br/>(Hermes, OpenClaw, Claude Desktop)"] <-->|MCP| server["health-mcp<br/>(one Node process)"]
+  agent["MCP agent<br/>(Hermes, OpenClaw)"] <-->|MCP| server["health-mcp<br/>(one Node process)"]
   server <--> db[("SQLite + auth.json")]
   server <-->|OAuth2| wearables{{"Whoop / Oura"}}
   server -->|":7777"| dashboard["Dashboard<br/>(browser)"]
@@ -39,6 +46,17 @@ Instead of building another photo-CV calorie app or a freeform-text parser, you 
 ---
 
 ## Quick start
+
+### npx
+
+Node ≥ 20, no clone or build:
+
+```bash
+npx health-mcp            # http://127.0.0.1:7777, opens the dashboard
+npx health-mcp --stdio    # headless MCP server over stdio
+```
+
+State lives in `~/.health-mcp/` (one SQLite file). `npx health-mcp --help` lists every flag; `npx health-mcp doctor` runs a self-check.
 
 ### Docker
 
@@ -92,28 +110,30 @@ pnpm start -- import-usda dump.json    # ingest a USDA FoodData Central bulk JSO
 
 ## Connect an MCP agent
 
-### Claude Desktop (stdio)
+### Hermes / OpenClaw (stdio)
 
-Build once (`pnpm build`), then add to `claude_desktop_config.json`:
+Both use the standard MCP config, so the setup is identical: add health-mcp to the agent's `mcpServers`. No clone or build needed; point it at the published package:
 
 ```json
 {
   "mcpServers": {
     "health": {
-      "command": "node",
-      "args": ["/path/to/health-mcp/apps/server/dist/index.js", "--stdio"]
+      "command": "npx",
+      "args": ["-y", "health-mcp", "--stdio"]
     }
   }
 }
 ```
 
-Then in Claude:
+Where that block lives differs by agent; check its MCP settings for the path.
+
+Then ask your agent:
 
 - *"Log eggs and toast for breakfast"* → `log_meal`
 - *"How's my fasting glucose trending?"* → `biomarker_trend`
 - *"Does my protein intake correlate with Whoop recovery the next day?"* → `correlate` with `lag_buckets: 1`
 
-If you'd rather skip the build step and run from source, swap to `"command": "node"` with `"args": ["--import", "tsx", "/path/to/health-mcp/apps/server/src/index.ts", "--stdio"]`.
+Running from a local checkout instead? Use `"command": "node"` with `"args": ["/path/to/health-mcp/apps/server/dist/index.js", "--stdio"]` after `pnpm build`, or `"args": ["--import", "tsx", "/path/to/health-mcp/apps/server/src/index.ts", "--stdio"]` to skip the build.
 
 ### MCP Inspector
 
