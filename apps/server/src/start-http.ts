@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { serve } from '@hono/node-server';
 import type { Hono } from 'hono';
+import { isLoopback } from './config.js';
 import type { Config } from './config.js';
 import type { Logger } from './logger.js';
 import { openBrowser } from './open-browser.js';
@@ -56,9 +57,16 @@ export const startHttpServer = async ({
   });
 
   const url = dashboardUrl(config);
-  logger.info('listening', { url, tz: config.tz });
+  logger.info('listening', { bind: `${config.host}:${config.port}`, url, tz: config.tz });
+  if (!isLoopback(config.host) && config.wearableRedirectBase?.includes('127.0.0.1')) {
+    logger.warn(
+      'wearable OAuth callback defaults to localhost while bound off-loopback; set HEALTH_MCP_WEARABLE_REDIRECT_BASE to a reachable URL for Whoop/Oura linking',
+      { host: config.host, wearableRedirectBase: config.wearableRedirectBase },
+    );
+  }
   if (config.dashboard) {
-    process.stdout.write(`\n  health-mcp · ${url}\n  press ctrl-c to stop\n\n`);
+    const scope = config.host === '0.0.0.0' ? ' (all interfaces)' : '';
+    process.stdout.write(`\n  health-mcp · ${url}${scope}\n  press ctrl-c to stop\n\n`);
   }
 
   if (config.openBrowser) {

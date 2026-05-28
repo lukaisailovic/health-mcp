@@ -233,7 +233,7 @@ const resolveOpen = (input: {
   return true;
 };
 
-const isLoopback = (host: string): boolean => {
+export const isLoopback = (host: string): boolean => {
   if (host === '127.0.0.1' || host === '::1' || host === 'localhost') return true;
   if (host.startsWith('127.')) return true;
   return false;
