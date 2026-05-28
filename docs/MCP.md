@@ -18,6 +18,8 @@ Two meta-tools — call these first to learn what's live.
 
 The fastest way to learn the surface from a fresh install is `discover_capabilities()` — it tells you which tools are hidden today, so you don't waste tokens on schemas for tools the user can't run.
 
+On connect the server also returns an `instructions` preamble in the `initialize` result. Clients that surface it (Claude Desktop, Claude Code) inject it into the agent's context, so a connected agent is primed to call `discover_capabilities` first and to follow the core conventions — structured meal logging, UTC timestamps, atomic lab panels, `lag_buckets` for next-day correlations — without being told.
+
 ## Capability gating
 
 Some tools are hidden until certain preconditions are met. The server re-evaluates every 30 s and emits `notifications/tools/list_changed`. Today's gates:
