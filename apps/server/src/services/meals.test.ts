@@ -6,6 +6,7 @@ import {
   deleteMeal,
   listMeals,
   logMeal,
+  logMealWithDay,
   removeMealComponent,
   undoLastMeal,
   updateMealComponent,
@@ -128,6 +129,66 @@ describe('meals — log_meal', () => {
     expect(c.custom_name).toBe('Apple slice');
     expect(c.ref_kind).toBe('custom');
     expect(c.kcal).toBeCloseTo(104, 5);
+  });
+
+  it('logs an absolute custom component without grams', () => {
+    const meal = logMeal(ctx, {
+      meal_type: 'dinner',
+      components: [
+        {
+          ref: 'custom',
+          custom: {
+            name: 'Small pizza',
+            absolute: { kcal: 720, protein_g: 28, carb_g: 80, fat_g: 30 },
+          },
+        },
+      ],
+    });
+    const c = meal.components[0]!;
+    expect(c.custom_name).toBe('Small pizza');
+    expect(c.grams).toBeNull();
+    expect(c.kcal).toBe(720);
+    expect(meal.totals.kcal).toBe(720);
+  });
+
+  it('rejects a per-100g custom component missing grams', () => {
+    expect(() =>
+      logMeal(ctx, {
+        meal_type: 'snack',
+        components: [
+          {
+            ref: 'custom',
+            custom: {
+              name: 'Nuts',
+              kcal_per_100g: 600,
+              protein_g_per_100g: 20,
+              carb_g_per_100g: 20,
+              fat_g_per_100g: 50,
+            },
+          },
+        ],
+      }),
+    ).toThrow(ServiceError);
+  });
+});
+
+describe('meals — daily rollup bundling', () => {
+  it('log_meal_with_day returns the meal plus the running daily total', () => {
+    const egg = eggFood();
+    const first = logMealWithDay(ctx, {
+      meal_type: 'breakfast',
+      components: [{ ref: 'food', food_id: egg.id, grams: 100 }],
+    });
+    expect(first.meal.totals.kcal).toBeCloseTo(155, 5);
+    expect(first.day.date).toBe(first.meal.date);
+    expect(first.day.totals.kcal).toBeCloseTo(155, 5);
+
+    const second = logMealWithDay(ctx, {
+      meal_type: 'lunch',
+      components: [{ ref: 'food', food_id: egg.id, grams: 100 }],
+    });
+    expect(second.day.totals.kcal).toBeCloseTo(310, 5);
+    expect(second.day.totals.meal_count).toBe(2);
   });
 });
 

@@ -9,14 +9,9 @@ import type {
 } from '@health-mcp/shared';
 import { cuid } from '../util/id.js';
 import { deriveMealType, nowIso, toLocalDate } from '../util/tz.js';
-import {
-  type Macros,
-  getFood,
-  macrosForCustom,
-  macrosForFoodGrams,
-  scaleMacros,
-} from './food.js';
+import { type Macros, getFood, macrosForCustom, macrosForFoodGrams, scaleMacros } from './food.js';
 import { type BatchTotals, batchMacrosForGrams, recipeTotalsById } from './recipes.js';
+import { type DailySummary, dailySummary } from './summaries.js';
 import { type Ctx, ServiceError } from './types.js';
 
 type MealRow = {
@@ -83,10 +78,11 @@ const deriveComponent = (ctx: Ctx, input: MealComponentInput): ComponentDerived 
     };
   }
   if (input.ref === 'recipe_serving') {
-    const recipe = ctx.db.prepare('SELECT id, servings FROM recipes WHERE id = ?').get(input.recipe_id) as
-      | { id: string; servings: number }
-      | undefined;
-    if (!recipe) throw new ServiceError('recipe_not_found', `recipe ${input.recipe_id} not found`, 404);
+    const recipe = ctx.db
+      .prepare('SELECT id, servings FROM recipes WHERE id = ?')
+      .get(input.recipe_id) as { id: string; servings: number } | undefined;
+    if (!recipe)
+      throw new ServiceError('recipe_not_found', `recipe ${input.recipe_id} not found`, 404);
     return {
       ref_kind: 'recipe_serving',
       food_id: null,
@@ -132,6 +128,25 @@ const deriveComponent = (ctx: Ctx, input: MealComponentInput): ComponentDerived 
       servings: null,
       macros: batchMacrosForGrams(batch, input.grams),
     };
+  }
+  if ('absolute' in input.custom) {
+    return {
+      ref_kind: 'custom',
+      food_id: null,
+      recipe_id: null,
+      batch_id: null,
+      custom_name: input.custom.name,
+      grams: null,
+      servings: null,
+      macros: macrosForCustom(input.custom, 0),
+    };
+  }
+  if (input.grams === undefined) {
+    throw new ServiceError(
+      'grams_required',
+      'per-100g custom foods need grams; supply grams or use the { name, absolute: {...} } shape',
+      400,
+    );
   }
   return {
     ref_kind: 'custom',
@@ -199,12 +214,16 @@ const decrementBatch = (ctx: Ctx, batchId: string, grams: number): void => {
   ctx.db
     .prepare('UPDATE batches SET remaining_grams = remaining_grams - ? WHERE id = ?')
     .run(grams, batchId);
-  const b = ctx.db
-    .prepare('SELECT remaining_grams FROM batches WHERE id = ?')
-    .get(batchId) as { remaining_grams: number } | undefined;
+  const b = ctx.db.prepare('SELECT remaining_grams FROM batches WHERE id = ?').get(batchId) as
+    | { remaining_grams: number }
+    | undefined;
   if (!b) throw new ServiceError('batch_not_found', batchId, 404);
   if (b.remaining_grams < 0) {
-    throw new ServiceError('batch_insufficient', `batch ${batchId} cannot supply requested grams`, 400);
+    throw new ServiceError(
+      'batch_insufficient',
+      `batch ${batchId} cannot supply requested grams`,
+      400,
+    );
   }
 };
 
@@ -333,10 +352,7 @@ export const logMeal = (ctx: Ctx, input: LogMealInput): MealDto => {
       });
       position += 1;
       if (derived.batch_id && derived.grams !== null) {
-        batchDeltas.set(
-          derived.batch_id,
-          (batchDeltas.get(derived.batch_id) ?? 0) + derived.grams,
-        );
+        batchDeltas.set(derived.batch_id, (batchDeltas.get(derived.batch_id) ?? 0) + derived.grams);
       }
     }
     for (const [batchId, delta] of batchDeltas.entries()) decrementBatch(ctx, batchId, delta);
@@ -381,11 +397,7 @@ export const getMeal = (ctx: Ctx, id: string): MealDto => toMealDto(ctx, fetchMe
 export const updateMeal = (ctx: Ctx, args: UpdateMealInput): MealDto => {
   const existing = fetchMealRow(ctx, args.id);
   const tags =
-    args.tags === undefined
-      ? existing.tags
-      : args.tags === null
-        ? null
-        : JSON.stringify(args.tags);
+    args.tags === undefined ? existing.tags : args.tags === null ? null : JSON.stringify(args.tags);
   ctx.db
     .prepare(
       `UPDATE meals SET
@@ -456,9 +468,9 @@ export const addMealComponent = (
 };
 
 const fetchComponentOrThrow = (ctx: Ctx, id: string): ComponentRow => {
-  const row = ctx.db
-    .prepare('SELECT * FROM meal_components WHERE id = ?')
-    .get(id) as ComponentRow | undefined;
+  const row = ctx.db.prepare('SELECT * FROM meal_components WHERE id = ?').get(id) as
+    | ComponentRow
+    | undefined;
   if (!row) throw new ServiceError('meal_component_not_found', `component ${id} not found`, 404);
   return row;
 };
@@ -502,7 +514,12 @@ export const updateMealComponent = (ctx: Ctx, args: UpdateMealComponentInput): M
     if (args.grams !== undefined && existing.ref_kind === 'food' && existing.food_id) {
       macros = macrosForFoodGrams(getFood(ctx, existing.food_id), args.grams);
       newGrams = args.grams;
-    } else if (args.grams !== undefined && existing.ref_kind === 'batch' && existing.batch_id && existing.grams !== null) {
+    } else if (
+      args.grams !== undefined &&
+      existing.ref_kind === 'batch' &&
+      existing.batch_id &&
+      existing.grams !== null
+    ) {
       const delta = args.grams - existing.grams;
       if (delta > 0) decrementBatch(ctx, existing.batch_id, delta);
       else if (delta < 0) refundBatch(ctx, existing.batch_id, -delta);
@@ -513,11 +530,18 @@ export const updateMealComponent = (ctx: Ctx, args: UpdateMealComponentInput): M
         .get(existing.batch_id) as BatchTotals;
       macros = batchMacrosForGrams(batch, args.grams);
       newGrams = args.grams;
-    } else if (args.servings !== undefined && existing.ref_kind === 'recipe_serving' && existing.recipe_id) {
+    } else if (
+      args.servings !== undefined &&
+      existing.ref_kind === 'recipe_serving' &&
+      existing.recipe_id
+    ) {
       const recipe = ctx.db
         .prepare('SELECT servings FROM recipes WHERE id = ?')
         .get(existing.recipe_id) as { servings: number };
-      macros = scaleMacros(recipeTotalsById(ctx, existing.recipe_id), args.servings / recipe.servings);
+      macros = scaleMacros(
+        recipeTotalsById(ctx, existing.recipe_id),
+        args.servings / recipe.servings,
+      );
       newServings = args.servings;
     }
     ctx.db
@@ -562,4 +586,45 @@ export const removeMealComponent = (ctx: Ctx, id: string): MealDto => {
   });
   tx();
   return getMeal(ctx, existing.meal_id);
+};
+
+// Agent-facing variants: bundle the meal with the running daily rollup so the
+// agent can report "this meal + where the day stands" in a single round-trip,
+// instead of chasing every mutation with a separate daily_summary call. REST
+// keeps calling the plain functions above.
+
+export type MealWithDay = { meal: MealDto; day: DailySummary };
+
+const withDay = (ctx: Ctx, meal: MealDto): MealWithDay => ({
+  meal,
+  day: dailySummary(ctx, { date: meal.date }),
+});
+
+export const logMealWithDay = (ctx: Ctx, input: LogMealInput): MealWithDay =>
+  withDay(ctx, logMeal(ctx, input));
+
+export const addMealComponentWithDay = (
+  ctx: Ctx,
+  args: { meal_id: string; component: MealComponentInput },
+): MealWithDay => withDay(ctx, addMealComponent(ctx, args));
+
+export const updateMealComponentWithDay = (ctx: Ctx, args: UpdateMealComponentInput): MealWithDay =>
+  withDay(ctx, updateMealComponent(ctx, args));
+
+export const removeMealComponentWithDay = (ctx: Ctx, id: string): MealWithDay =>
+  withDay(ctx, removeMealComponent(ctx, id));
+
+export const deleteMealWithDay = (
+  ctx: Ctx,
+  id: string,
+): { deleted: { id: string }; day: DailySummary } => {
+  const { date } = fetchMealRow(ctx, id);
+  const deleted = deleteMeal(ctx, id);
+  return { deleted, day: dailySummary(ctx, { date }) };
+};
+
+export const undoLastMealWithDay = (ctx: Ctx): { meal: MealDto | null; day: DailySummary } => {
+  const meal = undoLastMeal(ctx);
+  const date = meal?.date ?? toLocalDate(nowIso(), ctx.config.tz);
+  return { meal, day: dailySummary(ctx, { date }) };
 };

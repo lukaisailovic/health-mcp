@@ -1,5 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { ZodRawShape, ZodTypeAny } from 'zod';
+import { ZodError, type ZodRawShape, type ZodTypeAny } from 'zod';
 import { ServiceError } from '../services/types.js';
 import type { WearableServiceCtx } from '../services/wearables.js';
 import type { AnyToolDef } from './tool-registry.js';
@@ -60,6 +60,12 @@ export class HealthMcpServer {
             const out = await tool.handler(parsed, this.ctx);
             return { content: toContent(out) };
           } catch (err) {
+            if (err instanceof ZodError) {
+              const detail = err.issues
+                .map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`)
+                .join('; ');
+              return errorContent('invalid_input', detail);
+            }
             if (err instanceof ServiceError) {
               return errorContent(err.code, err.message);
             }

@@ -51,7 +51,7 @@ Below is the full surface. Schemas are condensed — the wire format is JSON, al
 
 | Tool | Params | Notes |
 |---|---|---|
-| `search_food` | `{ query, source?: 'usda'\|'off'\|'manual', limit? }` | Local FTS first. |
+| `search_food` | `{ query, source?: 'usda'\|'off'\|'manual', limit? }` | Typo- and punctuation-tolerant fuzzy match over local foods, ranked by likelihood; falls back to USDA when the local set is thin. |
 | `lookup_barcode` | `{ barcode }` | Local cache then Open Food Facts. |
 | `get_food` | `{ id }` | |
 | `create_custom_food` | `{ name, brand?, serving_grams?, nutrients_per_100g: {...} }` | Per-100g shape. |
@@ -221,7 +221,7 @@ type MealComponent =
       confidence?, source_trace?, notes? }
   | { ref: 'batch';          batch_id: string;  grams: number;
       confidence?, source_trace?, notes? }
-  | { ref: 'custom';         custom: CustomFoodSpec; grams: number;
+  | { ref: 'custom';         custom: CustomFoodSpec; grams?: number;
       confidence?, source_trace?, notes? };
 
 // CustomFoodSpec is per-100g (composes with grams) OR absolute totals — exactly one shape.
@@ -233,7 +233,17 @@ type CustomFoodSpec =
   | { name: string; absolute: { kcal, protein_g, carb_g, fat_g, fiber_g?, sugar_g?, sat_fat_g?, sodium_mg? } };
 ```
 
+`grams` is required for the per-100g custom shape (macros scale by weight) and **omitted** for the absolute-totals shape — passing it there is ignored and the component is stored with `grams: null`. A per-100g custom without `grams` is rejected with `grams_required`. For agent-estimated components set `source_trace` (`estimate` | `agent_inference`) and `confidence` (0..1); both default otherwise (`source_trace: 'manual'`, `confidence: 1`).
+
 Whole `log_meal` call is atomic — meal header + all components + all batch decrements land together, or none of them. A batch component that would push `remaining_grams` below zero fails with `batch_insufficient`.
+
+### Meal mutations return the running day
+
+`log_meal`, `add_meal_component`, `update_meal_component`, and `remove_meal_component` return `{ meal, day }`; `delete_meal` returns `{ deleted, day }`; `undo_last_meal` returns `{ meal, day }` (`meal` is `null` if nothing was in range). `day` is the same payload as `daily_summary` for the affected date (totals + per-macro delta vs goals), so an agent can report the meal and where the day stands without a follow-up `daily_summary` call.
+
+### Validation errors
+
+Input that fails the tool's schema comes back as `code: invalid_input` with a `field: message; …` detail (distinct from `internal_error`, which means an unexpected server fault). Service-level rejections keep their stable codes (`batch_insufficient`, `grams_required`, `food_not_found`, `custom_component_grams_unchangeable`, …).
 
 ## Wiring into MCP clients
 

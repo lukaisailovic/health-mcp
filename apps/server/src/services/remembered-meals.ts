@@ -163,6 +163,7 @@ export const logRememberedMeal = (
   const scale = args.scale ?? 1;
   const scaled: MealComponentInput[] = components.map((c) => {
     if (c.ref === 'recipe_serving') return { ...c, servings: c.servings * scale };
+    if (c.grams === undefined) return c;
     return { ...c, grams: c.grams * scale };
   });
   const input: LogMealInput = {

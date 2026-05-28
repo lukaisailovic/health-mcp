@@ -82,7 +82,9 @@ export const mealComponentInputSchema = z.discriminatedUnion('ref', [
   z.object({
     ref: z.literal('custom'),
     custom: customFoodSpecSchema,
-    grams: z.number().positive(),
+    // Required for the per-100g shape (macros scale by grams); ignored for the
+    // absolute-totals shape. Enforced in the service so the union stays discriminable.
+    grams: z.number().positive().optional(),
     ...baseItemFields,
   }),
 ]);
@@ -126,11 +128,7 @@ export const goalBoundSchema = z
   });
 export type GoalBoundInput = z.infer<typeof goalBoundSchema>;
 
-export const goalFieldSchema = z.union([
-  z.number().nonnegative(),
-  goalBoundSchema,
-  z.null(),
-]);
+export const goalFieldSchema = z.union([z.number().nonnegative(), goalBoundSchema, z.null()]);
 
 export const goalsSchema = z.object({
   kcal: goalFieldSchema.optional(),

@@ -88,7 +88,7 @@ CREATE TABLE meal_components (
     (ref_kind = 'food' AND food_id IS NOT NULL AND grams IS NOT NULL AND recipe_id IS NULL AND batch_id IS NULL AND custom_name IS NULL AND servings IS NULL) OR
     (ref_kind = 'recipe_serving' AND recipe_id IS NOT NULL AND servings IS NOT NULL AND food_id IS NULL AND batch_id IS NULL AND custom_name IS NULL AND grams IS NULL) OR
     (ref_kind = 'batch' AND batch_id IS NOT NULL AND grams IS NOT NULL AND food_id IS NULL AND recipe_id IS NULL AND custom_name IS NULL AND servings IS NULL) OR
-    (ref_kind = 'custom' AND custom_name IS NOT NULL AND grams IS NOT NULL AND food_id IS NULL AND recipe_id IS NULL AND batch_id IS NULL AND servings IS NULL)
+    (ref_kind = 'custom' AND custom_name IS NOT NULL AND food_id IS NULL AND recipe_id IS NULL AND batch_id IS NULL AND servings IS NULL)
   )
 );
 CREATE INDEX meal_components_meal_idx ON meal_components(meal_id);
