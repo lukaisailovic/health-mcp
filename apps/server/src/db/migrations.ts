@@ -1,6 +1,7 @@
 import type { Logger } from '../logger.js';
 import type { Db } from './client.js';
 import { migration0001 } from './sql/0001-init.js';
+import { migration0010 } from './sql/0010-relax-meal-components-custom-check.js';
 
 export type Migration = {
   id: string;
@@ -8,7 +9,7 @@ export type Migration = {
   run?: (db: Db) => void;
 };
 
-const migrations: Migration[] = [migration0001];
+const migrations: Migration[] = [migration0001, migration0010];
 
 const ensureTable = (db: Db) => {
   db.exec(`
