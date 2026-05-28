@@ -6,6 +6,17 @@ import type { AnyToolDef } from './tool-registry.js';
 
 const VERSION = '0.1.0';
 
+const INSTRUCTIONS = `health-mcp is the user's personal health database — nutrition, biomarkers/labs, and wearables. You do the estimation; the server stores structured, typed records. It does not parse free text or photos, so turn descriptions into structured tool calls yourself.
+
+Call discover_capabilities first. The tool surface is capability-gated and changes as data accrues and wearable providers link, so read the live catalog instead of assuming a tool exists.
+
+Conventions:
+- Meals are structured components. From "two eggs and toast", estimate portions and log them with log_meal. For meals the user repeats, remember_meal once, then log_remembered_meal to relog in a single call.
+- Timestamps are UTC ISO-8601. Daily and weekly summaries bucket by local day in the server's configured timezone.
+- Log lab panels with log_lab_panel so every result lands atomically; biomarker status is computed server-side from reference and optimal ranges.
+- correlate compares two metric series — set lag_buckets to surface next-day effects, e.g. today's protein against tomorrow's recovery.
+- Tool errors return { code, message }; read the code, fix the input, and retry.`;
+
 const toContent = (value: unknown): Array<{ type: 'text'; text: string }> => {
   if (value === undefined) return [{ type: 'text', text: '' }];
   return [{ type: 'text', text: JSON.stringify(value, null, 2) }];
@@ -42,7 +53,7 @@ export class HealthMcpServer {
     this.ctx = opts.ctx;
     this.server = new McpServer(
       { name: 'health-mcp', version: VERSION },
-      { capabilities: { tools: { listChanged: true } } },
+      { capabilities: { tools: { listChanged: true } }, instructions: INSTRUCTIONS },
     );
   }
 
