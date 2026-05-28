@@ -110,12 +110,27 @@ const SMALL_VALUE_CLASS = 'text-base font-semibold tabular-nums text-kumo-strong
 export const MacroRings = ({ macros }: { macros: Macro[] }) => {
   if (macros.length === 0) return null;
   const [kcal, ...rest] = macros;
+  if (rest.length === 0) {
+    return (
+      <div className="flex justify-center">
+        <div className="t-ring-enter" style={{ ['--ring-i' as string]: 0 }}>
+          <Ring macro={kcal!} size={148} stroke={12} valueClass={HERO_VALUE_CLASS} />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-10">
-      <Ring macro={kcal!} size={148} stroke={12} valueClass={HERO_VALUE_CLASS} />
-      <div className="grid w-full flex-1 grid-cols-4 gap-2 sm:gap-6">
-        {rest.map((m) => (
-          <div key={m.label} className="flex justify-center">
+      <div className="t-ring-enter" style={{ ['--ring-i' as string]: 0 }}>
+        <Ring macro={kcal!} size={148} stroke={12} valueClass={HERO_VALUE_CLASS} />
+      </div>
+      <div className="flex flex-1 flex-wrap items-center justify-evenly gap-4 sm:gap-6">
+        {rest.map((m, i) => (
+          <div
+            key={m.label}
+            className="t-ring-enter flex justify-center"
+            style={{ ['--ring-i' as string]: i + 1 }}
+          >
             <Ring macro={m} size={84} stroke={7} valueClass={SMALL_VALUE_CLASS} />
           </div>
         ))}

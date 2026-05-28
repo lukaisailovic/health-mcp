@@ -147,10 +147,10 @@ DELETE /api/measurements/:id
 
 ```http
 GET /api/goals
-PUT /api/goals      # any subset of: kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, hydration_ml — pass {min?, max?} bounds, a plain number (interpreted via per-macro default direction), or null to clear. weight_kg_target stays a single number.
+PUT /api/goals      # any subset of: kcal, protein_g, carb_g, fat_g, fiber_g, sugar_g, sat_fat_g, sodium_mg, hydration_ml — pass {min?, max?} bounds, a plain number (interpreted via per-macro default direction), or null to clear. weight_kg_target stays a single number; tracked_macros is an ordered array (≤ 4) of the macros shown as Today rings (kcal is always shown).
 ```
 
-Each bounded macro returns `{ min: number | null, max: number | null }`. Default direction when a plain number is supplied: `protein_g`, `fiber_g`, `hydration_ml` → floor (`min`); `sat_fat_g` → cap (`max`); `kcal`, `carb_g`, `fat_g` → exact target (both `min` and `max`).
+Each bounded macro returns `{ min: number | null, max: number | null }`. Default direction when a plain number is supplied: `protein_g`, `fiber_g`, `hydration_ml` → floor (`min`); `sat_fat_g`, `sugar_g`, `sodium_mg` → cap (`max`); `kcal`, `carb_g`, `fat_g` → exact target (both `min` and `max`).
 
 ## Summaries
 

@@ -123,7 +123,7 @@ Reusable meal templates. Shape mirrors `log_meal` components.
 | `list_measurements` | `{ date?, start?, end?, kind?, limit? }` |
 | `delete_measurement` | `{ id }` |
 | `get_goals` | `{}` |
-| `set_goals` | any subset of `{ kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, hydration_ml }` as `{ min?, max? }` bounds, plain number (uses per-macro default direction), or null to clear. Plus optional `weight_kg_target: number\|null`. |
+| `set_goals` | any subset of `{ kcal, protein_g, carb_g, fat_g, fiber_g, sugar_g, sat_fat_g, sodium_mg, hydration_ml }` as `{ min?, max? }` bounds, plain number (uses per-macro default direction), or null to clear. Plus optional `weight_kg_target: number\|null` and `tracked_macros` (ordered array, ≤ 4, of the macros shown as Today rings; kcal is always shown). |
 
 ### `summary`
 

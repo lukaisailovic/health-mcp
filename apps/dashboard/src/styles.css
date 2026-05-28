@@ -20,6 +20,25 @@
   --color-kumo-brand-hover: #3a8a6c;
 }
 
+/* Macro ring identity colors — semantic kumo tokens where one fits, plus distinct
+   custom hues (lightened for dark mode) so co-shown rings never collide. */
+:root,
+[data-mode="light"],
+[data-mode="dark"] {
+  --macro-protein: var(--color-kumo-success);
+  --macro-carb: var(--color-kumo-warning);
+  --macro-fat: var(--color-kumo-danger);
+  --macro-fiber: var(--color-kumo-info);
+  --macro-sat-fat: #c2410c;
+  --macro-sugar: #9333ea;
+  --macro-sodium: #64748b;
+}
+[data-mode="dark"] {
+  --macro-sat-fat: #fb923c;
+  --macro-sugar: #c084fc;
+  --macro-sodium: #94a3b8;
+}
+
 @layer base {
   html,
   body {
@@ -185,10 +204,29 @@
   will-change: transform, opacity, filter;
 }
 
+/* Ring enter — Today macro rings settle in, and re-stagger when the tracked set
+   changes (a newly tracked ring mounts and pops). Stagger via inline --ring-i. */
+@keyframes ring-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.t-ring-enter {
+  animation: ring-enter 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ring-i, 0) * 50ms);
+  will-change: transform, opacity;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .route-enter,
   .t-number.is-animating > span,
   .t-input.is-shaking,
+  .t-ring-enter,
   .t-panel-reveal {
     animation: none !important;
     transition: none !important;

@@ -1,4 +1,4 @@
-import type { MealType } from './schemas.js';
+import type { MealType, TrackableMacro } from './schemas.js';
 import type { BiomarkerStatus, IntakeMacros, RefKind } from './types.js';
 
 export type HealthProbe = {
@@ -39,9 +39,12 @@ export type GoalsDto = {
   carb_g: GoalBound;
   fat_g: GoalBound;
   fiber_g: GoalBound;
+  sugar_g: GoalBound;
   sat_fat_g: GoalBound;
+  sodium_mg: GoalBound;
   hydration_ml: GoalBound;
   weight_kg_target: number | null;
+  tracked_macros: TrackableMacro[];
   updated_at: string;
 };
 
@@ -141,7 +144,9 @@ export type DailySummaryDto = {
     carb_g: GoalDelta;
     fat_g: GoalDelta;
     fiber_g: GoalDelta;
+    sugar_g: GoalDelta;
     sat_fat_g: GoalDelta;
+    sodium_mg: GoalDelta;
     hydration_ml: GoalDelta;
   };
   compare?: {

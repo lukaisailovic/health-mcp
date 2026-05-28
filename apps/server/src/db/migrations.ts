@@ -2,6 +2,7 @@ import type { Logger } from '../logger.js';
 import type { Db } from './client.js';
 import { migration0001 } from './sql/0001-init.js';
 import { migration0010 } from './sql/0010-relax-meal-components-custom-check.js';
+import { migration0011 } from './sql/0011-goal-tracking-and-nutrients.js';
 
 export type Migration = {
   id: string;
@@ -9,7 +10,7 @@ export type Migration = {
   run?: (db: Db) => void;
 };
 
-const migrations: Migration[] = [migration0001, migration0010];
+const migrations: Migration[] = [migration0001, migration0010, migration0011];
 
 const ensureTable = (db: Db) => {
   db.exec(`

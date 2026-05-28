@@ -1,4 +1,4 @@
-import { goalFieldSchema } from '@health-mcp/shared';
+import { MAX_TRACKED_MACROS, goalFieldSchema, trackableMacroSchema } from '@health-mcp/shared';
 import { z } from 'zod';
 import { getGoals, setGoals } from '../../services/goals.js';
 import {
@@ -110,7 +110,7 @@ export const logTools = [
   tool({
     name: 'set_goals',
     description:
-      'Update one or more daily targets. Each macro accepts {min, max} bounds, a plain number (interpreted per macro: protein/fiber/hydration → floor, sat_fat → cap, kcal/carbs/fat → exact target), or null to clear.',
+      'Update one or more daily targets. Each macro accepts {min, max} bounds, a plain number (interpreted per macro: protein/fiber/hydration → floor, sat_fat/sugar/sodium → cap, kcal/carbs/fat → exact target), or null to clear. tracked_macros picks up to 4 macros to show as rings on Today (calories is always shown).',
     group: 'goal',
     inputSchema: z.object({
       kcal: goalFieldSchema.optional(),
@@ -118,9 +118,12 @@ export const logTools = [
       carb_g: goalFieldSchema.optional(),
       fat_g: goalFieldSchema.optional(),
       fiber_g: goalFieldSchema.optional(),
+      sugar_g: goalFieldSchema.optional(),
       sat_fat_g: goalFieldSchema.optional(),
+      sodium_mg: goalFieldSchema.optional(),
       hydration_ml: goalFieldSchema.optional(),
       weight_kg_target: z.number().positive().nullable().optional(),
+      tracked_macros: z.array(trackableMacroSchema).max(MAX_TRACKED_MACROS).optional(),
     }),
     handler: (args, ctx) => setGoals(ctx, args),
   }),

@@ -1,3 +1,4 @@
+import { EditRingsDialog } from '@/components/edit-rings-dialog';
 import { MacroRings } from '@/components/macro-rings';
 import { MealCard } from '@/components/meal-card';
 import { PageHeader } from '@/components/page-header';
@@ -19,9 +20,20 @@ import { SectionLabel } from '@/components/ui/section-label';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { fmtNum, fmtTime, todayIso } from '@/lib/format';
+import { MACRO_META, type MacroKey } from '@/lib/macros';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { Activity, Droplets, Flame, Heart, Moon, Plus, Scale, Trash2 } from 'lucide-react';
+import {
+  Activity,
+  Droplets,
+  Flame,
+  Heart,
+  Moon,
+  Plus,
+  Scale,
+  SlidersHorizontal,
+  Trash2,
+} from 'lucide-react';
 import { type ReactElement, useState } from 'react';
 
 const HYDRATION_STEPS = [250, 500, 750];
@@ -226,47 +238,15 @@ const Today = () => {
   }
 
   const s = summary.data;
-  const macros = [
-    {
-      label: 'kcal',
-      current: s.totals.kcal,
-      bound: s.goals.kcal,
-      status: s.delta.kcal.status,
-      color: 'var(--color-kumo-brand)',
-    },
-    {
-      label: 'protein',
-      current: s.totals.protein_g,
-      bound: s.goals.protein_g,
-      status: s.delta.protein_g.status,
-      color: 'var(--color-kumo-success)',
-      unit: 'g',
-    },
-    {
-      label: 'carbs',
-      current: s.totals.carb_g,
-      bound: s.goals.carb_g,
-      status: s.delta.carb_g.status,
-      color: 'var(--color-kumo-warning)',
-      unit: 'g',
-    },
-    {
-      label: 'fat',
-      current: s.totals.fat_g,
-      bound: s.goals.fat_g,
-      status: s.delta.fat_g.status,
-      color: 'var(--color-kumo-danger)',
-      unit: 'g',
-    },
-    {
-      label: 'sat fat',
-      current: s.totals.sat_fat_g ?? 0,
-      bound: s.goals.sat_fat_g,
-      status: s.delta.sat_fat_g.status,
-      color: 'var(--color-kumo-warning)',
-      unit: 'g',
-    },
-  ];
+  const ringKeys: MacroKey[] = ['kcal', ...s.goals.tracked_macros];
+  const macros = ringKeys.map((key) => ({
+    label: MACRO_META[key].label,
+    current: s.totals[key] ?? 0,
+    bound: s.goals[key],
+    status: s.delta[key].status,
+    color: MACRO_META[key].color,
+    unit: MACRO_META[key].unit,
+  }));
   const r = recovery.data?.[0];
   const sl = sleep.data?.[0];
   const w = weight.data?.[0];
@@ -298,15 +278,29 @@ const Today = () => {
                 Live totals from today's intake — tap a ring to break it down.
               </p>
             </div>
-            <Badge variant="muted">
-              {fmtNum(s.totals.meal_count, 0)} {s.totals.meal_count === 1 ? 'meal' : 'meals'}
-              {s.totals.component_count > s.totals.meal_count ? (
-                <span className="text-kumo-subtle">
-                  {' '}
-                  · {fmtNum(s.totals.component_count, 0)} items
-                </span>
-              ) : null}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="muted">
+                {fmtNum(s.totals.meal_count, 0)} {s.totals.meal_count === 1 ? 'meal' : 'meals'}
+                {s.totals.component_count > s.totals.meal_count ? (
+                  <span className="text-kumo-subtle">
+                    {' '}
+                    · {fmtNum(s.totals.component_count, 0)} items
+                  </span>
+                ) : null}
+              </Badge>
+              <EditRingsDialog
+                renderTrigger={(p) => (
+                  <button
+                    {...p}
+                    type="button"
+                    aria-label="Edit rings"
+                    className="grid h-8 w-8 place-items-center rounded-md text-kumo-subtle transition-colors hover:bg-kumo-elevated hover:text-kumo-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kumo-focus"
+                  >
+                    <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                )}
+              />
+            </div>
           </CardHeader>
           <CardContent className="pt-3">
             <MacroRings macros={macros} />
