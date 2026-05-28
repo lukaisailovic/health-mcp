@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  correlate,
-  isCorrelateAvailable,
-  listCorrelateMetrics,
-} from '../../services/correlate.js';
+import { correlate, isCorrelateAvailable, listCorrelateMetrics } from '../../services/correlate.js';
 import { tool } from '../tool-registry.js';
 
 const metricSpec = z.object({

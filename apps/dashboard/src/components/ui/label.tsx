@@ -1,6 +1,6 @@
+import { cn } from '@/lib/cn';
 import { Label as KumoLabel } from '@cloudflare/kumo';
 import type { ComponentPropsWithoutRef } from 'react';
-import { cn } from '@/lib/cn';
 
 export type LabelProps = ComponentPropsWithoutRef<typeof KumoLabel>;
 

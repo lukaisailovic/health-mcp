@@ -410,15 +410,13 @@ export const listCorrelateMetrics = (): Array<{ source: MetricSource; fields: st
   }));
 
 export const isCorrelateAvailable = (ctx: Ctx): boolean => {
-  const intakeDays = ctx.db
-    .prepare('SELECT COUNT(DISTINCT date) AS n FROM intake_v')
-    .get() as { n: number };
+  const intakeDays = ctx.db.prepare('SELECT COUNT(DISTINCT date) AS n FROM intake_v').get() as {
+    n: number;
+  };
   if (intakeDays.n < 7) return false;
-  const wearableRows = ctx.db
-    .prepare('SELECT COUNT(*) AS n FROM wearable_daily')
-    .get() as { n: number };
-  const labRows = ctx.db
-    .prepare('SELECT COUNT(*) AS n FROM lab_results')
-    .get() as { n: number };
+  const wearableRows = ctx.db.prepare('SELECT COUNT(*) AS n FROM wearable_daily').get() as {
+    n: number;
+  };
+  const labRows = ctx.db.prepare('SELECT COUNT(*) AS n FROM lab_results').get() as { n: number };
   return wearableRows.n >= 1 || labRows.n >= 3;
 };

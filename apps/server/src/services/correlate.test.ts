@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { logMeal } from './meals.js';
-import { logHydration, logWeight } from './simple-logs.js';
+import { closeCtx, makeTestCtx } from '../test-utils.js';
 import { logLabPanel } from './biomarkers.js';
 import { correlate, isCorrelateAvailable, listCorrelateMetrics } from './correlate.js';
 import { createCustomFood } from './food.js';
-import { closeCtx, makeTestCtx } from '../test-utils.js';
+import { logMeal } from './meals.js';
+import { logHydration, logWeight } from './simple-logs.js';
 
 describe('correlate', () => {
   it('lists discoverable metric sources and fields', () => {
@@ -64,7 +64,10 @@ describe('correlate', () => {
     });
     for (let i = 0; i < 14; i++) {
       const day = `2026-05-${String(1 + i).padStart(2, '0')}`;
-      logMeal(ctx, { ts: `${day}T12:00:00Z`, components: [{ ref: 'food', food_id: food.id, grams: 100 + i * 5 }] });
+      logMeal(ctx, {
+        ts: `${day}T12:00:00Z`,
+        components: [{ ref: 'food', food_id: food.id, grams: 100 + i * 5 }],
+      });
     }
     logLabPanel(ctx, {
       drawn_at: '2026-05-03T08:00:00Z',

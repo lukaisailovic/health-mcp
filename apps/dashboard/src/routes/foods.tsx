@@ -1,7 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Plus, Salad, Search, Trash2 } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,6 +16,10 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { fmtNum } from '@/lib/format';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { Plus, Salad, Search, Trash2 } from 'lucide-react';
+import { type FormEvent, useState } from 'react';
 
 type FormState = {
   name: string;
@@ -89,11 +89,7 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
       },
     });
   };
-  const renderField = (
-    key: keyof FormState,
-    label: string,
-    type: 'text' | 'number' = 'number',
-  ) => (
+  const renderField = (key: keyof FormState, label: string, type: 'text' | 'number' = 'number') => (
     <FormField label={label} htmlFor={key}>
       <Input
         id={key}
@@ -118,9 +114,7 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
         </DialogHeader>
         <form id="food-form" onSubmit={submit} className="grid grid-cols-2 gap-4">
           <div className="col-span-2">{renderField('name', 'Name', 'text')}</div>
-          <div className="col-span-2 sm:col-span-1">
-            {renderField('brand', 'Brand', 'text')}
-          </div>
+          <div className="col-span-2 sm:col-span-1">{renderField('brand', 'Brand', 'text')}</div>
           <div className="col-span-2 sm:col-span-1">
             {renderField('serving_grams', 'Serving (g)')}
           </div>
@@ -221,10 +215,7 @@ const Foods = () => {
           ) : (
             <ul className="divide-y divide-kumo-line">
               {search.data.map((f) => (
-                <li
-                  key={f.id}
-                  className="grid grid-cols-[1fr_auto] items-center gap-3 py-3"
-                >
+                <li key={f.id} className="grid grid-cols-[1fr_auto] items-center gap-3 py-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-[10px] uppercase">

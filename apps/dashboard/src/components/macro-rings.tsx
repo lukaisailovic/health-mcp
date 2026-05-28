@@ -1,6 +1,6 @@
-import type { GoalBound, GoalStatus } from '@health-mcp/shared/dto';
 import { AnimatedNumber } from '@/components/animated-number';
 import { fmtNum } from '@/lib/format';
+import type { GoalBound, GoalStatus } from '@health-mcp/shared/dto';
 
 type Macro = {
   label: string;
@@ -48,8 +48,7 @@ const Ring = ({
   valueClass: string;
 }) => {
   const target = primaryTarget(macro.bound);
-  const ratio =
-    target && target > 0 ? Math.min(1, Math.max(0, macro.current / target)) : 0;
+  const ratio = target && target > 0 ? Math.min(1, Math.max(0, macro.current / target)) : 0;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const valueDigits = macro.label === 'kcal' ? 0 : 1;
@@ -59,7 +58,7 @@ const Ring = ({
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="-rotate-90 overflow-visible">
+        <svg width={size} height={size} className="-rotate-90 overflow-visible" aria-hidden="true">
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -96,10 +95,7 @@ const Ring = ({
       <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-kumo-subtle">
         {macro.label}
         {macro.status !== 'no_goal' ? (
-          <span
-            className="ml-1 text-[10px] normal-case"
-            style={{ color: ringColor }}
-          >
+          <span className="ml-1 text-[10px] normal-case" style={{ color: ringColor }}>
             · {STATUS_LABEL[macro.status]}
           </span>
         ) : null}

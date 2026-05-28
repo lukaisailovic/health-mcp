@@ -44,9 +44,7 @@ const rowToGoals = (row: GoalRow): Goals => {
 };
 
 export const getGoals = (ctx: Ctx): Goals => {
-  const row = ctx.db
-    .prepare(`SELECT ${SELECT_COLS} FROM goals WHERE id = 1`)
-    .get() as GoalRow;
+  const row = ctx.db.prepare(`SELECT ${SELECT_COLS} FROM goals WHERE id = 1`).get() as GoalRow;
   return rowToGoals(row);
 };
 

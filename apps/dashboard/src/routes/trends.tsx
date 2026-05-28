@@ -1,12 +1,12 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type SeriesPoint, TrendArea } from '@/components/ui/chart';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { daysAgoIso, fmtNum, todayIso } from '@/lib/format';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { useMemo, useState } from 'react';
 
 const RANGES = [
   { label: '7d', days: 7 },
@@ -76,14 +76,7 @@ const ChartCard = ({
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <TrendArea
-          id={id}
-          data={data}
-          color={color}
-          unit={unit}
-          title={title}
-          height={height}
-        />
+        <TrendArea id={id} data={data} color={color} unit={unit} title={title} height={height} />
       </CardContent>
     </Card>
   );
@@ -147,8 +140,7 @@ const Trends = () => {
   });
   const sleep = useQuery({
     queryKey: ['sleep', start, end],
-    queryFn: () =>
-      api.wearables.sleep({ start: `${start}T00:00:00Z`, end: `${end}T23:59:59Z` }),
+    queryFn: () => api.wearables.sleep({ start: `${start}T00:00:00Z`, end: `${end}T23:59:59Z` }),
     placeholderData: keepPreviousData,
   });
 
@@ -157,9 +149,21 @@ const Trends = () => {
   const protein = daysData.map((d) => ({ date: d.date, value: d.protein_g }));
   const carbs = daysData.map((d) => ({ date: d.date, value: d.carb_g }));
   const fat = daysData.map((d) => ({ date: d.date, value: d.fat_g }));
-  const weights = toReversedSeries(weight.data, (w) => w.date, (w) => w.kg);
-  const recoveries = toReversedSeries(readiness.data, (r) => r.date, (r) => r.score);
-  const sleeps = toReversedSeries(sleep.data, (s) => s.start.slice(0, 10), (s) => s.score);
+  const weights = toReversedSeries(
+    weight.data,
+    (w) => w.date,
+    (w) => w.kg,
+  );
+  const recoveries = toReversedSeries(
+    readiness.data,
+    (r) => r.date,
+    (r) => r.score,
+  );
+  const sleeps = toReversedSeries(
+    sleep.data,
+    (s) => s.start.slice(0, 10),
+    (s) => s.score,
+  );
 
   return (
     <>
@@ -176,17 +180,35 @@ const Trends = () => {
       />
       <div className="grid gap-4 lg:grid-cols-2">
         <ChartCard id="kcal" title="kcal" data={kcal} color="var(--color-kumo-brand)" />
-        <ChartCard id="protein" title="protein" data={protein} color="var(--color-kumo-success)" unit="g" />
-        <ChartCard id="carbs" title="carbs" data={carbs} color="var(--color-kumo-warning)" unit="g" />
-        <ChartCard id="fat" title="fat" data={fat} color="var(--color-kumo-danger)" unit="g" />
-        <ChartCard id="weight" title="weight" data={weights} color="var(--color-kumo-brand)" unit="kg" />
-        <ChartCard id="recovery" title="recovery" data={recoveries} color="var(--color-kumo-success)" />
         <ChartCard
-          id="sleep"
-          title="sleep score"
-          data={sleeps}
-          color="var(--color-kumo-brand)"
+          id="protein"
+          title="protein"
+          data={protein}
+          color="var(--color-kumo-success)"
+          unit="g"
         />
+        <ChartCard
+          id="carbs"
+          title="carbs"
+          data={carbs}
+          color="var(--color-kumo-warning)"
+          unit="g"
+        />
+        <ChartCard id="fat" title="fat" data={fat} color="var(--color-kumo-danger)" unit="g" />
+        <ChartCard
+          id="weight"
+          title="weight"
+          data={weights}
+          color="var(--color-kumo-brand)"
+          unit="kg"
+        />
+        <ChartCard
+          id="recovery"
+          title="recovery"
+          data={recoveries}
+          color="var(--color-kumo-success)"
+        />
+        <ChartCard id="sleep" title="sleep score" data={sleeps} color="var(--color-kumo-brand)" />
       </div>
     </>
   );

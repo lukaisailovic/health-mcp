@@ -1,6 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { ArrowLeft, Beaker, ChevronRight, FlaskConical } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty } from '@/components/ui/empty';
@@ -9,6 +6,9 @@ import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { fmtDate, fmtNum } from '@/lib/format';
 import { STATUS_LABEL, STATUS_VARIANT } from '@/lib/labs';
+import { useQuery } from '@tanstack/react-query';
+import { Link, createFileRoute } from '@tanstack/react-router';
+import { ArrowLeft, Beaker, ChevronRight, FlaskConical } from 'lucide-react';
 
 const PanelDetail = () => {
   const { panelId } = Route.useParams();
@@ -105,10 +105,7 @@ const PanelDetail = () => {
                         <span className="truncate font-medium text-kumo-default">
                           {row.biomarker.display_name ?? row.biomarker.name}
                         </span>
-                        <Badge
-                          variant={STATUS_VARIANT[row.status]}
-                          className="shrink-0 capitalize"
-                        >
+                        <Badge variant={STATUS_VARIANT[row.status]} className="shrink-0 capitalize">
                           {STATUS_LABEL[row.status]}
                         </Badge>
                       </div>

@@ -358,7 +358,9 @@ const runWorkout = async (args: OuraRunnerArgs): Promise<SyncResult> => {
     for (const r of rs) {
       const duration_s = Math.max(
         0,
-        Math.round((new Date(r.end_datetime).getTime() - new Date(r.start_datetime).getTime()) / 1000),
+        Math.round(
+          (new Date(r.end_datetime).getTime() - new Date(r.start_datetime).getTime()) / 1000,
+        ),
       );
       rawIns.run({
         id: r.id,

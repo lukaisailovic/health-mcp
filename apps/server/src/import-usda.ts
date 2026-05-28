@@ -83,10 +83,7 @@ export type ImportUsdaResult = {
   skipped: number;
 };
 
-export const importUsda = (
-  ctx: Pick<Ctx, 'db' | 'logger'>,
-  path: string,
-): ImportUsdaResult => {
+export const importUsda = (ctx: Pick<Ctx, 'db' | 'logger'>, path: string): ImportUsdaResult => {
   const raw = readFileSync(path, 'utf8');
   const dump = JSON.parse(raw) as FdcDump | FdcFood[];
   const foods = Array.isArray(dump) ? dump : collectFoods(dump);

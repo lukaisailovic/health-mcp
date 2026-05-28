@@ -1,4 +1,9 @@
-import type { NormalizedActivity, NormalizedDaily, NormalizedReadiness, NormalizedSleep } from '../../types.js';
+import type {
+  NormalizedActivity,
+  NormalizedDaily,
+  NormalizedReadiness,
+  NormalizedSleep,
+} from '../../types.js';
 
 export type OuraSleep = {
   id: string;

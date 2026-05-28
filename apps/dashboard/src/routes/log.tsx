@@ -1,7 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { History } from 'lucide-react';
-import { useState } from 'react';
 import { MealCard } from '@/components/meal-card';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { fmtDate, todayIso } from '@/lib/format';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { History } from 'lucide-react';
+import { useState } from 'react';
 
 const Log = () => {
   const qc = useQueryClient();

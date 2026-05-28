@@ -1,6 +1,6 @@
 import { Empty as KumoEmpty } from '@cloudflare/kumo';
 import type { LucideIcon } from 'lucide-react';
-import { createElement, isValidElement, type ReactNode } from 'react';
+import { type ReactNode, createElement, isValidElement } from 'react';
 
 export type EmptyProps = {
   icon?: LucideIcon | ReactNode;

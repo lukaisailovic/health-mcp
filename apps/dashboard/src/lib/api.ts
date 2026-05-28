@@ -84,7 +84,9 @@ const patch = <T>(path: string, body?: unknown) => request<T>('PATCH', path, { b
 const del = <T>(path: string) => request<T>('DELETE', path);
 
 const qs = (params: Record<string, string | number | boolean | undefined | null>): string => {
-  const entries = Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '');
+  const entries = Object.entries(params).filter(
+    ([, v]) => v !== undefined && v !== null && v !== '',
+  );
   if (entries.length === 0) return '';
   const sp = new URLSearchParams();
   for (const [k, v] of entries) sp.set(k, String(v));
@@ -97,7 +99,8 @@ export const api = {
   foods: {
     search: (params: { query: string; source?: 'usda' | 'off' | 'manual'; limit?: number }) =>
       get<FoodDto[]>(`/api/foods/search${qs(params)}`),
-    byBarcode: (barcode: string) => get<FoodDto | null>(`/api/foods/barcode/${encodeURIComponent(barcode)}`),
+    byBarcode: (barcode: string) =>
+      get<FoodDto | null>(`/api/foods/barcode/${encodeURIComponent(barcode)}`),
     get: (id: string) => get<FoodDto>(`/api/foods/${encodeURIComponent(id)}`),
     createCustom: (body: {
       name: string;
@@ -120,8 +123,15 @@ export const api = {
   },
 
   meals: {
-    list: (params: { date?: string; start?: string; end?: string; meal_type?: string; limit?: number } = {}) =>
-      get<MealDto[]>(`/api/meals${qs(params)}`),
+    list: (
+      params: {
+        date?: string;
+        start?: string;
+        end?: string;
+        meal_type?: string;
+        limit?: number;
+      } = {},
+    ) => get<MealDto[]>(`/api/meals${qs(params)}`),
     get: (id: string) => get<MealDto>(`/api/meals/${encodeURIComponent(id)}`),
     log: (body: unknown) => post<MealDto>('/api/meals', body),
     update: (id: string, body: Record<string, unknown>) =>
@@ -135,13 +145,16 @@ export const api = {
         body,
       ),
     removeComponent: (mealId: string, componentId: string) =>
-      del<MealDto>(`/api/meals/${encodeURIComponent(mealId)}/components/${encodeURIComponent(componentId)}`),
+      del<MealDto>(
+        `/api/meals/${encodeURIComponent(mealId)}/components/${encodeURIComponent(componentId)}`,
+      ),
   },
 
   hydration: {
     list: (params: { date?: string; start?: string; end?: string; limit?: number } = {}) =>
       get<HydrationEntryDto[]>(`/api/hydration${qs(params)}`),
-    log: (body: { ml: number; ts?: string; notes?: string }) => post<HydrationEntryDto>('/api/hydration', body),
+    log: (body: { ml: number; ts?: string; notes?: string }) =>
+      post<HydrationEntryDto>('/api/hydration', body),
     delete: (id: string) => del<{ id: string }>(`/api/hydration/${encodeURIComponent(id)}`),
   },
 
@@ -154,8 +167,9 @@ export const api = {
   },
 
   measurements: {
-    list: (params: { date?: string; start?: string; end?: string; kind?: string; limit?: number } = {}) =>
-      get<MeasurementDto[]>(`/api/measurements${qs(params)}`),
+    list: (
+      params: { date?: string; start?: string; end?: string; kind?: string; limit?: number } = {},
+    ) => get<MeasurementDto[]>(`/api/measurements${qs(params)}`),
     log: (body: { kind: string; value: number; unit: string; ts?: string; notes?: string }) =>
       post<MeasurementDto>('/api/measurements', body),
     delete: (id: string) => del<{ id: string }>(`/api/measurements/${encodeURIComponent(id)}`),
@@ -169,13 +183,15 @@ export const api = {
   summary: {
     daily: (params: { date?: string; compare_to?: 'yesterday' | '7d_avg' } = {}) =>
       get<DailySummaryDto>(`/api/summary/daily${qs(params)}`),
-    weekly: (params: { week_starting?: string } = {}) => get<RangeSummaryDto>(`/api/summary/weekly${qs(params)}`),
+    weekly: (params: { week_starting?: string } = {}) =>
+      get<RangeSummaryDto>(`/api/summary/weekly${qs(params)}`),
     range: (params: { start: string; end: string; bucket?: 'day' | 'week' }) =>
       get<RangeSummaryDto>(`/api/summary/range${qs(params)}`),
   },
 
   recipes: {
-    list: (params: { query?: string; limit?: number } = {}) => get<RecipeDto[]>(`/api/recipes${qs(params)}`),
+    list: (params: { query?: string; limit?: number } = {}) =>
+      get<RecipeDto[]>(`/api/recipes${qs(params)}`),
     get: (id: string) => get<RecipeWithIngredientsDto>(`/api/recipes/${encodeURIComponent(id)}`),
     create: (body: unknown) => post<RecipeWithIngredientsDto>('/api/recipes', body),
     update: (id: string, body: unknown) =>
@@ -185,7 +201,9 @@ export const api = {
 
   batches: {
     list: (params: { active_only?: boolean } = {}) =>
-      get<BatchDto[]>(`/api/batches${qs({ active_only: params.active_only ? 'true' : undefined })}`),
+      get<BatchDto[]>(
+        `/api/batches${qs({ active_only: params.active_only ? 'true' : undefined })}`,
+      ),
     get: (id: string) => get<BatchDto>(`/api/batches/${encodeURIComponent(id)}`),
     create: (body: unknown) => post<BatchDto>('/api/batches', body),
     archive: (id: string) => post<BatchDto>(`/api/batches/${encodeURIComponent(id)}/archive`),
@@ -193,8 +211,14 @@ export const api = {
   },
 
   biomarkers: {
-    search: (params: { query?: string; category?: string; out_of_range_only?: boolean; limit?: number } = {}) =>
-      get<BiomarkerDto[] | LatestBiomarkerRowDto[]>(`/api/biomarkers${qs(params)}`),
+    search: (
+      params: {
+        query?: string;
+        category?: string;
+        out_of_range_only?: boolean;
+        limit?: number;
+      } = {},
+    ) => get<BiomarkerDto[] | LatestBiomarkerRowDto[]>(`/api/biomarkers${qs(params)}`),
     latest: (params: { category?: string; out_of_range_only?: boolean } = {}) =>
       get<LatestBiomarkerRowDto[]>(`/api/biomarkers${qs(params)}`),
     get: (id: string) => get<BiomarkerDto>(`/api/biomarkers/${encodeURIComponent(id)}`),
@@ -208,16 +232,19 @@ export const api = {
     panels: (params: { start?: string; end?: string; limit?: number } = {}) =>
       get<LabPanelDto[]>(`/api/lab-panels${qs(params)}`),
     panel: (id: string) => get<LabPanelDetailDto>(`/api/lab-panels/${encodeURIComponent(id)}`),
-    createPanel: (body: unknown) => post<{ panel: LabPanelDto; results: LabResultDto[] }>('/api/lab-panels', body),
+    createPanel: (body: unknown) =>
+      post<{ panel: LabPanelDto; results: LabResultDto[] }>('/api/lab-panels', body),
     deletePanel: (id: string) => del<{ id: string }>(`/api/lab-panels/${encodeURIComponent(id)}`),
-    results: (params: {
-      biomarker?: string;
-      category?: string;
-      start?: string;
-      end?: string;
-      out_of_range_only?: boolean;
-      limit?: number;
-    } = {}) => get<LabResultDto[]>(`/api/lab-results${qs(params)}`),
+    results: (
+      params: {
+        biomarker?: string;
+        category?: string;
+        start?: string;
+        end?: string;
+        out_of_range_only?: boolean;
+        limit?: number;
+      } = {},
+    ) => get<LabResultDto[]>(`/api/lab-results${qs(params)}`),
     logResult: (body: unknown) => post<LabResultDto>('/api/lab-results', body),
     deleteResult: (id: string) => del<{ id: string }>(`/api/lab-results/${encodeURIComponent(id)}`),
   },
@@ -245,9 +272,14 @@ export const api = {
   wearables: {
     providers: () => get<WearableProviderInfoDto[]>('/api/wearables/providers'),
     status: () => get<WearableStatusDto[]>('/api/wearables/status'),
-    connect: (provider: string) => post<{ url: string; state: string }>(`/api/wearables/${encodeURIComponent(provider)}/connect`),
+    connect: (provider: string) =>
+      post<{ url: string; state: string }>(
+        `/api/wearables/${encodeURIComponent(provider)}/connect`,
+      ),
     disconnect: (provider: string) =>
-      del<{ provider: string; disconnected: boolean }>(`/api/wearables/${encodeURIComponent(provider)}`),
+      del<{ provider: string; disconnected: boolean }>(
+        `/api/wearables/${encodeURIComponent(provider)}`,
+      ),
     sync: (body: { providers?: string[]; resources?: string[]; since?: string } = {}) =>
       post<unknown>('/api/wearables/sync', body),
     sleep: (params: { date?: string; start?: string; end?: string; providers?: string } = {}) =>

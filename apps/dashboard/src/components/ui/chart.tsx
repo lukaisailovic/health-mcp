@@ -1,3 +1,4 @@
+import { fmtNum } from '@/lib/format';
 import {
   Area,
   AreaChart,
@@ -8,7 +9,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { fmtNum } from '@/lib/format';
 
 export type SeriesPoint = { date: string; value: number | null };
 

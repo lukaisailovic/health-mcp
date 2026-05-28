@@ -1,20 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import {
-  Activity,
-  Droplets,
-  Flame,
-  Heart,
-  Moon,
-  Plus,
-  Scale,
-  Trash2,
-} from 'lucide-react';
-import { type ReactElement, useState } from 'react';
-import { MealCard } from '@/components/meal-card';
 import { MacroRings } from '@/components/macro-rings';
+import { MealCard } from '@/components/meal-card';
 import { PageHeader } from '@/components/page-header';
-import { SectionLabel } from '@/components/ui/section-label';
 import { StatCard } from '@/components/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,9 +15,14 @@ import {
 } from '@/components/ui/dialog';
 import { Empty } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
+import { SectionLabel } from '@/components/ui/section-label';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { fmtNum, fmtTime, todayIso } from '@/lib/format';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { Activity, Droplets, Flame, Heart, Moon, Plus, Scale, Trash2 } from 'lucide-react';
+import { type ReactElement, useState } from 'react';
 
 const HYDRATION_STEPS = [250, 500, 750];
 
@@ -87,9 +78,7 @@ const HydrationDialog = ({ renderTrigger, date }: HydrationDialogProps) => {
             <Droplets className="h-4 w-4 text-kumo-brand" />
             Hydration
           </DialogTitle>
-          <p className="text-xs text-kumo-subtle">
-            {fmtNum(total)} ml logged today.
-          </p>
+          <p className="text-xs text-kumo-subtle">{fmtNum(total)} ml logged today.</p>
         </DialogHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
@@ -120,11 +109,7 @@ const HydrationDialog = ({ renderTrigger, date }: HydrationDialogProps) => {
               }}
               className="flex-1"
             />
-            <Button
-              size="sm"
-              disabled={!custom || log.isPending}
-              onClick={submitCustom}
-            >
+            <Button size="sm" disabled={!custom || log.isPending} onClick={submitCustom}>
               Add
             </Button>
           </div>
@@ -316,7 +301,10 @@ const Today = () => {
             <Badge variant="muted">
               {fmtNum(s.totals.meal_count, 0)} {s.totals.meal_count === 1 ? 'meal' : 'meals'}
               {s.totals.component_count > s.totals.meal_count ? (
-                <span className="text-kumo-subtle"> · {fmtNum(s.totals.component_count, 0)} items</span>
+                <span className="text-kumo-subtle">
+                  {' '}
+                  · {fmtNum(s.totals.component_count, 0)} items
+                </span>
               ) : null}
             </Badge>
           </CardHeader>
@@ -401,9 +389,7 @@ const Today = () => {
               <span className="text-xs text-kumo-subtle">
                 avg confidence{' '}
                 <span className="font-medium text-kumo-default">
-                  {s.totals.avg_confidence === null
-                    ? '—'
-                    : fmtNum(s.totals.avg_confidence, 2)}
+                  {s.totals.avg_confidence === null ? '—' : fmtNum(s.totals.avg_confidence, 2)}
                 </span>
               </span>
             </div>

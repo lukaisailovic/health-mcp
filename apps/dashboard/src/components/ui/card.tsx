@@ -1,5 +1,5 @@
-import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
+import { type HTMLAttributes, forwardRef } from 'react';
 
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
@@ -14,11 +14,7 @@ Card.displayName = 'Card';
 
 export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex flex-col gap-1.5 px-5 pb-3 pt-5', className)}
-      {...props}
-    />
+    <div ref={ref} className={cn('flex flex-col gap-1.5 px-5 pb-3 pt-5', className)} {...props} />
   ),
 );
 CardHeader.displayName = 'CardHeader';
@@ -54,11 +50,7 @@ CardContent.displayName = 'CardContent';
 
 export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex items-center px-5 pb-5', className)}
-      {...props}
-    />
+    <div ref={ref} className={cn('flex items-center px-5 pb-5', className)} {...props} />
   ),
 );
 CardFooter.displayName = 'CardFooter';

@@ -1,3 +1,11 @@
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Empty } from '@/components/ui/empty';
+import { Spinner } from '@/components/ui/spinner';
+import { api } from '@/lib/api';
+import { cn } from '@/lib/cn';
+import { fmtDate, fmtNum } from '@/lib/format';
+import { STATUS_LABEL, STATUS_VARIANT, classifyValue } from '@/lib/labs';
 import { Popover } from '@cloudflare/kumo';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
@@ -14,14 +22,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Empty } from '@/components/ui/empty';
-import { Spinner } from '@/components/ui/spinner';
-import { api } from '@/lib/api';
-import { cn } from '@/lib/cn';
-import { fmtDate, fmtNum } from '@/lib/format';
-import { STATUS_LABEL, STATUS_VARIANT, classifyValue } from '@/lib/labs';
 
 const AboutSection = ({ label, body }: { label: string; body: string }) => (
   <div>
@@ -97,7 +97,13 @@ const BiomarkerDetail = () => {
   const latestValue = latest?.value_numeric ?? null;
   const status =
     latestValue != null
-      ? classifyValue(latestValue, b.default_ref_low, b.default_ref_high, b.optimal_low, b.optimal_high)
+      ? classifyValue(
+          latestValue,
+          b.default_ref_low,
+          b.default_ref_high,
+          b.optimal_low,
+          b.optimal_high,
+        )
       : 'unknown';
 
   const rangeLabel = (low: number | null, high: number | null): string => {
@@ -159,8 +165,8 @@ const BiomarkerDetail = () => {
                   <span className="font-medium text-kumo-default">
                     Logical Observation Identifiers Names and Codes
                   </span>{' '}
-                  — an international standard that gives every lab measurement a stable
-                  identifier so results match across labs and EHR systems.
+                  — an international standard that gives every lab measurement a stable identifier
+                  so results match across labs and EHR systems.
                 </Popover.Description>
                 <a
                   href={`https://loinc.org/${b.loinc_code}/`}
@@ -176,8 +182,7 @@ const BiomarkerDetail = () => {
         </div>
         {aliasList.length > 0 ? (
           <p className="text-sm text-kumo-subtle">
-            Also known as{' '}
-            <span className="text-kumo-default">{aliasList.join(', ')}</span>
+            Also known as <span className="text-kumo-default">{aliasList.join(', ')}</span>
           </p>
         ) : null}
       </header>
@@ -204,11 +209,7 @@ const BiomarkerDetail = () => {
               value={optLabel}
               hint={hasOpt ? 'your target band' : 'not set'}
             />
-            <StatTile
-              label="Entries"
-              value={String(sortedResults.length)}
-              hint={entriesHint}
-            />
+            <StatTile label="Entries" value={String(sortedResults.length)} hint={entriesHint} />
           </div>
           <Card>
             <CardHeader>
@@ -310,10 +311,7 @@ const BiomarkerDetail = () => {
                         fontSize: 12,
                       }}
                       labelStyle={{ color: 'var(--text-color-kumo-default)', fontWeight: 500 }}
-                      formatter={(v: number) => [
-                        `${fmtNum(v, 2)} ${b.default_unit_ucum}`,
-                        b.name,
-                      ]}
+                      formatter={(v: number) => [`${fmtNum(v, 2)} ${b.default_unit_ucum}`, b.name]}
                     />
                     <Area
                       type="monotone"
@@ -390,9 +388,7 @@ const BiomarkerDetail = () => {
             {b.why_it_matters ? (
               <AboutSection label="Why it matters" body={b.why_it_matters} />
             ) : null}
-            {b.influences ? (
-              <AboutSection label="What influences it" body={b.influences} />
-            ) : null}
+            {b.influences ? <AboutSection label="What influences it" body={b.influences} /> : null}
             {b.how_to_improve ? (
               <AboutSection label="How to improve" body={b.how_to_improve} />
             ) : null}

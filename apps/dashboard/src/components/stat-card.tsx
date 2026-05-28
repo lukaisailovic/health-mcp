@@ -1,8 +1,8 @@
-import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
 import { AnimatedNumber } from '@/components/animated-number';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/cn';
+import type { LucideIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 type Tone = 'default' | 'ok' | 'warn' | 'bad' | 'primary';
 
@@ -37,8 +37,7 @@ export const StatCard = ({
   tone?: Tone;
   className?: string;
 }) => {
-  const stringValue =
-    typeof value === 'string' || typeof value === 'number' ? String(value) : null;
+  const stringValue = typeof value === 'string' || typeof value === 'number' ? String(value) : null;
   return (
     <Card className={cn('transition-colors hover:bg-kumo-elevated', className)}>
       <div className="flex items-start justify-between gap-3 px-5 py-4">
@@ -58,10 +57,7 @@ export const StatCard = ({
         </div>
         {Icon ? (
           <div
-            className={cn(
-              'grid h-8 w-8 shrink-0 place-items-center rounded-md',
-              toneIconBg[tone],
-            )}
+            className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-md', toneIconBg[tone])}
           >
             <Icon className="h-4 w-4" />
           </div>

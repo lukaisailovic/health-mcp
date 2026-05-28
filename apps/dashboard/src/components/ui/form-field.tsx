@@ -1,6 +1,6 @@
-import type { HTMLAttributes, ReactNode } from 'react';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/cn';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 type FormFieldProps = {
   label: ReactNode;
@@ -39,6 +39,4 @@ export const FormGrid = ({
 }: {
   className?: string;
   children: ReactNode;
-}) => (
-  <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2', className)}>{children}</div>
-);
+}) => <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2', className)}>{children}</div>;

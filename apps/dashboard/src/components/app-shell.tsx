@@ -1,3 +1,6 @@
+import { Button } from '@/components/ui/button';
+import { SectionLabel } from '@/components/ui/section-label';
+import { cn } from '@/lib/cn';
 import { Dialog } from '@cloudflare/kumo';
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
 import {
@@ -17,9 +20,6 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { SectionLabel } from '@/components/ui/section-label';
-import { cn } from '@/lib/cn';
 
 type NavItem = { to: string; label: string; icon: LucideIcon };
 
@@ -146,6 +146,7 @@ const currentSectionLabel = (path: string): string =>
 
 const MobileNav = ({ path }: { path: string }) => {
   const [open, setOpen] = useState(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: path is the intended trigger — close the mobile nav whenever the route changes
   useEffect(() => {
     setOpen(false);
   }, [path]);

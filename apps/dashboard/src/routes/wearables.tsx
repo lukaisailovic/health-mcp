@@ -1,6 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Link2, RefreshCw, Unplug, Watch } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +6,9 @@ import { Empty } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { fmtRelative } from '@/lib/format';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { Link2, RefreshCw, Unplug, Watch } from 'lucide-react';
 
 const Wearables = () => {
   const qc = useQueryClient();
@@ -61,7 +61,10 @@ const Wearables = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{p.display_name}</span>
-                    <Badge variant={p.status === 'linked' ? 'ok' : 'outline'} className="capitalize">
+                    <Badge
+                      variant={p.status === 'linked' ? 'ok' : 'outline'}
+                      className="capitalize"
+                    >
                       {p.status}
                     </Badge>
                   </CardTitle>

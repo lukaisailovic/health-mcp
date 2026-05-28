@@ -1,6 +1,6 @@
+import { cn } from '@/lib/cn';
 import { ChevronDown } from 'lucide-react';
 import { type SelectHTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/lib/cn';
 
 type Size = 'xs' | 'sm' | 'base' | 'lg';
 

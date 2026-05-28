@@ -1,10 +1,3 @@
-import { InputGroup } from '@cloudflare/kumo';
-import type { GoalBound, GoalsDto } from '@health-mcp/shared/dto';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Check, Droplets, Flame, Salad, Scale } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +6,13 @@ import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { fmtNum } from '@/lib/format';
+import { InputGroup } from '@cloudflare/kumo';
+import type { GoalBound, GoalsDto } from '@health-mcp/shared/dto';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { Check, Droplets, Flame, Salad, Scale } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 
 type MacroKey =
   | 'kcal'
@@ -430,7 +430,7 @@ const SaveBar = ({
   error: string | null;
 }) => (
   <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-kumo-line bg-kumo-base/95 px-5 py-3 backdrop-blur supports-[backdrop-filter]:bg-kumo-base/80">
-    <span className="min-w-0 truncate text-xs text-kumo-subtle" aria-live="polite" role="status">
+    <output className="min-w-0 truncate text-xs text-kumo-subtle" aria-live="polite">
       {error ? (
         <span className="text-kumo-danger">{error}</span>
       ) : pending ? (
@@ -442,7 +442,7 @@ const SaveBar = ({
       ) : (
         ' '
       )}
-    </span>
+    </output>
     <Button
       type="submit"
       form="goals-form"

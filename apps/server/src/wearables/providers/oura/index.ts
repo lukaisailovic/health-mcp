@@ -44,9 +44,7 @@ export const createOuraProvider = (opts: OuraOptions): WearableProvider | null =
     buildAuthUrl: (state, redirectUri) =>
       buildOuraAuthUrl({ clientId, redirectUri, state, scopes: SCOPES }),
     exchangeCode: async (code, redirectUri) =>
-      tokenSetFromResponse(
-        await exchangeOuraCode({ code, clientId, clientSecret, redirectUri }),
-      ),
+      tokenSetFromResponse(await exchangeOuraCode({ code, clientId, clientSecret, redirectUri })),
     refreshTokens: async (refreshToken) =>
       tokenSetFromResponse(await refreshOuraTokens({ refreshToken, clientId, clientSecret })),
     sync: async (args: SyncArgs): Promise<SyncResult[]> => {

@@ -1,7 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Archive, CookingPot, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +7,10 @@ import { Spinner } from '@/components/ui/spinner';
 import { Tabs } from '@/components/ui/tabs';
 import { api } from '@/lib/api';
 import { fmtDate, fmtNum } from '@/lib/format';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { Archive, CookingPot, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 const TONE_COLOR = {
   ok: 'var(--color-kumo-success)',
@@ -53,7 +53,11 @@ const Batches = () => {
       {list.isLoading ? (
         <Spinner />
       ) : !list.data?.length ? (
-        <Empty icon={CookingPot} title="No batches" description="Cook a recipe via MCP to start tracking depletion." />
+        <Empty
+          icon={CookingPot}
+          title="No batches"
+          description="Cook a recipe via MCP to start tracking depletion."
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {list.data.map((b) => {
@@ -65,11 +69,13 @@ const Batches = () => {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="truncate font-medium">{b.name ?? 'Batch'}</div>
-                      <div className="text-xs text-kumo-subtle">
-                        cooked {fmtDate(b.cooked_at)}
-                      </div>
+                      <div className="text-xs text-kumo-subtle">cooked {fmtDate(b.cooked_at)}</div>
                     </div>
-                    {b.archived ? <Badge variant="muted">archived</Badge> : <Badge variant={tone}>{Math.round(ratio * 100)}%</Badge>}
+                    {b.archived ? (
+                      <Badge variant="muted">archived</Badge>
+                    ) : (
+                      <Badge variant={tone}>{Math.round(ratio * 100)}%</Badge>
+                    )}
                   </div>
                   <div className="space-y-1">
                     <div className="h-2 overflow-hidden rounded-full bg-kumo-fill">

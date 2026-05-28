@@ -49,9 +49,9 @@ const dayTotals = (ctx: Ctx, date: string): DayTotals => {
        FROM intake_v WHERE date = ?`,
     )
     .get(date) as Omit<DayTotals, 'date' | 'hydration_ml' | 'meal_count'>;
-  const meals = ctx.db
-    .prepare('SELECT COUNT(*) AS n FROM meals WHERE date = ?')
-    .get(date) as { n: number };
+  const meals = ctx.db.prepare('SELECT COUNT(*) AS n FROM meals WHERE date = ?').get(date) as {
+    n: number;
+  };
   const hyd = ctx.db
     .prepare('SELECT COALESCE(SUM(ml),0) AS ml FROM hydration_entries WHERE date = ?')
     .get(date) as { ml: number };

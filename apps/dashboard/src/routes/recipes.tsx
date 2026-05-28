@@ -1,7 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { ChefHat, Search } from 'lucide-react';
-import { useDeferredValue, useMemo, useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { fmtNum } from '@/lib/format';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { ChefHat, Search } from 'lucide-react';
+import { useDeferredValue, useMemo, useState } from 'react';
 
 const RecipeDetail = ({ id }: { id: string }) => {
   const detail = useQuery({

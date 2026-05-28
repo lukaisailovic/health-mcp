@@ -1,16 +1,3 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { ArrowRight, HelpCircle, Lightbulb, Sparkles } from 'lucide-react';
-import { type FormEvent, useMemo, useState } from 'react';
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +9,19 @@ import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { daysAgoIso, fmtNum, todayIso } from '@/lib/format';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { ArrowRight, HelpCircle, Lightbulb, Sparkles } from 'lucide-react';
+import { type FormEvent, useId, useMemo, useState } from 'react';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 const AGGS = ['sum', 'avg', 'min', 'max', 'latest', 'forward_fill'] as const;
 const BUCKETS = ['day', 'week', 'month'] as const;
@@ -32,7 +32,12 @@ type Method = (typeof METHODS)[number];
 type SpecState = { source: string; field: string; agg: string; filter: string };
 
 const DEFAULT_A: SpecState = { source: 'intake', field: 'kcal', agg: 'sum', filter: '' };
-const DEFAULT_B: SpecState = { source: 'wearable_readiness', field: 'score', agg: 'avg', filter: '' };
+const DEFAULT_B: SpecState = {
+  source: 'wearable_readiness',
+  field: 'score',
+  agg: 'avg',
+  filter: '',
+};
 
 type Example = {
   title: string;
@@ -142,34 +147,41 @@ const ChipToggle = <T extends string>({
   options: readonly T[];
   onChange: (v: T) => void;
   label: string;
-}) => (
-  <div
-    role="radiogroup"
-    aria-label={label}
-    className="inline-flex h-9 w-full rounded-lg border border-kumo-line bg-kumo-elevated p-1"
-  >
-    {options.map((opt) => {
-      const active = value === opt;
-      return (
-        <button
-          key={opt}
-          type="button"
-          role="radio"
-          aria-checked={active}
-          onClick={() => onChange(opt)}
-          className={cn(
-            'flex-1 rounded-md px-2.5 text-xs font-medium capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kumo-focus',
-            active
-              ? 'bg-kumo-base text-kumo-default ring-1 ring-kumo-line'
-              : 'text-kumo-subtle hover:text-kumo-default',
-          )}
-        >
-          {opt}
-        </button>
-      );
-    })}
-  </div>
-);
+}) => {
+  const name = useId();
+  return (
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className="inline-flex h-9 w-full rounded-lg border border-kumo-line bg-kumo-elevated p-1"
+    >
+      {options.map((opt) => {
+        const active = value === opt;
+        return (
+          <label
+            key={opt}
+            className={cn(
+              'flex flex-1 cursor-pointer items-center justify-center rounded-md px-2.5 text-xs font-medium capitalize transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-kumo-focus',
+              active
+                ? 'bg-kumo-base text-kumo-default ring-1 ring-kumo-line'
+                : 'text-kumo-subtle hover:text-kumo-default',
+            )}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={opt}
+              checked={active}
+              onChange={() => onChange(opt)}
+              className="sr-only"
+            />
+            {opt}
+          </label>
+        );
+      })}
+    </div>
+  );
+};
 
 const SpecPicker = ({
   label,
@@ -267,12 +279,10 @@ const Explainer = () => (
     </CardHeader>
     <CardContent className="space-y-3 text-sm text-kumo-subtle">
       <p>
-        Pick any two time series — calories, sleep score, HRV, hydration, labs — and we compute
-        the{' '}
+        Pick any two time series — calories, sleep score, HRV, hydration, labs — and we compute the{' '}
         <span className="font-medium text-kumo-default">correlation</span> over a date range. The
-        result is a number{' '}
-        <span className="font-mono text-kumo-default">r ∈ [−1, 1]</span> telling you how tightly
-        the two move together.
+        result is a number <span className="font-mono text-kumo-default">r ∈ [−1, 1]</span> telling
+        you how tightly the two move together.
       </p>
       <ul className="grid gap-2 sm:grid-cols-3">
         <li className="rounded-md border border-kumo-line bg-kumo-elevated px-3 py-2 text-xs">
@@ -517,7 +527,10 @@ const Insights = () => {
                   {chartData.length > 0 ? (
                     <div className="rounded-lg border border-kumo-line bg-kumo-elevated p-2 sm:p-3">
                       <ResponsiveContainer width="100%" height={260}>
-                        <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                        <LineChart
+                          data={chartData}
+                          margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
+                        >
                           <CartesianGrid
                             stroke="var(--color-kumo-line)"
                             strokeDasharray="2 4"
@@ -590,10 +603,7 @@ const Insights = () => {
                       </ResponsiveContainer>
                       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-kumo-subtle">
                         <span className="flex items-center gap-1.5">
-                          <span
-                            aria-hidden="true"
-                            className="h-2 w-2 rounded-full bg-kumo-brand"
-                          />{' '}
+                          <span aria-hidden="true" className="h-2 w-2 rounded-full bg-kumo-brand" />{' '}
                           {a.source}.{a.field}
                         </span>
                         <span className="flex items-center gap-1.5">

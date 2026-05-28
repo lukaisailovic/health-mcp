@@ -42,10 +42,7 @@ const isServerRoute = (path: string): boolean =>
   path.startsWith('/api/') ||
   path.startsWith('/auth/');
 
-export const mountDashboard = (
-  app: Hono,
-  opts: { publicDir: string; logger: Logger },
-): void => {
+export const mountDashboard = (app: Hono, opts: { publicDir: string; logger: Logger }): void => {
   const indexHtml = readFileSync(join(opts.publicDir, 'index.html'), 'utf8');
 
   app.get('*', (c) => {

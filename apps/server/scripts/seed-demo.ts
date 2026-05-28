@@ -14,8 +14,7 @@
 
 import Database from 'better-sqlite3';
 
-const BASE =
-  process.env.HEALTH_MCP_URL?.replace(/\/$/, '') ?? 'http://127.0.0.1:7777';
+const BASE = process.env.HEALTH_MCP_URL?.replace(/\/$/, '') ?? 'http://127.0.0.1:7777';
 const TOKEN = process.env.HEALTH_MCP_TOKEN ?? null;
 const DAYS = Number(process.env.SEED_DAYS ?? '30');
 const ONLY_WEARABLES = process.argv.includes('--only-wearables');
@@ -83,20 +82,16 @@ const FOOD_DEFS = [
 const seedFoods = async (): Promise<Food[]> => {
   const out: Food[] = [];
   for (const f of FOOD_DEFS) {
-    const food = await req<{ id: string; name: string }>(
-      'POST',
-      '/api/foods',
-      {
-        name: f.name,
-        nutrients_per_100g: {
-          kcal_per_100g: f.kcal,
-          protein_g_per_100g: f.p,
-          carb_g_per_100g: f.c,
-          fat_g_per_100g: f.f,
-          fiber_g_per_100g: f.fiber,
-        },
+    const food = await req<{ id: string; name: string }>('POST', '/api/foods', {
+      name: f.name,
+      nutrients_per_100g: {
+        kcal_per_100g: f.kcal,
+        protein_g_per_100g: f.p,
+        carb_g_per_100g: f.c,
+        fat_g_per_100g: f.f,
+        fiber_g_per_100g: f.fiber,
       },
-    );
+    });
     out.push({ id: food.id, name: food.name });
   }
   return out;
@@ -276,7 +271,7 @@ const seedRecipesAndBatches = async (foods: Food[]): Promise<void> => {
   });
 
   await req('POST', '/api/batches', {
-    name: 'Chicken & rice — week of ' + dateOnly(0),
+    name: `Chicken & rice — week of ${dateOnly(0)}`,
     recipe_id: r1.recipe.id,
     total_grams: 2350,
     cooked_at: isoAt(2, 18, 0),
@@ -359,9 +354,7 @@ const seedWearables = (dbPath: string): void => {
       const date = dateOnly(daysAgo);
       const sleepStart = isoAt(daysAgo, 0, 15);
       const durationS = Math.round(jitter(7.4 * 3600, 0.12));
-      const sleepEnd = new Date(
-        new Date(sleepStart).getTime() + durationS * 1000,
-      ).toISOString();
+      const sleepEnd = new Date(new Date(sleepStart).getTime() + durationS * 1000).toISOString();
       const efficiency = round(jitter(89, 0.05), 1);
       const sleepScore = round(jitter(78, 0.13), 0);
       const deep = Math.round(durationS * jitter(0.18, 0.15));

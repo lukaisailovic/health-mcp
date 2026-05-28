@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
+import { useEffect, useRef, useState } from 'react';
 
 export const AnimatedNumber = ({
   value,
@@ -26,10 +26,7 @@ export const AnimatedNumber = ({
   return (
     <span ref={ref} className={cn('t-number', className)}>
       {display.split('').map((ch, i) => (
-        <span
-          key={`${i}-${ch}`}
-          style={{ ['--i' as string]: i }}
-        >
+        <span key={`${i}-${ch}`} style={{ ['--i' as string]: i }}>
           {ch}
         </span>
       ))}

@@ -1,10 +1,10 @@
-import { Activity, Key, ShieldCheck } from 'lucide-react';
-import { type FormEvent, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { setToken } from '@/lib/auth';
+import { Activity, Key, ShieldCheck } from 'lucide-react';
+import { type FormEvent, useRef, useState } from 'react';
 
 export const SetupScreen = ({ reason }: { reason: 'missing' | '401' }) => {
   const [value, setValue] = useState('');

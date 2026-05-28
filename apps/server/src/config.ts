@@ -228,7 +228,8 @@ const resolveOpen = (input: {
   if (input.flagOpen) return true;
   if (input.env !== null) return input.env;
   if (input.file !== null) return input.file;
-  if (input.stdio || !input.dashboard || input.subcommand !== 'serve' || !input.ttyOut) return false;
+  if (input.stdio || !input.dashboard || input.subcommand !== 'serve' || !input.ttyOut)
+    return false;
   return true;
 };
 

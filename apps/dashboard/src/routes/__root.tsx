@@ -1,11 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
-import { Outlet, createRootRoute } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { SetupScreen } from '@/components/setup-screen';
 import { Spinner } from '@/components/ui/spinner';
 import { ApiError, api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
+import { useQuery } from '@tanstack/react-query';
+import { Outlet, createRootRoute } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
 
 const RootGate = () => {
   const [authReason, setAuthReason] = useState<'missing' | '401' | null>(null);

@@ -46,12 +46,7 @@ export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value'>
   shape?: Shape;
 };
 
-export const Button = ({
-  variant = 'default',
-  size = 'default',
-  shape,
-  ...props
-}: ButtonProps) => {
+export const Button = ({ variant = 'default', size = 'default', shape, ...props }: ButtonProps) => {
   const resolvedShape: Shape = shape ?? (size === 'icon' ? 'square' : 'base');
   return (
     // @ts-expect-error — Kumo Button's discriminated union doesn't model both shape:base + icon-only;

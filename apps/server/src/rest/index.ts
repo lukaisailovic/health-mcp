@@ -1,3 +1,4 @@
+import type { MealComponentInput, MealType } from '@health-mcp/shared';
 import type { Context, Hono } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import {
@@ -26,7 +27,6 @@ import {
   updateCustomFood,
 } from '../services/food.js';
 import { getGoals, setGoals } from '../services/goals.js';
-import type { MealComponentInput, MealType } from '@health-mcp/shared';
 import {
   addMealComponent,
   deleteMeal,
@@ -237,9 +237,7 @@ export const mountRestRoutes = (app: Hono, ctx: WearableServiceCtx): void => {
   );
 
   app.get('/api/correlate/metrics', (c) => wrap(c, () => listCorrelateMetrics()));
-  app.post('/api/correlate', (c) =>
-    wrap(c, async () => correlate(ctx, await parseBody(c))),
-  );
+  app.post('/api/correlate', (c) => wrap(c, async () => correlate(ctx, await parseBody(c))));
 
   // Recipes / batches
   app.get('/api/recipes', (c) =>

@@ -1,8 +1,8 @@
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/cn';
 import { Dialog as KumoDialog } from '@cloudflare/kumo';
 import { X } from 'lucide-react';
 import type { ComponentProps, ComponentPropsWithoutRef, HTMLAttributes, ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/cn';
 
 export const Dialog = KumoDialog.Root;
 export const DialogTrigger = KumoDialog.Trigger;
@@ -45,15 +45,9 @@ export const DialogFooter = ({ className, ...props }: HTMLAttributes<HTMLDivElem
   <div className={cn('mt-6 flex justify-end gap-2', className)} {...props} />
 );
 
-export const DialogTitle = ({
-  className,
-  ...props
-}: ComponentProps<typeof KumoDialog.Title>) => (
+export const DialogTitle = ({ className, ...props }: ComponentProps<typeof KumoDialog.Title>) => (
   <KumoDialog.Title
-    className={cn(
-      'text-lg font-semibold leading-none tracking-tight text-kumo-strong',
-      className,
-    )}
+    className={cn('text-lg font-semibold leading-none tracking-tight text-kumo-strong', className)}
     {...props}
   />
 );
@@ -62,8 +56,5 @@ export const DialogDescription = ({
   className,
   ...props
 }: ComponentProps<typeof KumoDialog.Description>) => (
-  <KumoDialog.Description
-    className={cn('text-sm text-kumo-subtle', className)}
-    {...props}
-  />
+  <KumoDialog.Description className={cn('text-sm text-kumo-subtle', className)} {...props} />
 );

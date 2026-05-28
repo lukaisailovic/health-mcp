@@ -1,3 +1,13 @@
+import { PageHeader } from '@/components/page-header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { api } from '@/lib/api';
+import { clearToken, getToken, setToken } from '@/lib/auth';
+import { cn } from '@/lib/cn';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import {
@@ -16,16 +26,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import { type FormEvent, type ReactNode, useState } from 'react';
-import { PageHeader } from '@/components/page-header';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import { api } from '@/lib/api';
-import { clearToken, getToken, setToken } from '@/lib/auth';
-import { cn } from '@/lib/cn';
 
 type Probe = NonNullable<ReturnType<typeof useHealthProbe>['data']>;
 
@@ -113,8 +113,8 @@ const TokenSection = () => {
           </div>
           <p className="text-xs text-kumo-subtle">
             Stored in your browser&apos;s localStorage only. Sent as{' '}
-            <code className="rounded bg-kumo-fill px-1.5 py-0.5">Authorization: Bearer</code>{' '}
-            on every <code className="rounded bg-kumo-fill px-1.5 py-0.5">/api/*</code> call.
+            <code className="rounded bg-kumo-fill px-1.5 py-0.5">Authorization: Bearer</code> on
+            every <code className="rounded bg-kumo-fill px-1.5 py-0.5">/api/*</code> call.
           </p>
         </form>
       </CardContent>
@@ -182,11 +182,19 @@ const ServerSection = ({ probe }: { probe: ReturnType<typeof useHealthProbe> }) 
           </p>
         ) : probe.data ? (
           <ul className="space-y-0">
-            <ProbeRow label="version" value={<span className="font-mono">{probe.data.version}</span>} />
+            <ProbeRow
+              label="version"
+              value={<span className="font-mono">{probe.data.version}</span>}
+            />
             <ProbeRow
               label="database"
               value={
-                <span className={cn('capitalize', probe.data.db === 'up' ? 'text-kumo-success' : 'text-kumo-danger')}>
+                <span
+                  className={cn(
+                    'capitalize',
+                    probe.data.db === 'up' ? 'text-kumo-success' : 'text-kumo-danger',
+                  )}
+                >
                   {probe.data.db}
                 </span>
               }
@@ -196,7 +204,9 @@ const ServerSection = ({ probe }: { probe: ReturnType<typeof useHealthProbe> }) 
               label="auth required"
               value={
                 <span className="inline-flex items-center gap-1.5">
-                  {probe.data.auth_required ? <ShieldCheck className="h-3.5 w-3.5 text-kumo-success" /> : null}
+                  {probe.data.auth_required ? (
+                    <ShieldCheck className="h-3.5 w-3.5 text-kumo-success" />
+                  ) : null}
                   {probe.data.auth_required ? 'yes' : 'no'}
                 </span>
               }
@@ -263,9 +273,8 @@ const StorageSection = ({ probe }: { probe: Probe }) => (
         <HardDrive className="h-4 w-4" /> Storage
       </CardTitle>
       <p className="text-xs text-kumo-subtle">
-        Everything stays local — pass{' '}
-        <code className="rounded bg-kumo-fill px-1 py-0.5">--db</code> or{' '}
-        <code className="rounded bg-kumo-fill px-1 py-0.5">HEALTH_MCP_DB</code> to move them.
+        Everything stays local — pass <code className="rounded bg-kumo-fill px-1 py-0.5">--db</code>{' '}
+        or <code className="rounded bg-kumo-fill px-1 py-0.5">HEALTH_MCP_DB</code> to move them.
       </p>
     </CardHeader>
     <CardContent className="space-y-4">
@@ -367,9 +376,7 @@ const ProvidersSection = ({ probe }: { probe: Probe }) => (
               className="flex items-start justify-between gap-3 border-t border-kumo-line py-3 first:border-t-0"
             >
               <div className="min-w-0 space-y-1">
-                <div className="text-sm font-medium text-kumo-default">
-                  {PROVIDER_LABEL[key]}
-                </div>
+                <div className="text-sm font-medium text-kumo-default">{PROVIDER_LABEL[key]}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {PROVIDER_ENV[key].map((envName) => (
                     <code

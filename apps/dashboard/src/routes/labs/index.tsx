@@ -1,7 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
-import { Link, createFileRoute } from '@tanstack/react-router';
-import { Beaker, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +7,10 @@ import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { fmtDate, fmtNum } from '@/lib/format';
 import { STATUS_LABEL, STATUS_VARIANT } from '@/lib/labs';
+import { useQuery } from '@tanstack/react-query';
+import { Link, createFileRoute } from '@tanstack/react-router';
+import { Beaker, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 
 const LabsIndex = () => {
   const [outOnly, setOutOnly] = useState(false);
