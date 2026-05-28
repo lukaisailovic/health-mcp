@@ -10,6 +10,16 @@
   --text-color-kumo-brand: var(--color-kumo-brand);
 }
 
+/* Brand override — derived from the logo's teal/green */
+:root,
+:root[data-mode="light"],
+:root[data-mode="dark"],
+[data-mode="light"],
+[data-mode="dark"] {
+  --color-kumo-brand: #499d80;
+  --color-kumo-brand-hover: #3a8a6c;
+}
+
 @layer base {
   html,
   body {

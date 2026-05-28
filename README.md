@@ -1,14 +1,18 @@
+<p align="center">
+  <img src="docs/health-mcp-logo.png" alt="health-mcp logo" width="160" />
+</p>
+
 # health-mcp
 
 > Your personal health database. Your agent does the typing.
 
-A local-first server that stores your nutrition, biomarker, and wearable data. The whole thing is exposed as Model Context Protocol tools, so any MCP-aware agent (Claude Desktop, MCP Inspector, your own) can read and write it. A web dashboard ships in the same process for when you want to look at the data instead of talk to it.
+A local-first server that stores your nutrition, biomarker, and wearable data. The whole thing is exposed as Model Context Protocol tools, so any MCP-aware agent (Hermes, OpenClaw, Claude Desktop) can read and write it. A web dashboard ships in the same process for when you want to look at the data instead of talk to it.
 
 Everything runs on your machine. One SQLite file. No accounts, no SaaS, no telemetry.
 
 ```mermaid
 flowchart LR
-  agent["MCP agent<br/>(Claude, Inspector, …)"] <-->|MCP| server["health-mcp<br/>(one Node process)"]
+  agent["MCP agent<br/>(Hermes, OpenClaw, Claude Desktop)"] <-->|MCP| server["health-mcp<br/>(one Node process)"]
   server <--> db[("SQLite + auth.json")]
   server <-->|OAuth2| wearables{{"Whoop / Oura"}}
   server -->|":7777"| dashboard["Dashboard<br/>(browser)"]

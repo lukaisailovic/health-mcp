@@ -1,7 +1,6 @@
 import { Dialog } from '@cloudflare/kumo';
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
 import {
-  Activity,
   BarChart3,
   Beaker,
   CalendarCheck,
@@ -66,7 +65,7 @@ const NavLink = ({
       'group relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium no-underline outline-none transition-colors',
       'focus-visible:ring-2 focus-visible:ring-kumo-focus',
       active
-        ? 'bg-kumo-fill text-kumo-strong'
+        ? 'bg-kumo-brand/10 text-kumo-brand'
         : 'text-kumo-subtle hover:bg-kumo-fill hover:text-kumo-default',
     )}
   >
@@ -111,9 +110,12 @@ const Brand = ({ onNavigate }: { onNavigate?: () => void }) => (
     onClick={onNavigate}
     className="flex items-center gap-2.5 rounded-md px-3 py-2.5 transition-colors hover:bg-kumo-tint"
   >
-    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-kumo-brand">
-      <Activity className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
-    </div>
+    <img
+      src="/logo.webp"
+      alt=""
+      aria-hidden="true"
+      className="h-8 w-8 shrink-0 rounded-md object-cover ring-1 ring-kumo-line"
+    />
     <div className="flex flex-col leading-none">
       <span className="text-sm font-semibold tracking-tight text-kumo-strong">health-mcp</span>
       <span className="mt-0.5 text-[10px] text-kumo-subtle">your data, your model</span>
@@ -208,9 +210,14 @@ export const AppShell = () => {
           <Link
             to="/today"
             aria-label="Home"
-            className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-md bg-kumo-brand"
+            className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-md"
           >
-            <Activity className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+            <img
+              src="/logo.webp"
+              alt=""
+              aria-hidden="true"
+              className="h-8 w-8 rounded-md object-cover ring-1 ring-kumo-line"
+            />
           </Link>
         </header>
         <div
