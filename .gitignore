@@ -12,3 +12,7 @@ coverage/
 apps/server/public/
 apps/dashboard/src/routeTree.gen.ts
 packages/shared/dist/
+
+# Generated at publish time (prepack copies these from the repo root into the package).
+apps/server/LICENSE
+apps/server/README.md

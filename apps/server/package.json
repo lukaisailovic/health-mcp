@@ -2,36 +2,62 @@
   "name": "health-mcp",
   "version": "0.1.0",
   "description": "Self-hosted MCP server for personal nutrition, biomarkers, and wearables data",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "health",
+    "nutrition",
+    "biomarkers",
+    "wearables",
+    "whoop",
+    "oura",
+    "self-hosted"
+  ],
+  "homepage": "https://github.com/lukaisailovic/health-mcp#readme",
+  "bugs": "https://github.com/lukaisailovic/health-mcp/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukaisailovic/health-mcp.git",
+    "directory": "apps/server"
+  },
+  "license": "MIT",
+  "author": "Luka Isailovic",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "health-mcp": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "files": ["dist", "public", "README.md", "LICENSE"],
   "scripts": {
-    "build": "tsc -p tsconfig.json && cp src/biomarkers/seed-biomarkers.json dist/biomarkers/seed-biomarkers.json",
+    "build": "tsup",
     "dev": "node --import tsx --watch src/index.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "inspect": "npx -y @modelcontextprotocol/inspector node --import tsx src/index.ts --stdio",
-    "prepublishOnly": "pnpm --filter @health-mcp/shared build && pnpm --filter @health-mcp/dashboard build && pnpm build"
+    "prepack": "pnpm -w run build && cp ../../LICENSE ../../README.md . && rm -f public/assets/*.map"
   },
   "dependencies": {
-    "@health-mcp/shared": "workspace:*",
     "@hono/node-server": "^1.13.7",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "better-sqlite3": "^11.5.0",
     "croner": "^9.0.0",
-    "drizzle-orm": "^0.36.4",
     "hono": "^4.6.11",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@health-mcp/shared": "workspace:*",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.10.1",
     "drizzle-kit": "^0.28.1",
+    "tsup": "^8.5.1",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "undici": "^7.1.0",
