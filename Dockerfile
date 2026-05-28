@@ -31,6 +31,10 @@ RUN pnpm build \
         --filter health-mcp deploy --prod --legacy /out
 
 FROM node:${NODE_VERSION}-bookworm-slim AS runtime
+LABEL org.opencontainers.image.title="health-mcp" \
+      org.opencontainers.image.description="Self-hosted MCP server for personal nutrition, biomarkers, and wearables data" \
+      org.opencontainers.image.source="https://github.com/lukaisailovic/health-mcp" \
+      org.opencontainers.image.licenses="MIT"
 ENV NODE_ENV=production \
     HEALTH_MCP_HOST=0.0.0.0 \
     HEALTH_MCP_PORT=7777 \
