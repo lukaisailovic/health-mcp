@@ -13,7 +13,7 @@ export const foodTools = [
   tool({
     name: 'search_food',
     description:
-      'Search foods. Local SQLite FTS first; falls back to USDA when query has space for more results and USDA key is configured.',
+      'Search foods by name/brand, ranked by likelihood. Matches any word prefix and tolerates typos and punctuation ("bbq (sauce)", "tex bqq" → "TexMex BBQ Sauce"). Local SQLite first; falls back to USDA when the local set is thin and a USDA key is configured.',
     group: 'food',
     inputSchema: z.object({
       query: z.string().min(1),

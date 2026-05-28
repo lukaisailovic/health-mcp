@@ -2,6 +2,7 @@ import type { CustomFoodSpec } from '@health-mcp/shared';
 import { fetchOffByBarcode } from '../providers/openfoodfacts.js';
 import { fetchUsdaSearch } from '../providers/usda.js';
 import { cuid } from '../util/id.js';
+import { buildFtsMatch, normalizeTokens, scoreFood } from './food-search.js';
 import { type Ctx, ServiceError } from './types.js';
 
 export type FoodRow = {
@@ -23,19 +24,33 @@ export type FoodRow = {
   created_at: string;
 };
 
-const sanitizeFts = (s: string): string =>
-  s.replace(/["'*]/g, ' ').trim().split(/\s+/).filter(Boolean).join(' ');
+// FTS recall pool reranked in JS; bm25 already front-loads the most relevant rows.
+const CANDIDATE_POOL = 200;
+// When every query token is a typo, FTS recalls nothing; rerank a bounded window instead.
+const FUZZY_SCAN_CAP = 2000;
+
+const rankFoods = (tokens: string[], pool: FoodRow[], limit: number): FoodRow[] =>
+  pool
+    .map((food) => ({ food, score: scoreFood(tokens, food) }))
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score || a.food.name.length - b.food.name.length)
+    .slice(0, limit)
+    .map((s) => s.food);
 
 export const searchFoodLocal = (ctx: Ctx, query: string, limit = 20): FoodRow[] => {
-  const cleaned = sanitizeFts(query);
-  if (!cleaned) return [];
-  const rows = ctx.db
+  const tokens = normalizeTokens(query);
+  if (tokens.length === 0) return [];
+  const candidates = ctx.db
     .prepare(
       `SELECT f.* FROM foods_fts JOIN foods f ON f.rowid = foods_fts.rowid
        WHERE foods_fts MATCH ? ORDER BY rank LIMIT ?`,
     )
-    .all(`${cleaned}*`, limit) as FoodRow[];
-  return rows;
+    .all(buildFtsMatch(tokens), CANDIDATE_POOL) as FoodRow[];
+  if (candidates.length > 0) return rankFoods(tokens, candidates, limit);
+  const recent = ctx.db
+    .prepare(`SELECT * FROM foods ORDER BY source = 'manual' DESC, created_at DESC LIMIT ?`)
+    .all(FUZZY_SCAN_CAP) as FoodRow[];
+  return rankFoods(tokens, recent, limit);
 };
 
 export const upsertFood = (
