@@ -26,6 +26,10 @@ export type DayTotals = {
   sugar_g: number;
   sat_fat_g: number;
   sodium_mg: number;
+  potassium_mg: number;
+  calcium_mg: number;
+  magnesium_mg: number;
+  iron_mg: number;
   hydration_ml: number;
   meal_count: number;
   component_count: number;
@@ -44,6 +48,10 @@ const dayTotals = (ctx: Ctx, date: string): DayTotals => {
         COALESCE(SUM(sugar_g),0) AS sugar_g,
         COALESCE(SUM(sat_fat_g),0) AS sat_fat_g,
         COALESCE(SUM(sodium_mg),0) AS sodium_mg,
+        COALESCE(SUM(potassium_mg),0) AS potassium_mg,
+        COALESCE(SUM(calcium_mg),0) AS calcium_mg,
+        COALESCE(SUM(magnesium_mg),0) AS magnesium_mg,
+        COALESCE(SUM(iron_mg),0) AS iron_mg,
         COUNT(*) AS component_count,
         AVG(confidence) AS avg_confidence
        FROM intake_v WHERE date = ?`,
@@ -78,6 +86,10 @@ const SUMMABLE_KEYS = [
   'sugar_g',
   'sat_fat_g',
   'sodium_mg',
+  'potassium_mg',
+  'calcium_mg',
+  'magnesium_mg',
+  'iron_mg',
   'hydration_ml',
   'meal_count',
   'component_count',

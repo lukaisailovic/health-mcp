@@ -11,11 +11,13 @@ Migrations live in `apps/server/src/db/sql/000N-*.ts`. They run automatically on
 | File | Adds |
 |---|---|
 | `0001-init.ts` | full schema — foods (+ FTS5), meals + meal_components + `intake_v` view, hydration, weight, measurements, goals (per-macro `_min` / `_max`), system, biomarkers (+ `why_it_matters` / `influences` / `how_to_improve`), biomarker_categories + map, lab_panels, lab_results, recipes, recipe_ingredients, batches, remembered_meals (with `components_json`), wearable_providers (seed), wearable_sync_state, wearable_oauth_nonces, wearable_sleep / activity / readiness / daily, wearable_metric_minutes, wearable_activity_type_map (seeded), whoop_* raw tables, oura_* raw tables; seeds ~60 curated biomarkers with categories |
+| `0010-relax-meal-components-custom-check.ts` | rebuilds `meal_components` to relax the custom-component `CHECK` so absolute-totals customs (`grams` NULL) are accepted |
+| `0011-food-micros-aliases-external-id.ts` | adds `external_id` (partial-unique) + `aliases` + micronutrients (potassium/calcium/magnesium/iron) to `foods`; rebuilds `foods_fts` to index `aliases`; adds the four micros to `meal_components`, to `batches` (as `_total`), and to the `intake_v` view |
 
 ## Nutrition
 
 ### `foods`
-`(id, source, source_id, name, brand, barcode, serving_grams, kcal_per_100g, protein_g, carb_g, fat_g, fiber_g?, sugar_g?, sat_fat_g?, sodium_mg?, raw_json?, created_at)` — `UNIQUE(source, source_id)`. `source ∈ ('usda','off','manual')`. `foods_fts` is an FTS5 virtual table over `(name, brand)` with sync triggers; `searchFood` queries it first.
+`(id, source, source_id, external_id?, name, brand, barcode, serving_grams, kcal_per_100g, protein_g, carb_g, fat_g, fiber_g?, sugar_g?, sat_fat_g?, sodium_mg?, potassium_mg?, calcium_mg?, magnesium_mg?, iron_mg?, aliases?, raw_json?, created_at)` — `UNIQUE(source, source_id)`, plus a partial `UNIQUE(external_id) WHERE external_id IS NOT NULL`. `source ∈ ('usda','off','manual')`. `external_id` is a stable cross-system key (e.g. an Obsidian slug) that manual upserts dedupe on; `aliases` is a JSON-encoded `string[]` of search synonyms. `foods_fts` is an FTS5 virtual table over `(name, brand, aliases)` with sync triggers; `searchFood` queries it first, reranks with a 0..1 relevance score (coverage × completeness, an exact alias/name match winning), drops sub-floor noise, and trims the tail when there's a clear winner.
 
 ### `meals` + `meal_components`
 
@@ -23,14 +25,14 @@ A **meal** is the unit of logging: one event (eaten at a single timestamp, tagge
 
 `meals(id, ts, date, meal_type, name?, notes?, tags?, created_at, updated_at)` — `meal_type ∈ ('breakfast','lunch','dinner','snack','other')`. `name` is optional; the dashboard falls back to the slot label or to the single component's name. `tags` is a JSON-encoded `string[]` for forward compat.
 
-`meal_components(id, meal_id FK CASCADE, position int, ref_kind, food_id?, recipe_id?, batch_id?, custom_name?, grams?, servings?, kcal, protein_g, carb_g, fat_g, fiber_g?, sugar_g?, sat_fat_g?, sodium_mg?, confidence, source_trace, notes?, created_at)` — `ref_kind ∈ ('food','recipe_serving','batch','custom')`. A `CHECK` constraint enforces the discriminator-coherence rule:
+`meal_components(id, meal_id FK CASCADE, position int, ref_kind, food_id?, recipe_id?, batch_id?, custom_name?, grams?, servings?, kcal, protein_g, carb_g, fat_g, fiber_g?, sugar_g?, sat_fat_g?, sodium_mg?, potassium_mg?, calcium_mg?, magnesium_mg?, iron_mg?, confidence, source_trace, notes?, created_at)` — `ref_kind ∈ ('food','recipe_serving','batch','custom')`. A `CHECK` constraint enforces the discriminator-coherence rule:
 
 - `food` → `food_id`, `grams` not null; rest null
 - `recipe_serving` → `recipe_id`, `servings` not null; rest null
 - `batch` → `batch_id`, `grams` not null; rest null
 - `custom` → `custom_name`, `grams` not null; rest null
 
-Macros are **frozen on insert per component**. Later edits to the referenced food/recipe/batch do not retro-mutate. `update_meal_component` re-derives that component's macros when `grams` (food/batch) or `servings` (recipe_serving) changes. Custom components reject grams changes — `remove_meal_component` then `add_meal_component` with new grams. Meal totals are computed at read time from components — never denormalized.
+Macros are **frozen on insert per component**. Later edits to the referenced food/recipe/batch do not retro-mutate. `update_meal_component` re-derives that component's macros when `grams`/`grams_delta` (food/batch) or `servings` (recipe_serving) changes — `grams_delta` is a relative correction ("add another 43g"). Custom components reject grams changes — `remove_meal_component` then `add_meal_component` with new grams. Meal totals are computed at read time from components — never denormalized.
 
 Indexes: `meals(date)`, `meals(ts)`, `meals(meal_type)`, `meal_components(meal_id)`, `meal_components(batch_id)`.
 
@@ -53,7 +55,7 @@ Singleton — `CHECK (id = 1)`. Seeded with a row of nulls by the first migratio
 ### `batches`
 A cooked instance that depletes as it's eaten.
 
-`(id, name?, recipe_id?, total_grams, remaining_grams, kcal_total, protein_g_total, carb_g_total, fat_g_total, fiber_g_total?, sugar_g_total?, sat_fat_g_total?, sodium_mg_total?, cooked_at, expires_at?, notes?, archived bool, created_at, updated_at)`
+`(id, name?, recipe_id?, total_grams, remaining_grams, kcal_total, protein_g_total, carb_g_total, fat_g_total, fiber_g_total?, sugar_g_total?, sat_fat_g_total?, sodium_mg_total?, potassium_mg_total?, calcium_mg_total?, magnesium_mg_total?, iron_mg_total?, cooked_at, expires_at?, notes?, archived bool, created_at, updated_at)`
 
 `remaining_grams` decrements atomically inside `log_meal` (and `add_meal_component`) whenever a component has `ref: 'batch'`. The transaction fails with `batch_insufficient` if a decrement would drop below 0 — no partial writes. `delete_meal` and `remove_meal_component` refund the grams. `update_meal_component` handles batch grams deltas in-place (decrement or refund). `archive_batch` is non-destructive: it just sets `archived = 1` so `list_batches(active_only=true)` hides it.
 

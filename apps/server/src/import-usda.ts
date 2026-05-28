@@ -37,6 +37,10 @@ const NUTRIENT_MAP: Record<string, keyof MacroAccumulator> = {
   '269': 'sugar_g',
   '606': 'sat_fat_g',
   '307': 'sodium_mg',
+  '306': 'potassium_mg',
+  '301': 'calcium_mg',
+  '304': 'magnesium_mg',
+  '303': 'iron_mg',
 };
 
 type MacroAccumulator = {
@@ -48,6 +52,10 @@ type MacroAccumulator = {
   sugar_g: number | null;
   sat_fat_g: number | null;
   sodium_mg: number | null;
+  potassium_mg: number | null;
+  calcium_mg: number | null;
+  magnesium_mg: number | null;
+  iron_mg: number | null;
 };
 
 const extractMacros = (nutrients: FdcNutrient[]): MacroAccumulator => {
@@ -60,6 +68,10 @@ const extractMacros = (nutrients: FdcNutrient[]): MacroAccumulator => {
     sugar_g: null,
     sat_fat_g: null,
     sodium_mg: null,
+    potassium_mg: null,
+    calcium_mg: null,
+    magnesium_mg: null,
+    iron_mg: null,
   };
   for (const n of nutrients) {
     const number = n.nutrient?.number ?? n.nutrientNumber;
@@ -98,6 +110,7 @@ export const importUsda = (ctx: Pick<Ctx, 'db' | 'logger'>, path: string): Impor
     upsertFood(ctx as Ctx, {
       source: 'usda',
       source_id: String(f.fdcId),
+      external_id: null,
       name: f.description,
       brand: f.brandOwner ?? null,
       barcode: f.gtinUpc ?? null,
@@ -110,6 +123,11 @@ export const importUsda = (ctx: Pick<Ctx, 'db' | 'logger'>, path: string): Impor
       sugar_g: macros.sugar_g,
       sat_fat_g: macros.sat_fat_g,
       sodium_mg: macros.sodium_mg,
+      potassium_mg: macros.potassium_mg,
+      calcium_mg: macros.calcium_mg,
+      magnesium_mg: macros.magnesium_mg,
+      iron_mg: macros.iron_mg,
+      aliases: null,
     });
     imported++;
   }

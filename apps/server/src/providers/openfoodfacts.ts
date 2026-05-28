@@ -8,6 +8,10 @@ type OffNutriments = {
   sugars_100g?: number;
   'saturated-fat_100g'?: number;
   sodium_100g?: number;
+  potassium_100g?: number;
+  calcium_100g?: number;
+  magnesium_100g?: number;
+  iron_100g?: number;
 };
 
 type OffProduct = {
@@ -35,8 +39,15 @@ export type OffNormalized = {
   sugar_g: number | null;
   sat_fat_g: number | null;
   sodium_mg: number | null;
+  potassium_mg: number | null;
+  calcium_mg: number | null;
+  magnesium_mg: number | null;
+  iron_mg: number | null;
   raw_json: string;
 };
+
+// OFF reports minerals in grams per 100 g; the catalog stores mg.
+const gToMg = (g: number | undefined): number | null => (g === undefined ? null : g * 1000);
 
 export const fetchOffByBarcode = async (barcode: string): Promise<OffNormalized | null> => {
   const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json`;
@@ -62,7 +73,11 @@ export const fetchOffByBarcode = async (barcode: string): Promise<OffNormalized 
     fiber_g: n.fiber_100g ?? null,
     sugar_g: n.sugars_100g ?? null,
     sat_fat_g: n['saturated-fat_100g'] ?? null,
-    sodium_mg: n.sodium_100g !== undefined ? n.sodium_100g * 1000 : null,
+    sodium_mg: gToMg(n.sodium_100g),
+    potassium_mg: gToMg(n.potassium_100g),
+    calcium_mg: gToMg(n.calcium_100g),
+    magnesium_mg: gToMg(n.magnesium_100g),
+    iron_mg: gToMg(n.iron_100g),
     raw_json: JSON.stringify(data.product),
   };
 };

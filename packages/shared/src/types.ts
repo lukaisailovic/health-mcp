@@ -9,6 +9,10 @@ export type FoodMacros = {
   sugar_g: number | null;
   sat_fat_g: number | null;
   sodium_mg: number | null;
+  potassium_mg: number | null;
+  calcium_mg: number | null;
+  magnesium_mg: number | null;
+  iron_mg: number | null;
 };
 
 export type IntakeMacros = {
@@ -20,6 +24,10 @@ export type IntakeMacros = {
   sugar_g: number | null;
   sat_fat_g: number | null;
   sodium_mg: number | null;
+  potassium_mg: number | null;
+  calcium_mg: number | null;
+  magnesium_mg: number | null;
+  iron_mg: number | null;
 };
 
 export type DailySummary = {

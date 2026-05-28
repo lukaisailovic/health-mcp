@@ -19,9 +19,11 @@ import {
 } from '../services/biomarkers.js';
 import { correlate, listCorrelateMetrics } from '../services/correlate.js';
 import {
+  bulkUpsertCustomFoods,
   createCustomFood,
   deleteCustomFood,
   getFood,
+  getFoodByExternalId,
   lookupBarcode,
   searchFood,
   updateCustomFood,
@@ -124,6 +126,12 @@ export const mountRestRoutes = (app: Hono, ctx: WearableServiceCtx): void => {
   );
   app.get('/api/foods/barcode/:barcode', (c) =>
     wrap(c, () => lookupBarcode(ctx, c.req.param('barcode'))),
+  );
+  app.get('/api/foods/external/:externalId', (c) =>
+    wrap(c, () => getFoodByExternalId(ctx, c.req.param('externalId'))),
+  );
+  app.post('/api/foods/bulk', (c) =>
+    wrap(c, async () => bulkUpsertCustomFoods(ctx, await parseBody(c))),
   );
   app.get('/api/foods/:id', (c) => wrap(c, () => getFood(ctx, c.req.param('id'))));
   app.post('/api/foods', (c) => wrap(c, async () => createCustomFood(ctx, await parseBody(c))));

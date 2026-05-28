@@ -3,8 +3,10 @@ import type {
   BatchDto,
   BiomarkerDto,
   BiomarkerTrendPointDto,
+  CustomFoodInput,
   DailySummaryDto,
   FoodDto,
+  FoodSearchHitDto,
   GoalsDto,
   HealthProbe,
   HydrationEntryDto,
@@ -98,25 +100,11 @@ export const api = {
 
   foods: {
     search: (params: { query: string; source?: 'usda' | 'off' | 'manual'; limit?: number }) =>
-      get<FoodDto[]>(`/api/foods/search${qs(params)}`),
+      get<FoodSearchHitDto[]>(`/api/foods/search${qs(params)}`),
     byBarcode: (barcode: string) =>
       get<FoodDto | null>(`/api/foods/barcode/${encodeURIComponent(barcode)}`),
     get: (id: string) => get<FoodDto>(`/api/foods/${encodeURIComponent(id)}`),
-    createCustom: (body: {
-      name: string;
-      brand?: string;
-      serving_grams?: number;
-      nutrients_per_100g: {
-        kcal_per_100g: number;
-        protein_g_per_100g: number;
-        carb_g_per_100g: number;
-        fat_g_per_100g: number;
-        fiber_g_per_100g?: number;
-        sugar_g_per_100g?: number;
-        sat_fat_g_per_100g?: number;
-        sodium_mg_per_100g?: number;
-      };
-    }) => post<FoodDto>('/api/foods', body),
+    createCustom: (body: CustomFoodInput) => post<FoodDto>('/api/foods', body),
     updateCustom: (id: string, body: Record<string, unknown>) =>
       patch<FoodDto>(`/api/foods/${encodeURIComponent(id)}`, body),
     deleteCustom: (id: string) => del<{ id: string }>(`/api/foods/${encodeURIComponent(id)}`),

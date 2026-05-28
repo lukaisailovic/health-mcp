@@ -227,7 +227,7 @@ ping, discover_capabilities
 
 # food
 search_food, search_foods, lookup_barcode, get_food
-create_custom_food, update_custom_food, delete_custom_food
+create_custom_food, bulk_upsert_custom_foods, update_custom_food, delete_custom_food
 
 # meals
 log_meal, list_meals, get_meal, update_meal, delete_meal, undo_last_meal,

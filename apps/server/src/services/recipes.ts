@@ -191,6 +191,10 @@ export type BatchTotals = Pick<
   | 'sugar_g_total'
   | 'sat_fat_g_total'
   | 'sodium_mg_total'
+  | 'potassium_mg_total'
+  | 'calcium_mg_total'
+  | 'magnesium_mg_total'
+  | 'iron_mg_total'
 >;
 
 export const batchMacrosForGrams = (batch: BatchTotals, grams: number): Macros =>
@@ -204,6 +208,10 @@ export const batchMacrosForGrams = (batch: BatchTotals, grams: number): Macros =
       sugar_g: batch.sugar_g_total,
       sat_fat_g: batch.sat_fat_g_total,
       sodium_mg: batch.sodium_mg_total,
+      potassium_mg: batch.potassium_mg_total,
+      calcium_mg: batch.calcium_mg_total,
+      magnesium_mg: batch.magnesium_mg_total,
+      iron_mg: batch.iron_mg_total,
     },
     grams / batch.total_grams,
   );
@@ -222,6 +230,10 @@ export type Batch = {
   sugar_g_total: number | null;
   sat_fat_g_total: number | null;
   sodium_mg_total: number | null;
+  potassium_mg_total: number | null;
+  calcium_mg_total: number | null;
+  magnesium_mg_total: number | null;
+  iron_mg_total: number | null;
   cooked_at: string;
   expires_at: string | null;
   notes: string | null;
@@ -276,8 +288,9 @@ export const createBatch = (
         id, name, recipe_id, total_grams, remaining_grams,
         kcal_total, protein_g_total, carb_g_total, fat_g_total,
         fiber_g_total, sugar_g_total, sat_fat_g_total, sodium_mg_total,
+        potassium_mg_total, calcium_mg_total, magnesium_mg_total, iron_mg_total,
         cooked_at, expires_at, notes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       id,
@@ -293,6 +306,10 @@ export const createBatch = (
       totals.sugar_g,
       totals.sat_fat_g,
       totals.sodium_mg,
+      totals.potassium_mg,
+      totals.calcium_mg,
+      totals.magnesium_mg,
+      totals.iron_mg,
       cooked_at,
       args.expires_at ?? null,
       args.notes ?? null,
