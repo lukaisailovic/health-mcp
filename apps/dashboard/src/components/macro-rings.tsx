@@ -1,5 +1,6 @@
 import { AnimatedNumber } from '@/components/animated-number';
 import { fmtNum } from '@/lib/format';
+import { MACRO_STATUS_LABEL, formatBound, goalRatio, macroBarColor } from '@/lib/macros';
 import type { GoalBound, GoalStatus } from '@health-mcp/shared/dto';
 
 type Macro = {
@@ -9,31 +10,6 @@ type Macro = {
   status: GoalStatus;
   color: string;
   unit?: string;
-};
-
-const STATUS_COLOR: Record<GoalStatus, string | null> = {
-  no_goal: null,
-  under: null,
-  in_range: 'var(--color-kumo-success)',
-  over: 'var(--color-kumo-danger)',
-};
-
-const STATUS_LABEL: Record<GoalStatus, string> = {
-  no_goal: '',
-  under: 'low',
-  in_range: 'on track',
-  over: 'over',
-};
-
-const primaryTarget = (b: GoalBound): number | null => b.max ?? b.min;
-
-const formatBound = (b: GoalBound): string | null => {
-  if (b.min !== null && b.max !== null && b.min !== b.max) {
-    return `${fmtNum(b.min, 0)}–${fmtNum(b.max, 0)}`;
-  }
-  if (b.max !== null) return `≤ ${fmtNum(b.max, 0)}`;
-  if (b.min !== null) return `≥ ${fmtNum(b.min, 0)}`;
-  return null;
 };
 
 const Ring = ({
@@ -47,12 +23,11 @@ const Ring = ({
   stroke: number;
   valueClass: string;
 }) => {
-  const target = primaryTarget(macro.bound);
-  const ratio = target && target > 0 ? Math.min(1, Math.max(0, macro.current / target)) : 0;
+  const ratio = goalRatio(macro.current, macro.bound);
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const valueDigits = macro.label === 'kcal' ? 0 : 1;
-  const ringColor = STATUS_COLOR[macro.status] ?? macro.color;
+  const ringColor = macroBarColor(macro.status, macro.color);
   const boundLabel = formatBound(macro.bound);
 
   return (
@@ -96,7 +71,7 @@ const Ring = ({
         {macro.label}
         {macro.status !== 'no_goal' ? (
           <span className="ml-1 text-[10px] normal-case" style={{ color: ringColor }}>
-            · {STATUS_LABEL[macro.status]}
+            · {MACRO_STATUS_LABEL[macro.status]}
           </span>
         ) : null}
       </span>
