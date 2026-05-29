@@ -1,4 +1,6 @@
 import type { TrackableMacro } from '@health-mcp/shared';
+import type { GoalBound, GoalStatus } from '@health-mcp/shared/dto';
+import { fmtNum } from './format';
 
 export type MacroKey = 'kcal' | TrackableMacro;
 
@@ -19,4 +21,40 @@ export const MACRO_META: Record<MacroKey, MacroMeta> = {
   sugar_g: { label: 'sugar', unit: 'g', color: 'var(--macro-sugar)' },
   sat_fat_g: { label: 'sat fat', unit: 'g', color: 'var(--macro-sat-fat)' },
   sodium_mg: { label: 'sodium', unit: 'mg', color: 'var(--macro-sodium)' },
+};
+
+// Goal status → accent color. `in_range` and `over` carry meaning; `under`/`no_goal`
+// fall back to the macro's own identity color (null here, resolved by macroBarColor).
+export const MACRO_STATUS_COLOR: Record<GoalStatus, string | null> = {
+  no_goal: null,
+  under: null,
+  in_range: 'var(--color-kumo-success)',
+  over: 'var(--color-kumo-danger)',
+};
+
+export const MACRO_STATUS_LABEL: Record<GoalStatus, string> = {
+  no_goal: '',
+  under: 'low',
+  in_range: 'on track',
+  over: 'over',
+};
+
+export const primaryTarget = (bound: GoalBound): number | null => bound.max ?? bound.min;
+
+export const goalRatio = (current: number, bound: GoalBound): number => {
+  const target = primaryTarget(bound);
+  if (!target || target <= 0) return 0;
+  return Math.min(1, Math.max(0, current / target));
+};
+
+export const macroBarColor = (status: GoalStatus, identity: string): string =>
+  MACRO_STATUS_COLOR[status] ?? identity;
+
+export const formatBound = (bound: GoalBound): string | null => {
+  if (bound.min !== null && bound.max !== null && bound.min !== bound.max) {
+    return `${fmtNum(bound.min, 0)}–${fmtNum(bound.max, 0)}`;
+  }
+  if (bound.max !== null) return `≤ ${fmtNum(bound.max, 0)}`;
+  if (bound.min !== null) return `≥ ${fmtNum(bound.min, 0)}`;
+  return null;
 };
