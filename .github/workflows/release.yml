@@ -160,8 +160,14 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
-      # OIDC trusted publishing: pnpm mints a short-lived token from id-token:write.
-      # No NPM_TOKEN. pnpm resolves the workspace:* dep and runs prepack (build).
+      # OIDC trusted publishing is an npm-CLI feature requiring npm >= 11.5.1; the version
+      # bundled with Node 22 is older, and pnpm delegates the publish to it. Upgrade first.
+      - name: Upgrade npm for OIDC trusted publishing
+        if: ${{ !inputs.dry_run }}
+        run: npm install --global npm@latest
+
+      # No NPM_TOKEN: npm mints a short-lived token from id-token:write. pnpm resolves the
+      # workspace:* dep, runs prepack (build), and hands the tarball to npm for the publish.
       - name: Publish to npm
         if: ${{ !inputs.dry_run }}
         run: pnpm --filter health-mcp publish --no-git-checks --provenance --access public
