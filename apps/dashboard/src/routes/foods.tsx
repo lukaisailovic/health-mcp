@@ -167,6 +167,8 @@ const Foods = () => {
     queryKey: ['foods', 'search', active],
     queryFn: () => api.foods.search({ query: active, limit: 50 }),
     enabled: active.length > 1,
+    // User-initiated search (may proxy to USDA/OFF): no value in background polling.
+    refetchInterval: false,
   });
   const remove = useMutation({
     mutationFn: (id: string) => api.foods.deleteCustom(id),

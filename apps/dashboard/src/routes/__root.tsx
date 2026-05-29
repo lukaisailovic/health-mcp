@@ -21,6 +21,9 @@ const RootGate = () => {
     queryFn: () => api.health(),
     staleTime: 60_000,
     retry: false,
+    // Reachability gate, not page data: a transient poll failure would swap the
+    // whole app for the "unreachable" screen, so opt out of the global interval.
+    refetchInterval: false,
   });
 
   if (probe.isLoading) {

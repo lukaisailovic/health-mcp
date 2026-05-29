@@ -4,6 +4,7 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5_000,
+      refetchInterval: 20_000,
       retry: (count, err: unknown) => {
         const code = (err as { status?: number } | null)?.status;
         if (code === 401 || code === 404) return false;
