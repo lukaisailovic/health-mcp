@@ -19,10 +19,9 @@ import { buildAllTools } from './mcp/tools/index.js';
 import { createMcpRouter } from './mcp/transport.js';
 import { startScheduler } from './scheduler.js';
 import { startHttpServer } from './start-http.js';
+import { VERSION } from './version.js';
 import { AuthStore } from './wearables/auth-store.js';
 import { initRegistry } from './wearables/registry.js';
-
-const VERSION = '0.1.0';
 
 const resolveConfig = (argv: string[]): Config => {
   try {
