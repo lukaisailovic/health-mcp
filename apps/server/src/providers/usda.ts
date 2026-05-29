@@ -31,6 +31,10 @@ export type UsdaNormalized = {
   sugar_g: number | null;
   sat_fat_g: number | null;
   sodium_mg: number | null;
+  potassium_mg: number | null;
+  calcium_mg: number | null;
+  magnesium_mg: number | null;
+  iron_mg: number | null;
   raw_json: string;
 };
 
@@ -60,6 +64,10 @@ const normalize = (food: UsdaSearchResultFood): UsdaNormalized => {
     sugar_g: num(nutrients, '269'),
     sat_fat_g: num(nutrients, '606'),
     sodium_mg: num(nutrients, '307'),
+    potassium_mg: num(nutrients, '306'),
+    calcium_mg: num(nutrients, '301'),
+    magnesium_mg: num(nutrients, '304'),
+    iron_mg: num(nutrients, '303'),
     raw_json: JSON.stringify(food),
   };
 };

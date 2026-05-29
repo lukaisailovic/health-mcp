@@ -24,6 +24,10 @@ export const nutrientsPer100gSchema = z.object({
   sugar_g_per_100g: z.number().nonnegative().optional(),
   sat_fat_g_per_100g: z.number().nonnegative().optional(),
   sodium_mg_per_100g: z.number().nonnegative().optional(),
+  potassium_mg_per_100g: z.number().nonnegative().optional(),
+  calcium_mg_per_100g: z.number().nonnegative().optional(),
+  magnesium_mg_per_100g: z.number().nonnegative().optional(),
+  iron_mg_per_100g: z.number().nonnegative().optional(),
 });
 
 export const absoluteMacrosSchema = z.object({
@@ -35,6 +39,10 @@ export const absoluteMacrosSchema = z.object({
   sugar_g: z.number().nonnegative().optional(),
   sat_fat_g: z.number().nonnegative().optional(),
   sodium_mg: z.number().nonnegative().optional(),
+  potassium_mg: z.number().nonnegative().optional(),
+  calcium_mg: z.number().nonnegative().optional(),
+  magnesium_mg: z.number().nonnegative().optional(),
+  iron_mg: z.number().nonnegative().optional(),
 });
 
 export const customFoodSpecSchema = z.union([
@@ -49,6 +57,41 @@ export const customFoodSpecSchema = z.union([
   }),
 ]);
 export type CustomFoodSpec = z.infer<typeof customFoodSpecSchema>;
+
+// Search synonyms stored on a food. An exact alias match wins the search ranking,
+// so migrating an external DB keeps "dm bio ketchup" / "whole egg" findable even
+// when the canonical name is in another language.
+export const foodAliasesSchema = z.array(z.string().trim().min(1).max(120)).max(25);
+
+// Stable cross-system key for a manual food (e.g. an Obsidian slug). Upserts key
+// on it, so re-importing the same source never creates a duplicate.
+export const externalIdSchema = z.string().trim().min(1).max(200);
+
+export const customFoodInputSchema = z.object({
+  name: z.string().min(1),
+  brand: z.string().min(1).optional(),
+  serving_grams: z.number().positive().optional(),
+  external_id: externalIdSchema.optional(),
+  aliases: foodAliasesSchema.optional(),
+  nutrients_per_100g: nutrientsPer100gSchema,
+});
+export type CustomFoodInput = z.infer<typeof customFoodInputSchema>;
+
+export const updateCustomFoodInputSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).optional(),
+  brand: z.string().min(1).nullable().optional(),
+  serving_grams: z.number().positive().nullable().optional(),
+  external_id: externalIdSchema.nullable().optional(),
+  aliases: foodAliasesSchema.nullable().optional(),
+  nutrients_per_100g: nutrientsPer100gSchema.optional(),
+});
+export type UpdateCustomFoodInput = z.infer<typeof updateCustomFoodInputSchema>;
+
+export const bulkUpsertCustomFoodsInputSchema = z.object({
+  foods: z.array(customFoodInputSchema).min(1).max(500),
+});
+export type BulkUpsertCustomFoodsInput = z.infer<typeof bulkUpsertCustomFoodsInputSchema>;
 
 export const isoTimestamp = z.string().refine((v) => !Number.isNaN(Date.parse(v)), {
   message: 'must be an ISO timestamp',
@@ -109,13 +152,20 @@ export const updateMealInputSchema = z.object({
 });
 export type UpdateMealInput = z.infer<typeof updateMealInputSchema>;
 
-export const updateMealComponentInputSchema = z.object({
-  id: z.string().min(1),
-  grams: z.number().positive().optional(),
-  servings: z.number().positive().optional(),
-  notes: z.string().nullable().optional(),
-  confidence: z.number().min(0).max(1).optional(),
-});
+export const updateMealComponentInputSchema = z
+  .object({
+    id: z.string().min(1),
+    grams: z.number().positive().optional(),
+    // Additive correction for food/batch components ("add another 43g" → 43,
+    // "scrap 20g" → -20). Resolved against the component's current grams.
+    grams_delta: z.number().optional(),
+    servings: z.number().positive().optional(),
+    notes: z.string().nullable().optional(),
+    confidence: z.number().min(0).max(1).optional(),
+  })
+  .refine((v) => !(v.grams !== undefined && v.grams_delta !== undefined), {
+    message: 'provide grams or grams_delta, not both',
+  });
 export type UpdateMealComponentInput = z.infer<typeof updateMealComponentInputSchema>;
 
 export const goalBoundSchema = z

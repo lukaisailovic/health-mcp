@@ -61,16 +61,20 @@ GET /version
 ```http
 GET    /api/foods/search?query=<q>&source=<usda|off|manual>&limit=<n>
 GET    /api/foods/barcode/:barcode
+GET    /api/foods/external/:externalId
+POST   /api/foods/bulk
 GET    /api/foods/:id
 POST   /api/foods
 PATCH  /api/foods/:id
 DELETE /api/foods/:id
 ```
 
-- `search` — local FTS first; falls back to USDA when configured and the local set is sparse.
+- `search` — local FTS first; consults USDA only when there's no strong local hit. Each result carries a `score` (0..1 relevance) and an `exact` flag; sub-floor noise is dropped and a clear winner trims the tail.
 - `barcode` — local cache, then Open Food Facts.
-- `POST` body: `{ name, brand?, serving_grams?, nutrients_per_100g: { kcal_per_100g, protein_g_per_100g, carb_g_per_100g, fat_g_per_100g, fiber_g_per_100g?, sugar_g_per_100g?, sat_fat_g_per_100g?, sodium_mg_per_100g? } }`.
-- `PATCH` accepts any subset. `nutrients_per_100g` must be passed whole if supplied.
+- `external/:externalId` — fetch a manual food by its stable import key. `[[slug|Display]]` / `[[slug]]` wikilinks are accepted and resolved to the slug.
+- `POST /bulk` — body `{ foods: CustomFood[] }` (max 500). Create-or-update many in one transaction, keyed on `external_id` else exact (name, brand); returns `{ created, updated, foods: [{ id, name, external_id, action }] }`.
+- `POST` body: `{ name, brand?, serving_grams?, external_id?, aliases?: string[], nutrients_per_100g: { kcal_per_100g, protein_g_per_100g, carb_g_per_100g, fat_g_per_100g, fiber_g_per_100g?, sugar_g_per_100g?, sat_fat_g_per_100g?, sodium_mg_per_100g?, potassium_mg_per_100g?, calcium_mg_per_100g?, magnesium_mg_per_100g?, iron_mg_per_100g? } }`. An `external_id` makes the create idempotent.
+- `PATCH` accepts any subset (incl. `external_id`, `aliases`); `null` clears `brand`/`serving_grams`/`external_id`/`aliases`. `nutrients_per_100g` must be passed whole if supplied.
 - `DELETE` only works on `source = 'manual'` foods.
 
 ## Meals
@@ -119,7 +123,7 @@ DELETE /api/meals/:id/components/:componentId
 
 **`PATCH /api/meals/:id`** updates the meal header only — `meal_type?`, `name?`, `notes?`, `tags?`. No macro impact.
 
-**`PATCH /api/meals/:id/components/:componentId`** updates a single component — `grams?` (food/batch), `servings?` (recipe_serving), `notes?`, `confidence?`. Re-derives macros. Custom components reject grams changes (`custom_component_grams_unchangeable: 400`) — delete and re-add.
+**`PATCH /api/meals/:id/components/:componentId`** updates a single component — `grams?` / `grams_delta?` (food/batch; `grams_delta` is a relative correction, e.g. `43` for "add another 43g"), `servings?` (recipe_serving), `notes?`, `confidence?`. Re-derives macros. Custom components reject grams changes (`custom_component_grams_unchangeable: 400`) — delete and re-add.
 
 **`POST /api/meals/:id/components`** appends a new component to an existing meal. Body: `{ component: <discriminated union, same shape as POST /api/meals.components[i]> }`.
 

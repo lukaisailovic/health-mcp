@@ -33,6 +33,10 @@ type FormState = {
   fiber_g_per_100g: string;
   sugar_g_per_100g: string;
   sodium_mg_per_100g: string;
+  potassium_mg_per_100g: string;
+  calcium_mg_per_100g: string;
+  magnesium_mg_per_100g: string;
+  iron_mg_per_100g: string;
 };
 
 const empty: FormState = {
@@ -47,6 +51,10 @@ const empty: FormState = {
   fiber_g_per_100g: '',
   sugar_g_per_100g: '',
   sodium_mg_per_100g: '',
+  potassium_mg_per_100g: '',
+  calcium_mg_per_100g: '',
+  magnesium_mg_per_100g: '',
+  iron_mg_per_100g: '',
 };
 
 const numOrUndef = (s: string): number | undefined => {
@@ -86,6 +94,10 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
         fiber_g_per_100g: numOrUndef(form.fiber_g_per_100g),
         sugar_g_per_100g: numOrUndef(form.sugar_g_per_100g),
         sodium_mg_per_100g: numOrUndef(form.sodium_mg_per_100g),
+        potassium_mg_per_100g: numOrUndef(form.potassium_mg_per_100g),
+        calcium_mg_per_100g: numOrUndef(form.calcium_mg_per_100g),
+        magnesium_mg_per_100g: numOrUndef(form.magnesium_mg_per_100g),
+        iron_mg_per_100g: numOrUndef(form.iron_mg_per_100g),
       },
     });
   };
@@ -129,6 +141,10 @@ const CreateCustomFood = ({ onCreated }: { onCreated: () => void }) => {
           {renderField('fiber_g_per_100g', 'Fiber (g)')}
           {renderField('sugar_g_per_100g', 'Sugar (g)')}
           {renderField('sodium_mg_per_100g', 'Sodium (mg)')}
+          {renderField('potassium_mg_per_100g', 'Potassium (mg)')}
+          {renderField('calcium_mg_per_100g', 'Calcium (mg)')}
+          {renderField('magnesium_mg_per_100g', 'Magnesium (mg)')}
+          {renderField('iron_mg_per_100g', 'Iron (mg)')}
         </form>
         <DialogFooter>
           <Button variant="outline" type="button" onClick={() => setOpen(false)}>

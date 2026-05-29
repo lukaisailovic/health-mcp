@@ -14,7 +14,7 @@ Two meta-tools — call these first to learn what's live.
 | Tool | Description |
 |---|---|
 | `ping` | Liveness probe. Returns `{ ok, time, tz }`. |
-| `discover_capabilities({ group? })` | Live catalog grouped by `group`. Each tool entry carries `name`, `description`, and `enabled` (true if currently registered). Pass `group` to filter. |
+| `discover_capabilities({ group? })` | Live catalog grouped by `group`. Each tool entry carries `name`, `description`, and `enabled` (true if currently registered). Call with no `group` first — the group names are the top-level keys (e.g. `food`, `meal`, `summary`). Pass one of those to filter; an unknown group (e.g. `nutrition`) returns an error listing the valid names rather than an empty object. |
 
 The fastest way to learn the surface from a fresh install is `discover_capabilities()` — it tells you which tools are hidden today, so you don't waste tokens on schemas for tools the user can't run.
 
@@ -47,19 +47,22 @@ Below is the full surface. Schemas are condensed — the wire format is JSON, al
 
 | Tool | Params | Notes |
 |---|---|---|
-| `discover_capabilities` | `{ group? }` | Catalog with enable status. |
+| `discover_capabilities` | `{ group? }` | Catalog with enable status. Group names are the response keys; an unknown `group` errors with the valid list. |
 
 ### `food`
 
 | Tool | Params | Notes |
 |---|---|---|
-| `search_food` | `{ query, source?: 'usda'\|'off'\|'manual', limit? }` | Single-query catalog search. Typo- and punctuation-tolerant fuzzy match, ranked by likelihood; falls back to USDA when the local set is thin. Default `limit` is 5. |
+| `search_food` | `{ query, source?: 'usda'\|'off'\|'manual', limit? }` | Single-query catalog search. Typo- and punctuation-tolerant; each hit carries a 0..1 `score` and an `exact` flag. A query whose content words match nothing returns nothing (no wrong best-guess), and a clear top hit trims the loose tail. Consults USDA only when there is no strong local hit. Default `limit` is 5. |
 | `search_foods` | `{ queries: string[], source?: 'usda'\|'off'\|'manual', limit? }` | Batch variant of `search_food` — pass every component of a multi-component meal up front and only estimate macros for queries that come back empty. Returns `[{ query, results }]` preserving input order. Default `limit` is 5 per query. |
 | `lookup_barcode` | `{ barcode }` | Local cache then Open Food Facts. |
-| `get_food` | `{ id }` | |
-| `create_custom_food` | `{ name, brand?, serving_grams?, nutrients_per_100g: {...} }` | Per-100g shape. |
-| `update_custom_food` | `{ id, name?, brand?, serving_grams?, nutrients_per_100g? }` | Manual foods only. |
+| `get_food` | `{ id }` \| `{ external_id }` | By id, or by the stable import key. `external_id` accepts `[[slug\|Display]]` / `[[slug]]` wikilinks and resolves them to the slug. |
+| `create_custom_food` | `{ name, brand?, serving_grams?, external_id?, aliases?: string[], nutrients_per_100g: {...} }` | Per-100g shape. `nutrients_per_100g` also accepts `potassium_mg_per_100g`, `calcium_mg_per_100g`, `magnesium_mg_per_100g`, `iron_mg_per_100g`. An `external_id` makes the food idempotent (re-creating overwrites instead of duplicating); `aliases` are search synonyms. |
+| `bulk_upsert_custom_foods` | `{ foods: CustomFood[] }` | Create-or-update many manual foods in one transaction — the tool for migrating an external food DB. Each upserts on `external_id` when present, else on exact (name, brand); existing rows are overwritten with the payload, so re-running an import never duplicates. Returns `{ created, updated, foods: [{ id, name, external_id, action }] }`. Max 500 per call. |
+| `update_custom_food` | `{ id, name?, brand?, serving_grams?, external_id?, aliases?, nutrients_per_100g? }` | Manual foods only. Patch semantics — pass `null` to clear `brand`/`serving_grams`/`external_id`/`aliases`; pass `aliases` to replace the whole synonym list. |
 | `delete_custom_food` | `{ id }` | Manual foods only. |
+
+**Migrating an external food DB.** Give each food a stable `external_id` (e.g. its Obsidian slug) and push the lot through `bulk_upsert_custom_foods` — re-runs upsert in place, so the import is idempotent and never depends on fuzzy search. Reference foods afterwards by `get_food({ external_id })`. If your notes link foods as `[[slug|Display Name]]`, split on `|` for the key (or just hand the whole wikilink to `external_id`/`get_food`, which strips it) and pass the display name in `aliases` so search still finds it. Carry every name the food was ever called in `aliases` — an exact alias match wins the ranking, which matters when the canonical name is in another language.
 
 ### `meal`
 
@@ -74,7 +77,7 @@ A meal is the unit of logging: one or more components (food / recipe_serving / b
 | `delete_meal` | `{ id }` | Cascades to components; refunds batch grams. |
 | `undo_last_meal` | `{}` | Pops the most recent meal created within last 10 minutes; refunds batches; returns `null` if none. |
 | `add_meal_component` | `{ meal_id, component: MealComponent }` | Appends a component; re-derives macros at insert; decrements batch if applicable. |
-| `update_meal_component` | `{ id, grams?, servings?, notes?, confidence? }` | Re-derives macros. `grams` only valid for food/batch; `servings` only for recipe_serving; custom rejects grams changes (`custom_component_grams_unchangeable`). |
+| `update_meal_component` | `{ id, grams?, grams_delta?, servings?, notes?, confidence? }` | Re-derives macros. `grams` (absolute) or `grams_delta` (relative — "add another 43g" → `grams_delta: 43`) for food/batch; `servings` for recipe_serving; custom rejects grams changes (`custom_component_grams_unchangeable`). |
 | `remove_meal_component` | `{ id }` | Removes one component (refunds batch grams if applicable). The meal remains even if empty. |
 
 ### `recipe` / `batch`
@@ -336,6 +339,41 @@ To point OpenClaw at an HTTP-mode server instead (start it once with `pnpm start
 ```
 
 Add `"headers": { "Authorization": "Bearer <HEALTH_MCP_TOKEN>" }` when the server is started with `HEALTH_MCP_TOKEN` set (required if it binds off-loopback).
+
+### Talking to `/mcp` directly (raw HTTP)
+
+The Streamable-HTTP transport is session-based: you must `initialize` first and then echo the session id on every later request, or the server answers `tools/list` with `-32000 "Server not initialized"`. A real MCP client (Inspector, the configs above) does this for you — this is only for hand-rolled HTTP calls.
+
+1. **`initialize`** — the server returns the session id in the `Mcp-Session-Id` response header. Send both accept types:
+
+   ```bash
+   curl -i -X POST http://127.0.0.1:7777/mcp \
+     -H 'Content-Type: application/json' \
+     -H 'Accept: application/json, text/event-stream' \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{
+           "protocolVersion":"2025-06-18","capabilities":{},
+           "clientInfo":{"name":"curl","version":"0"}}}'
+   # → response header:  Mcp-Session-Id: 1b9f…
+   ```
+
+2. **`notifications/initialized`** and every subsequent call carry that id in the `Mcp-Session-Id` **request** header:
+
+   ```bash
+   SID=1b9f…
+   curl -s -X POST http://127.0.0.1:7777/mcp \
+     -H 'Content-Type: application/json' \
+     -H 'Accept: application/json, text/event-stream' \
+     -H "Mcp-Session-Id: $SID" \
+     -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'
+
+   curl -s -X POST http://127.0.0.1:7777/mcp \
+     -H 'Content-Type: application/json' \
+     -H 'Accept: application/json, text/event-stream' \
+     -H "Mcp-Session-Id: $SID" \
+     -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+   ```
+
+Responses come back as `text/event-stream` (one SSE `data:` line per JSON-RPC message), which is why the `Accept` header must include `text/event-stream`. Add `-H "Authorization: Bearer <HEALTH_MCP_TOKEN>"` when a token is configured.
 
 ## Inspector
 

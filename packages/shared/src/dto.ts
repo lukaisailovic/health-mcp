@@ -52,6 +52,7 @@ export type FoodDto = {
   id: string;
   source: 'usda' | 'off' | 'manual';
   source_id: string | null;
+  external_id: string | null;
   name: string;
   brand: string | null;
   barcode: string | null;
@@ -64,7 +65,20 @@ export type FoodDto = {
   sugar_g: number | null;
   sat_fat_g: number | null;
   sodium_mg: number | null;
+  potassium_mg: number | null;
+  calcium_mg: number | null;
+  magnesium_mg: number | null;
+  iron_mg: number | null;
+  // JSON-encoded string[] of search synonyms (mirrors the biomarker `aliases` shape).
+  aliases: string | null;
   created_at: string;
+};
+
+// A search result: the food plus how well it matched. `score` is 0..1 relevance;
+// `exact` is true when the query equals the name, "brand name", or an alias.
+export type FoodSearchHitDto = FoodDto & {
+  score: number;
+  exact: boolean;
 };
 
 export type MealComponentDto = IntakeMacros & {

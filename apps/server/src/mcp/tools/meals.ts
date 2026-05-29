@@ -89,7 +89,7 @@ export const mealTools = [
   tool({
     name: 'update_meal_component',
     description:
-      'Update a single component (grams for food/batch, servings for recipe_serving). Re-derives macros and adjusts batch grams. Custom components cannot have grams changed — remove and re-add. Returns { meal, day } with the updated daily total.',
+      'Correct a single component by its id (from the meal returned by log_meal/get_meal). For food/batch components set `grams` (absolute) or `grams_delta` (relative — "add another 43g" → grams_delta: 43; trim with a negative value); for recipe_serving set `servings`. Re-derives macros and adjusts batch grams. Custom components cannot have grams changed — remove and re-add. Returns { meal, day } with the updated daily total.',
     group: 'meal',
     inputSchema: updateMealComponentInputSchema,
     handler: (args, ctx) => updateMealComponentWithDay(ctx, args),

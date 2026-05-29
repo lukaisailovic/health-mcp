@@ -45,6 +45,10 @@ type ComponentRow = {
   sugar_g: number | null;
   sat_fat_g: number | null;
   sodium_mg: number | null;
+  potassium_mg: number | null;
+  calcium_mg: number | null;
+  magnesium_mg: number | null;
+  iron_mg: number | null;
   confidence: number;
   source_trace: string;
   notes: string | null;
@@ -96,19 +100,7 @@ const deriveComponent = (ctx: Ctx, input: MealComponentInput): ComponentDerived 
   }
   if (input.ref === 'batch') {
     const batch = ctx.db.prepare('SELECT * FROM batches WHERE id = ?').get(input.batch_id) as
-      | {
-          id: string;
-          total_grams: number;
-          remaining_grams: number;
-          kcal_total: number;
-          protein_g_total: number;
-          carb_g_total: number;
-          fat_g_total: number;
-          fiber_g_total: number | null;
-          sugar_g_total: number | null;
-          sat_fat_g_total: number | null;
-          sodium_mg_total: number | null;
-        }
+      | (BatchTotals & { remaining_grams: number })
       | undefined;
     if (!batch) throw new ServiceError('batch_not_found', `batch ${input.batch_id} not found`, 404);
     if (input.grams > batch.remaining_grams) {
@@ -177,10 +169,12 @@ const insertComponent = (
       `INSERT INTO meal_components (
         id, meal_id, position, ref_kind, food_id, recipe_id, batch_id, custom_name,
         grams, servings, kcal, protein_g, carb_g, fat_g, fiber_g, sugar_g, sat_fat_g, sodium_mg,
+        potassium_mg, calcium_mg, magnesium_mg, iron_mg,
         confidence, source_trace, notes
       ) VALUES (
         @id, @meal_id, @position, @ref_kind, @food_id, @recipe_id, @batch_id, @custom_name,
         @grams, @servings, @kcal, @protein_g, @carb_g, @fat_g, @fiber_g, @sugar_g, @sat_fat_g, @sodium_mg,
+        @potassium_mg, @calcium_mg, @magnesium_mg, @iron_mg,
         @confidence, @source_trace, @notes
       )`,
     )
@@ -203,6 +197,10 @@ const insertComponent = (
       sugar_g: args.derived.macros.sugar_g,
       sat_fat_g: args.derived.macros.sat_fat_g,
       sodium_mg: args.derived.macros.sodium_mg,
+      potassium_mg: args.derived.macros.potassium_mg,
+      calcium_mg: args.derived.macros.calcium_mg,
+      magnesium_mg: args.derived.macros.magnesium_mg,
+      iron_mg: args.derived.macros.iron_mg,
       confidence: args.confidence,
       source_trace: args.source_trace,
       notes: args.notes,
@@ -289,6 +287,10 @@ const computeTotals = (components: MealComponentDto[]): MealDto['totals'] => {
     sugar_g: 0,
     sat_fat_g: 0,
     sodium_mg: 0,
+    potassium_mg: 0,
+    calcium_mg: 0,
+    magnesium_mg: 0,
+    iron_mg: 0,
     avg_confidence: null as number | null,
   };
   let confidenceSum = 0;
@@ -301,6 +303,10 @@ const computeTotals = (components: MealComponentDto[]): MealDto['totals'] => {
     totals.sugar_g += c.sugar_g ?? 0;
     totals.sat_fat_g += c.sat_fat_g ?? 0;
     totals.sodium_mg += c.sodium_mg ?? 0;
+    totals.potassium_mg += c.potassium_mg ?? 0;
+    totals.calcium_mg += c.calcium_mg ?? 0;
+    totals.magnesium_mg += c.magnesium_mg ?? 0;
+    totals.iron_mg += c.iron_mg ?? 0;
     confidenceSum += c.confidence;
   }
   if (components.length > 0) totals.avg_confidence = confidenceSum / components.length;
@@ -477,14 +483,15 @@ const fetchComponentOrThrow = (ctx: Ctx, id: string): ComponentRow => {
 
 export const updateMealComponent = (ctx: Ctx, args: UpdateMealComponentInput): MealDto => {
   const existing = fetchComponentOrThrow(ctx, args.id);
-  if (args.grams !== undefined && existing.ref_kind === 'custom') {
+  const wantsGrams = args.grams !== undefined || args.grams_delta !== undefined;
+  if (wantsGrams && existing.ref_kind === 'custom') {
     throw new ServiceError(
       'custom_component_grams_unchangeable',
       'cannot change grams on a custom component; remove and re-add with new grams',
       400,
     );
   }
-  if (args.grams !== undefined && existing.ref_kind === 'recipe_serving') {
+  if (wantsGrams && existing.ref_kind === 'recipe_serving') {
     throw new ServiceError(
       'recipe_serving_uses_servings',
       'recipe_serving components are scaled by servings, not grams',
@@ -498,6 +505,20 @@ export const updateMealComponent = (ctx: Ctx, args: UpdateMealComponentInput): M
       400,
     );
   }
+  let gramsTarget = args.grams;
+  if (args.grams_delta !== undefined) {
+    if (existing.grams === null) {
+      throw new ServiceError('component_has_no_grams', 'component has no grams to adjust', 400);
+    }
+    gramsTarget = existing.grams + args.grams_delta;
+    if (gramsTarget <= 0) {
+      throw new ServiceError(
+        'grams_must_be_positive',
+        `grams_delta ${args.grams_delta} would drop grams to ${gramsTarget}; remove the component instead`,
+        400,
+      );
+    }
+  }
   const tx = ctx.db.transaction(() => {
     let macros: Macros = {
       kcal: existing.kcal,
@@ -508,28 +529,35 @@ export const updateMealComponent = (ctx: Ctx, args: UpdateMealComponentInput): M
       sugar_g: existing.sugar_g,
       sat_fat_g: existing.sat_fat_g,
       sodium_mg: existing.sodium_mg,
+      potassium_mg: existing.potassium_mg,
+      calcium_mg: existing.calcium_mg,
+      magnesium_mg: existing.magnesium_mg,
+      iron_mg: existing.iron_mg,
     };
     let newGrams = existing.grams;
     let newServings = existing.servings;
-    if (args.grams !== undefined && existing.ref_kind === 'food' && existing.food_id) {
-      macros = macrosForFoodGrams(getFood(ctx, existing.food_id), args.grams);
-      newGrams = args.grams;
+    if (gramsTarget !== undefined && existing.ref_kind === 'food' && existing.food_id) {
+      macros = macrosForFoodGrams(getFood(ctx, existing.food_id), gramsTarget);
+      newGrams = gramsTarget;
     } else if (
-      args.grams !== undefined &&
+      gramsTarget !== undefined &&
       existing.ref_kind === 'batch' &&
       existing.batch_id &&
       existing.grams !== null
     ) {
-      const delta = args.grams - existing.grams;
+      const delta = gramsTarget - existing.grams;
       if (delta > 0) decrementBatch(ctx, existing.batch_id, delta);
       else if (delta < 0) refundBatch(ctx, existing.batch_id, -delta);
       const batch = ctx.db
         .prepare(
-          'SELECT total_grams, kcal_total, protein_g_total, carb_g_total, fat_g_total, fiber_g_total, sugar_g_total, sat_fat_g_total, sodium_mg_total FROM batches WHERE id = ?',
+          `SELECT total_grams, kcal_total, protein_g_total, carb_g_total, fat_g_total,
+            fiber_g_total, sugar_g_total, sat_fat_g_total, sodium_mg_total,
+            potassium_mg_total, calcium_mg_total, magnesium_mg_total, iron_mg_total
+           FROM batches WHERE id = ?`,
         )
         .get(existing.batch_id) as BatchTotals;
-      macros = batchMacrosForGrams(batch, args.grams);
-      newGrams = args.grams;
+      macros = batchMacrosForGrams(batch, gramsTarget);
+      newGrams = gramsTarget;
     } else if (
       args.servings !== undefined &&
       existing.ref_kind === 'recipe_serving' &&
@@ -551,7 +579,8 @@ export const updateMealComponent = (ctx: Ctx, args: UpdateMealComponentInput): M
           notes = ?,
           confidence = COALESCE(?, confidence),
           kcal = ?, protein_g = ?, carb_g = ?, fat_g = ?,
-          fiber_g = ?, sugar_g = ?, sat_fat_g = ?, sodium_mg = ?
+          fiber_g = ?, sugar_g = ?, sat_fat_g = ?, sodium_mg = ?,
+          potassium_mg = ?, calcium_mg = ?, magnesium_mg = ?, iron_mg = ?
          WHERE id = ?`,
       )
       .run(
@@ -567,6 +596,10 @@ export const updateMealComponent = (ctx: Ctx, args: UpdateMealComponentInput): M
         macros.sugar_g,
         macros.sat_fat_g,
         macros.sodium_mg,
+        macros.potassium_mg,
+        macros.calcium_mg,
+        macros.magnesium_mg,
+        macros.iron_mg,
         args.id,
       );
     touchMeal(ctx, existing.meal_id);
