@@ -33,12 +33,7 @@
     "health-mcp": "./dist/index.js"
   },
   "main": "./dist/index.js",
-  "files": [
-    "dist",
-    "public",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "public", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsup",
     "dev": "node --import tsx --watch src/index.ts",
