@@ -110,7 +110,7 @@ export const logTools = [
   tool({
     name: 'set_goals',
     description:
-      'Update one or more daily targets. Each macro accepts {min, max} bounds, a plain number (interpreted per macro: protein/fiber/hydration → floor, sat_fat/sugar/sodium → cap, kcal/carbs/fat → exact target), or null to clear. tracked_macros picks up to 4 macros to show as rings on Today (calories is always shown).',
+      'Update one or more daily targets. Each macro accepts {min, max} bounds, a plain number (interpreted per macro: protein/fiber/hydration → floor, sat_fat/sugar/sodium → cap, kcal/carbs/fat → exact target), or null to clear. tracked_macros picks up to 5 macros to show as rings on Today (calories is always shown).',
     group: 'goal',
     inputSchema: z.object({
       kcal: goalFieldSchema.optional(),

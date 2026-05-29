@@ -20,7 +20,7 @@ describe('goals', () => {
     expect(g.sodium_mg).toEqual({ min: null, max: 2300 });
   });
 
-  it('normalizes untrusted tracked_macros: drops unknown/kcal, dedupes, caps at 4', () => {
+  it('normalizes untrusted tracked_macros: drops unknown/kcal, dedupes, caps at 5', () => {
     const dirty = [
       'fiber_g',
       'fiber_g',
@@ -30,9 +30,11 @@ describe('goals', () => {
       'sodium_mg',
       'protein_g',
       'carb_g',
+      'fat_g',
+      'sat_fat_g',
     ] as unknown as TrackableMacro[];
     const g = setGoals(ctx, { tracked_macros: dirty });
-    expect(g.tracked_macros).toEqual(['fiber_g', 'sugar_g', 'sodium_mg', 'protein_g']);
+    expect(g.tracked_macros).toEqual(['fiber_g', 'sugar_g', 'sodium_mg', 'protein_g', 'carb_g']);
   });
 
   it('preserves tracked_macros when only bounds change, and vice versa', () => {

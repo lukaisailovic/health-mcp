@@ -44,7 +44,7 @@ Flat read-only view consumed by `summaries.ts` (`SUM(kcal) … WHERE date = ?`) 
 Thin event tables. All carry `(id, ts, date, ..., notes, created_at)`. `measurements.kind` is freeform (e.g. `waist`, `chest`, `biceps`); `unit` is freeform but expected to be UCUM-ish (`cm`, `mm`, …).
 
 ### `goals`
-Singleton — `CHECK (id = 1)`. Seeded with a row of nulls by the first migration so `set_goals` is always an `UPDATE`. Each bounded macro stores two columns — `<macro>_min` and `<macro>_max` — so a goal can be a floor (only `_min`), a cap (only `_max`), or a target band (both). Bounded macros: `kcal, protein_g, carb_g, fat_g, fiber_g, sugar_g, sat_fat_g, sodium_mg, hydration_ml`. `weight_kg_target` stays a single number. `tracked_macros` is a JSON array (≤ 4 macro keys, excluding the always-shown kcal) of the rings rendered on Today; defaults to `["protein_g","carb_g","fat_g","sat_fat_g"]`.
+Singleton — `CHECK (id = 1)`. Seeded with a row of nulls by the first migration so `set_goals` is always an `UPDATE`. Each bounded macro stores two columns — `<macro>_min` and `<macro>_max` — so a goal can be a floor (only `_min`), a cap (only `_max`), or a target band (both). Bounded macros: `kcal, protein_g, carb_g, fat_g, fiber_g, sugar_g, sat_fat_g, sodium_mg, hydration_ml`. `weight_kg_target` stays a single number. `tracked_macros` is a JSON array (≤ 5 macro keys, excluding the always-shown kcal) of the rings rendered on Today; defaults to `["protein_g","carb_g","fat_g","sat_fat_g"]`.
 
 ### `recipes`, `recipe_ingredients`
 - `recipes(id, name, servings, notes?, created_at, updated_at)`

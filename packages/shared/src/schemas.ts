@@ -142,7 +142,7 @@ export const trackableMacroSchema = z.enum([
 ]);
 export type TrackableMacro = z.infer<typeof trackableMacroSchema>;
 export const TRACKABLE_MACROS = trackableMacroSchema.options;
-export const MAX_TRACKED_MACROS = 4;
+export const MAX_TRACKED_MACROS = 5;
 
 export const goalsSchema = z.object({
   kcal: goalFieldSchema.optional(),

@@ -1,7 +1,7 @@
 import type { Migration } from '../migrations.js';
 
 // Goals gained two more food nutrients (sugar, sodium) as targets, plus a
-// `tracked_macros` selection — the up-to-4 macros shown as rings on Today (kcal
+// `tracked_macros` selection — the up-to-5 macros shown as rings on Today (kcal
 // is always shown, so it stays out of the list). ADD COLUMN is forward-only and
 // safe in SQLite; the default backfills existing rows with the exact set Today
 // rendered before this change, so nothing regresses.
