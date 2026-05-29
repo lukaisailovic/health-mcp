@@ -1,6 +1,6 @@
 {
   "name": "health-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Self-hosted MCP server for personal nutrition, biomarkers, and wearables data",
   "keywords": [
     "mcp",
@@ -33,7 +33,12 @@
     "health-mcp": "./dist/index.js"
   },
   "main": "./dist/index.js",
-  "files": ["dist", "public", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "public",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "node --import tsx --watch src/index.ts",
