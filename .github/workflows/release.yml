@@ -78,6 +78,9 @@ jobs:
         run: |
           cd apps/server
           npm version "$RELEASE_TYPE" --no-git-tag-version --no-commit-hooks >/dev/null
+          # npm version reserializes package.json with its own formatter (e.g. expands the
+          # "files" array); re-apply biome's formatting so the committed bump keeps CI green.
+          pnpm exec biome format --write package.json
           version="$(node -p "require('./package.json').version")"
           prerelease=false
           case "$version" in *-*) prerelease=true ;; esac
