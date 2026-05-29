@@ -6,6 +6,7 @@ build/
 *.log
 .health-mcp/
 coverage/
+.claude/worktrees/
 .env
 .env.*
 !.env.example
