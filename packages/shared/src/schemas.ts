@@ -180,15 +180,32 @@ export type GoalBoundInput = z.infer<typeof goalBoundSchema>;
 
 export const goalFieldSchema = z.union([z.number().nonnegative(), goalBoundSchema, z.null()]);
 
+// Macros (excluding the always-shown kcal) that can be picked as Today rings.
+export const trackableMacroSchema = z.enum([
+  'protein_g',
+  'carb_g',
+  'fat_g',
+  'fiber_g',
+  'sugar_g',
+  'sat_fat_g',
+  'sodium_mg',
+]);
+export type TrackableMacro = z.infer<typeof trackableMacroSchema>;
+export const TRACKABLE_MACROS = trackableMacroSchema.options;
+export const MAX_TRACKED_MACROS = 5;
+
 export const goalsSchema = z.object({
   kcal: goalFieldSchema.optional(),
   protein_g: goalFieldSchema.optional(),
   carb_g: goalFieldSchema.optional(),
   fat_g: goalFieldSchema.optional(),
   fiber_g: goalFieldSchema.optional(),
+  sugar_g: goalFieldSchema.optional(),
   sat_fat_g: goalFieldSchema.optional(),
+  sodium_mg: goalFieldSchema.optional(),
   hydration_ml: goalFieldSchema.optional(),
   weight_kg_target: z.number().positive().nullable().optional(),
+  tracked_macros: z.array(trackableMacroSchema).max(MAX_TRACKED_MACROS).optional(),
 });
 export type GoalsInput = z.infer<typeof goalsSchema>;
 

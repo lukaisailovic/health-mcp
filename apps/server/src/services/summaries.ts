@@ -121,7 +121,9 @@ export const dailySummary = (
     carb_g: computeDelta(totals.carb_g, goals.carb_g),
     fat_g: computeDelta(totals.fat_g, goals.fat_g),
     fiber_g: computeDelta(totals.fiber_g, goals.fiber_g),
+    sugar_g: computeDelta(totals.sugar_g, goals.sugar_g),
     sat_fat_g: computeDelta(totals.sat_fat_g, goals.sat_fat_g),
+    sodium_mg: computeDelta(totals.sodium_mg, goals.sodium_mg),
     hydration_ml: computeDelta(totals.hydration_ml, goals.hydration_ml),
   };
   let compare: { kind: 'yesterday' | '7d_avg'; totals: DayTotals } | undefined;

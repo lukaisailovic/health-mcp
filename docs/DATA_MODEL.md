@@ -12,7 +12,8 @@ Migrations live in `apps/server/src/db/sql/000N-*.ts`. They run automatically on
 |---|---|
 | `0001-init.ts` | full schema — foods (+ FTS5), meals + meal_components + `intake_v` view, hydration, weight, measurements, goals (per-macro `_min` / `_max`), system, biomarkers (+ `why_it_matters` / `influences` / `how_to_improve`), biomarker_categories + map, lab_panels, lab_results, recipes, recipe_ingredients, batches, remembered_meals (with `components_json`), wearable_providers (seed), wearable_sync_state, wearable_oauth_nonces, wearable_sleep / activity / readiness / daily, wearable_metric_minutes, wearable_activity_type_map (seeded), whoop_* raw tables, oura_* raw tables; seeds ~60 curated biomarkers with categories |
 | `0010-relax-meal-components-custom-check.ts` | rebuilds `meal_components` to relax the custom-component `CHECK` so absolute-totals customs (`grams` NULL) are accepted |
-| `0011-food-micros-aliases-external-id.ts` | adds `external_id` (partial-unique) + `aliases` + micronutrients (potassium/calcium/magnesium/iron) to `foods`; rebuilds `foods_fts` to index `aliases`; adds the four micros to `meal_components`, to `batches` (as `_total`), and to the `intake_v` view |
+| `0011-goal-tracking-and-nutrients.ts` | adds `sugar_g` / `sodium_mg` goal bounds and a `tracked_macros` selection (the Today rings) to `goals` |
+| `0012-food-micros-aliases-external-id.ts` | adds `external_id` (partial-unique) + `aliases` + micronutrients (potassium/calcium/magnesium/iron) to `foods`; rebuilds `foods_fts` to index `aliases`; adds the four micros to `meal_components`, to `batches` (as `_total`), and to the `intake_v` view |
 
 ## Nutrition
 
@@ -46,7 +47,7 @@ Flat read-only view consumed by `summaries.ts` (`SUM(kcal) … WHERE date = ?`) 
 Thin event tables. All carry `(id, ts, date, ..., notes, created_at)`. `measurements.kind` is freeform (e.g. `waist`, `chest`, `biceps`); `unit` is freeform but expected to be UCUM-ish (`cm`, `mm`, …).
 
 ### `goals`
-Singleton — `CHECK (id = 1)`. Seeded with a row of nulls by the first migration so `set_goals` is always an `UPDATE`. Each bounded macro stores two columns — `<macro>_min` and `<macro>_max` — so a goal can be a floor (only `_min`), a cap (only `_max`), or a target band (both). Bounded macros: `kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, hydration_ml`. `weight_kg_target` stays a single number.
+Singleton — `CHECK (id = 1)`. Seeded with a row of nulls by the first migration so `set_goals` is always an `UPDATE`. Each bounded macro stores two columns — `<macro>_min` and `<macro>_max` — so a goal can be a floor (only `_min`), a cap (only `_max`), or a target band (both). Bounded macros: `kcal, protein_g, carb_g, fat_g, fiber_g, sugar_g, sat_fat_g, sodium_mg, hydration_ml`. `weight_kg_target` stays a single number. `tracked_macros` is a JSON array (≤ 5 macro keys, excluding the always-shown kcal) of the rings rendered on Today; defaults to `["protein_g","carb_g","fat_g","sat_fat_g"]`.
 
 ### `recipes`, `recipe_ingredients`
 - `recipes(id, name, servings, notes?, created_at, updated_at)`

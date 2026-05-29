@@ -20,7 +20,9 @@ type MacroKey =
   | 'carb_g'
   | 'fat_g'
   | 'fiber_g'
+  | 'sugar_g'
   | 'sat_fat_g'
+  | 'sodium_mg'
   | 'hydration_ml';
 
 type Shape = 'range' | 'floor' | 'cap';
@@ -60,6 +62,14 @@ const SECTIONS: MacroSection[] = [
         hint: 'AHA recommends ≤ 13 g for a 2000 kcal diet.',
       },
       { key: 'fiber_g', label: 'Fiber', unit: 'g', shape: 'floor' },
+      { key: 'sugar_g', label: 'Sugar', unit: 'g', shape: 'cap' },
+      {
+        key: 'sodium_mg',
+        label: 'Sodium',
+        unit: 'mg',
+        shape: 'cap',
+        hint: 'FDA daily limit is 2300 mg.',
+      },
     ],
   },
   {

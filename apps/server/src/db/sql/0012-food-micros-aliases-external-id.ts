@@ -83,7 +83,7 @@ FROM meal_components mc
 JOIN meals m ON m.id = mc.meal_id;
 `;
 
-export const migration0011: Migration = {
-  id: '0011-food-micros-aliases-external-id',
+export const migration0012: Migration = {
+  id: '0012-food-micros-aliases-external-id',
   sql,
 };
