@@ -72,6 +72,14 @@ Data persists in the `health-mcp-data` named volume. If you'd rather see the fil
 
 `docker compose down` stops the container; data survives across restarts.
 
+Prefer the prebuilt image over building locally? Point `docker-compose.yml` at the published image and drop its `build:` block:
+
+```yaml
+image: ghcr.io/lukaisailovic/health-mcp:latest   # or pin :0.1.0 / :0.1
+```
+
+Each release pushes `:X.Y.Z`, `:X.Y`, and `:latest`; `:main` tracks the newest commit. All images carry a build-provenance attestation. See [Releasing](./docs/RELEASING.md).
+
 ### From source
 
 Node ≥ 20 and pnpm.
@@ -283,6 +291,7 @@ Capability gating hides tools the agent can't currently use, so the surface stay
 | [Biomarkers](./docs/BIOMARKERS.md) | Three-tier range model, status walk, unit-conversion table |
 | [Wearables](./docs/WEARABLES.md) | Provider interface, OAuth flow, refresh rotation, provider matrix |
 | [Security](./docs/SECURITY.md) | Bearer auth, loopback rule, file modes, OAuth state, threat model |
+| [Releasing](./docs/RELEASING.md) | Version bump → tag → npm (OIDC) + GHCR, all from one Actions run |
 
 ---
 
@@ -304,6 +313,8 @@ A few ground rules:
 - `pnpm lint:fix` before pushing — Biome.
 
 Adding a new wearable provider is a self-contained job: create `apps/server/src/wearables/providers/<id>/`, add a migration with the raw mirror tables, register in the wearable registry. The normalized read tools pick it up automatically. Walkthrough in [docs/WEARABLES.md](./docs/WEARABLES.md#adding-a-new-provider).
+
+Cutting a release is a one-click GitHub Actions run — bump, tag, npm publish, and GHCR tags in one go. See [docs/RELEASING.md](./docs/RELEASING.md).
 
 ---
 

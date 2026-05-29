@@ -2,9 +2,8 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ZodError, type ZodRawShape, type ZodTypeAny } from 'zod';
 import { ServiceError } from '../services/types.js';
 import type { WearableServiceCtx } from '../services/wearables.js';
+import { VERSION } from '../version.js';
 import type { AnyToolDef } from './tool-registry.js';
-
-const VERSION = '0.1.0';
 
 const INSTRUCTIONS = `health-mcp is the user's personal health database — nutrition, biomarkers/labs, and wearables. You do the estimation; the server stores structured, typed records. It does not parse free text or photos, so turn descriptions into structured tool calls yourself.
 

@@ -6,8 +6,7 @@ import { mountDashboard, resolvePublicDir } from './dashboard.js';
 import type { Logger } from './logger.js';
 import { mountRestRoutes } from './rest/index.js';
 import type { WearableServiceCtx } from './services/wearables.js';
-
-const VERSION = '0.1.0';
+import { VERSION } from './version.js';
 
 export const createHonoApp = (opts: {
   config: Config;
