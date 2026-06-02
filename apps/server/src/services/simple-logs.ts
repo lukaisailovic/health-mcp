@@ -16,6 +16,7 @@ export type WeightEntry = {
   date: string;
   kg: number;
   body_fat_pct: number | null;
+  source: string;
   notes: string | null;
   created_at: string;
 };
@@ -130,6 +131,28 @@ export const logWeight = (
       notes: args.notes ?? null,
     },
   );
+};
+
+// Mirror a provider-supplied weight (e.g. Whoop body measurement) as one entry per
+// local day. Returns early when that source already wrote today, so the every-30-min
+// wearable sync never stacks duplicates and manual entries stay untouched.
+export const recordProviderWeight = (
+  ctx: Ctx,
+  args: { kg: number; source: string; ts?: string },
+): { recorded: boolean; date: string } => {
+  const ts = args.ts ?? nowIso();
+  const date = toLocalDate(ts, ctx.config.tz);
+  const exists = ctx.db
+    .prepare('SELECT 1 FROM weight_entries WHERE date = ? AND source = ? LIMIT 1')
+    .get(date, args.source);
+  if (exists) return { recorded: false, date };
+  insertSimple<WeightEntry>(
+    ctx,
+    'weight_entries',
+    ['id', 'ts', 'date', 'kg', 'body_fat_pct', 'notes', 'source'],
+    { id: cuid(), ts, date, kg: args.kg, body_fat_pct: null, notes: null, source: args.source },
+  );
+  return { recorded: true, date };
 };
 
 export const listWeight = (ctx: Ctx, args: DateRangeArgs): WeightEntry[] =>

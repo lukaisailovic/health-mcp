@@ -1,121 +1,42 @@
+import { MetricChart } from '@/components/metric-chart';
 import { PageHeader } from '@/components/page-header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { type SeriesPoint, TrendArea } from '@/components/ui/chart';
+import { RangeToggle } from '@/components/range-toggle';
+import { type SeriesPoint, reverseSeries } from '@/components/ui/chart';
+import { SectionLabel } from '@/components/ui/section-label';
 import { api } from '@/lib/api';
-import { cn } from '@/lib/cn';
-import { daysAgoIso, fmtNum, todayIso } from '@/lib/format';
+import { daysAgoIso, todayIso } from '@/lib/format';
+import { MACRO_META, type MacroKey } from '@/lib/macros';
+import type { WeightEntryDto } from '@health-mcp/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
-const RANGES = [
-  { label: '7d', days: 7 },
-  { label: '30d', days: 30 },
-  { label: '90d', days: 90 },
-] as const;
+// Nutrient charts share the Today ring identity (color + label + unit) so a macro
+// reads the same everywhere; digits differ since trace nutrients want a decimal.
+const NUTRIENTS: { key: MacroKey; digits: number }[] = [
+  { key: 'kcal', digits: 0 },
+  { key: 'protein_g', digits: 0 },
+  { key: 'carb_g', digits: 0 },
+  { key: 'fat_g', digits: 0 },
+  { key: 'fiber_g', digits: 1 },
+  { key: 'sugar_g', digits: 1 },
+  { key: 'sat_fat_g', digits: 1 },
+  { key: 'sodium_mg', digits: 0 },
+];
 
-const summarize = (data: SeriesPoint[]): { latest: number | null; avg: number | null } => {
-  const vals = data.map((d) => d.value).filter((v): v is number => v !== null);
-  if (vals.length === 0) return { latest: null, avg: null };
-  return {
-    latest: vals[vals.length - 1] ?? null,
-    avg: vals.reduce((a, b) => a + b, 0) / vals.length,
-  };
+// Weight can carry both a manual entry and a Whoop-synced one for the same day, so
+// collapse to the latest reading per day for a clean line. Rows arrive newest-first,
+// so the first seen per date is the latest; reverse to ascending for the chart.
+const weightByDay = (rows: WeightEntryDto[] | undefined): SeriesPoint[] => {
+  const seen = new Set<string>();
+  const points: SeriesPoint[] = [];
+  for (const w of rows ?? []) {
+    if (seen.has(w.date)) continue;
+    seen.add(w.date);
+    points.push({ date: w.date, value: w.kg });
+  }
+  return points.reverse();
 };
-
-const toReversedSeries = <T,>(
-  data: T[] | undefined,
-  date: (item: T) => string,
-  value: (item: T) => number | null,
-): SeriesPoint[] =>
-  (data ?? [])
-    .slice()
-    .reverse()
-    .map((item) => ({ date: date(item), value: value(item) }));
-
-const ChartCard = ({
-  id,
-  title,
-  data,
-  color,
-  unit,
-  height = 200,
-}: {
-  id: string;
-  title: string;
-  data: SeriesPoint[];
-  color: string;
-  unit?: string;
-  height?: number;
-}) => {
-  const { latest, avg } = useMemo(() => summarize(data), [data]);
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-2">
-        <div className="space-y-0.5">
-          <CardTitle className="capitalize">{title}</CardTitle>
-          <p className="text-xs text-kumo-subtle">
-            avg{' '}
-            <span className="font-medium text-kumo-default tabular-nums">
-              {avg !== null ? `${fmtNum(avg, 1)}${unit ? ` ${unit}` : ''}` : '—'}
-            </span>
-          </p>
-        </div>
-        <div className="min-w-[4.5rem] shrink-0 text-right">
-          <div
-            className="text-xl font-semibold leading-none tabular-nums tracking-tight"
-            style={{ color }}
-          >
-            {latest !== null ? fmtNum(latest, 1) : '—'}
-          </div>
-          {unit ? (
-            <div className="mt-0.5 text-[10px] uppercase tracking-wider text-kumo-subtle">
-              {unit}
-            </div>
-          ) : null}
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <TrendArea id={id} data={data} color={color} unit={unit} title={title} height={height} />
-      </CardContent>
-    </Card>
-  );
-};
-
-const RangeToggle = ({
-  days,
-  onChange,
-}: {
-  days: number;
-  onChange: (n: number) => void;
-}) => (
-  <div
-    className="inline-flex rounded-md border border-kumo-line bg-kumo-elevated p-0.5"
-    role="tablist"
-    aria-label="Range"
-  >
-    {RANGES.map((r) => {
-      const active = days === r.days;
-      return (
-        <button
-          key={r.label}
-          type="button"
-          role="tab"
-          aria-selected={active}
-          onClick={() => onChange(r.days)}
-          className={cn(
-            'inline-flex h-[26px] items-center justify-center rounded px-3 text-xs font-medium transition-colors',
-            active
-              ? 'bg-kumo-base text-kumo-default shadow-sm ring-1 ring-kumo-line'
-              : 'text-kumo-subtle hover:text-kumo-default',
-          )}
-        >
-          {r.label}
-        </button>
-      );
-    })}
-  </div>
-);
 
 const Trends = () => {
   const [days, setDays] = useState(30);
@@ -145,21 +66,13 @@ const Trends = () => {
   });
 
   const daysData = range.data?.days ?? [];
-  const kcal = daysData.map((d) => ({ date: d.date, value: d.kcal }));
-  const protein = daysData.map((d) => ({ date: d.date, value: d.protein_g }));
-  const carbs = daysData.map((d) => ({ date: d.date, value: d.carb_g }));
-  const fat = daysData.map((d) => ({ date: d.date, value: d.fat_g }));
-  const weights = toReversedSeries(
-    weight.data,
-    (w) => w.date,
-    (w) => w.kg,
-  );
-  const recoveries = toReversedSeries(
+  const weights = weightByDay(weight.data);
+  const recoveries = reverseSeries(
     readiness.data,
     (r) => r.date,
     (r) => r.score,
   );
-  const sleeps = toReversedSeries(
+  const sleeps = reverseSeries(
     sleep.data,
     (s) => s.start.slice(0, 10),
     (s) => s.score,
@@ -178,37 +91,48 @@ const Trends = () => {
         }
         actions={<RangeToggle days={days} onChange={setDays} />}
       />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ChartCard id="kcal" title="kcal" data={kcal} color="var(--color-kumo-brand)" />
-        <ChartCard
-          id="protein"
-          title="protein"
-          data={protein}
-          color="var(--color-kumo-success)"
-          unit="g"
-        />
-        <ChartCard
-          id="carbs"
-          title="carbs"
-          data={carbs}
-          color="var(--color-kumo-warning)"
-          unit="g"
-        />
-        <ChartCard id="fat" title="fat" data={fat} color="var(--color-kumo-danger)" unit="g" />
-        <ChartCard
+
+      <SectionLabel>Nutrition</SectionLabel>
+      <div className="mt-3 grid gap-4 lg:grid-cols-2">
+        {NUTRIENTS.map(({ key, digits }) => {
+          const meta = MACRO_META[key];
+          return (
+            <MetricChart
+              key={key}
+              id={key}
+              title={meta.label}
+              data={daysData.map((d) => ({ date: d.date, value: d[key] ?? null }))}
+              color={meta.color}
+              unit={meta.unit || undefined}
+              digits={digits}
+            />
+          );
+        })}
+      </div>
+
+      <SectionLabel className="mt-8">Body &amp; recovery</SectionLabel>
+      <div className="mt-3 grid gap-4 lg:grid-cols-2">
+        <MetricChart
           id="weight"
           title="weight"
           data={weights}
           color="var(--color-kumo-brand)"
           unit="kg"
         />
-        <ChartCard
+        <MetricChart
           id="recovery"
           title="recovery"
           data={recoveries}
           color="var(--color-kumo-success)"
+          digits={0}
         />
-        <ChartCard id="sleep" title="sleep score" data={sleeps} color="var(--color-kumo-brand)" />
+        <MetricChart
+          id="sleep"
+          title="sleep score"
+          data={sleeps}
+          color="var(--color-kumo-brand)"
+          digits={0}
+        />
       </div>
     </>
   );

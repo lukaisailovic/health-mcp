@@ -3,6 +3,7 @@ import type { AuthStore } from '../wearables/auth-store.js';
 import { encodeState } from '../wearables/oauth-state.js';
 import { getProvider, listProviders } from '../wearables/registry.js';
 import type { AuthRecord, ResourceKind, SyncResult, TokenSet } from '../wearables/types.js';
+import { recordProviderWeight } from './simple-logs.js';
 import { type Ctx, ServiceError } from './types.js';
 
 export type WearableServiceCtx = Ctx & { authStore: AuthStore };
@@ -145,6 +146,12 @@ export const syncWearables = async (
       onAuthRefreshed,
     });
     results.push(...r);
+  }
+  if (results.some((r) => r.provider === 'whoop')) {
+    const body = whoopBodyMeasurement(ctx) as { weight_kg: number | null } | null;
+    if (body?.weight_kg != null) {
+      recordProviderWeight(ctx, { kg: body.weight_kg, source: 'whoop' });
+    }
   }
   return results;
 };

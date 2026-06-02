@@ -163,8 +163,9 @@ Extending = `set_activity_type_map({ provider, raw_type, canonical })`. Zero cod
 - Pagination via `nextToken`; persisted per resource in `wearable_sync_state`.
 - Rate limit: provider docs say 100/min / 10k/day. Client wraps fetch with a 90/min token bucket to stay clear.
 - Refresh tokens rotate per use — per-provider mutex on the auth-store prevents double-spend on concurrent 401s.
-- Normalization map (raw → normalized): see `apps/server/src/wearables/providers/whoop/normalize.ts`. Sleep stages from `stage_summary`, respiratory rate, efficiency; recovery → readiness (`score`, `hrv_rmssd`, `resting_hr`, `spo2`, `skin_temp_delta`); workouts → activity (sport name → canonical type, `strain` → `strain_or_load`, kj → kcal); cycles → daily (kj → kcal_active for that date).
+- Normalization map (raw → normalized): see `apps/server/src/wearables/providers/whoop/normalize.ts`. Sleep stages from `stage_summary`, respiratory rate, efficiency; recovery → readiness (`score`, `hrv_rmssd`, `resting_hr`, `spo2`, `skin_temp_delta`); workouts → activity (sport name → canonical type, `strain` → `strain_or_load`, kj → kcal); cycles → daily (kj → `kcal_active` and day `strain`, for that date).
 - Day bucketing: a recovery is dated by its own `created_at` (the wake-morning timestamp) in `HEALTH_MCP_TZ`, and `wearable_readiness` is keyed `(provider, date)` — so each recovery lands on the day you woke, not the day the sync ran. Sleep is read back by **wake day** (`end` in `HEALTH_MCP_TZ`), so last night's sleep shows under this morning's date.
+- Body weight: the Whoop body measurement is a latest-only snapshot (no per-day history), so `syncWearables` mirrors it into `weight_entries` as one `source='whoop'` row per local day — skipping a day that already has a Whoop weight. The 30-min cron therefore never piles up duplicates, and hand-logged (`source='manual'`) entries are left untouched. This is what feeds weight into Trends.
 
 ## Oura specifics
 

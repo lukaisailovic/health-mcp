@@ -12,6 +12,18 @@ import {
 
 export type SeriesPoint = { date: string; value: number | null };
 
+// Provider/list rows come back newest-first; charts read oldest-first. Map each row to
+// a { date, value } point in chronological order.
+export const reverseSeries = <T,>(
+  rows: T[] | undefined,
+  date: (r: T) => string,
+  value: (r: T) => number | null,
+): SeriesPoint[] =>
+  (rows ?? [])
+    .slice()
+    .reverse()
+    .map((r) => ({ date: date(r), value: value(r) }));
+
 const tooltipStyle = {
   background: 'var(--color-kumo-base)',
   border: '1px solid var(--color-kumo-line)',
