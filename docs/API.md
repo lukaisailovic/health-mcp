@@ -307,6 +307,7 @@ DELETE /api/lab-results/:id
 - If `unit_ucum` differs from the biomarker's default and the pair is in the [unit conversion table](./BIOMARKERS.md#unit-conversion), value is converted and the original is appended to `notes`. Otherwise it's stored as-supplied and `notes` gets a `unit_mismatch` tag.
 - `value_numeric` *or* `value_text` is required.
 - `GET /api/lab-panels/:id` returns `{ panel, rows: [{ biomarker, result, status }] }` for each row in the panel.
+- `GET /api/lab-results` rows each carry a server-computed `status` (`optimal | in_ref | out_of_ref | unknown`) so clients never reclassify.
 
 See [Biomarkers](./BIOMARKERS.md) for the status/range model.
 
