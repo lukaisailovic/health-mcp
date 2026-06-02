@@ -128,6 +128,8 @@ export type WeightEntryDto = {
   date: string;
   kg: number;
   body_fat_pct: number | null;
+  // 'manual' for hand-logged entries; a provider id (e.g. 'whoop') for synced ones.
+  source: string;
   notes: string | null;
   created_at: string;
 };
@@ -364,6 +366,8 @@ export type WearableDailyDto = {
   steps: number | null;
   kcal_active: number | null;
   kcal_total: number | null;
+  // Whoop day strain (0–21 scale); null for providers that don't report it.
+  strain: number | null;
   distance_m: number | null;
   floors: number | null;
   resting_hr: number | null;

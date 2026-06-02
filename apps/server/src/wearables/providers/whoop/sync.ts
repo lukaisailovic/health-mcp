@@ -413,11 +413,12 @@ export const runWhoopResource = async ({
          score_state = excluded.score_state, raw_json = excluded.raw_json`,
     );
     const normIns = db.prepare(
-      `INSERT INTO wearable_daily (provider, date, kcal_active, hr_avg, raw_provider_id)
-       VALUES (@provider, @date, @kcal_active, @hr_avg, @raw_provider_id)
+      `INSERT INTO wearable_daily (provider, date, kcal_active, hr_avg, strain, raw_provider_id)
+       VALUES (@provider, @date, @kcal_active, @hr_avg, @strain, @raw_provider_id)
        ON CONFLICT(provider, date) DO UPDATE SET
          kcal_active = COALESCE(excluded.kcal_active, wearable_daily.kcal_active),
          hr_avg = COALESCE(excluded.hr_avg, wearable_daily.hr_avg),
+         strain = COALESCE(excluded.strain, wearable_daily.strain),
          raw_provider_id = excluded.raw_provider_id`,
     );
     for (const r of rs) {

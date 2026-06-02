@@ -21,6 +21,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { fmtNum, fmtTime, todayIso } from '@/lib/format';
 import { MACRO_META, type MacroKey } from '@/lib/macros';
+import { scoreTone } from '@/lib/tone';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import {
@@ -37,17 +38,6 @@ import {
 import { type ReactElement, useState } from 'react';
 
 const HYDRATION_STEPS = [250, 500, 750];
-
-const scoreTone = (
-  score: number | null | undefined,
-  good: number,
-  ok: number,
-): 'ok' | 'warn' | 'bad' | 'default' => {
-  if (score == null) return 'default';
-  if (score >= good) return 'ok';
-  if (score >= ok) return 'warn';
-  return 'bad';
-};
 
 type TriggerProps = Record<string, unknown>;
 
@@ -335,7 +325,7 @@ const Today = () => {
             hint={
               w?.body_fat_pct != null
                 ? `${fmtNum(w.body_fat_pct, 1)}% body fat`
-                : !w && whoopWeightKg != null
+                : w?.source === 'whoop' || (!w && whoopWeightKg != null)
                   ? 'from Whoop'
                   : 'no entry'
             }

@@ -4,6 +4,7 @@ import { migration0001 } from './sql/0001-init.js';
 import { migration0010 } from './sql/0010-relax-meal-components-custom-check.js';
 import { migration0011 } from './sql/0011-goal-tracking-and-nutrients.js';
 import { migration0012 } from './sql/0012-food-micros-aliases-external-id.js';
+import { migration0013 } from './sql/0013-weight-source-and-day-strain.js';
 
 export type Migration = {
   id: string;
@@ -11,7 +12,13 @@ export type Migration = {
   run?: (db: Db) => void;
 };
 
-const migrations: Migration[] = [migration0001, migration0010, migration0011, migration0012];
+const migrations: Migration[] = [
+  migration0001,
+  migration0010,
+  migration0011,
+  migration0012,
+  migration0013,
+];
 
 const ensureTable = (db: Db) => {
   db.exec(`

@@ -45,3 +45,14 @@ export const pct = (numerator: number, denominator: number | null): number => {
   if (denominator === null || denominator <= 0) return 0;
   return Math.min(1, Math.max(0, numerator / denominator));
 };
+
+export const fmtDuration = (seconds: number | null | undefined): string => {
+  if (seconds === null || seconds === undefined || !Number.isFinite(seconds) || seconds <= 0) {
+    return '—';
+  }
+  const minutes = Math.round(seconds / 60);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}m`;
+  return `${h}h ${m}m`;
+};

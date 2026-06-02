@@ -44,7 +44,7 @@ Indexes: `meals(date)`, `meals(ts)`, `meals(meal_type)`, `meal_components(meal_i
 Flat read-only view consumed by `summaries.ts` (`SUM(kcal) … WHERE date = ?`) and `correlate.ts` (`SOURCES.intake.table = 'intake_v'`). Lets aggregation SQL stay simple without re-introducing a denormalized flat table.
 
 ### `hydration_entries` / `weight_entries` / `measurements`
-Thin event tables. All carry `(id, ts, date, ..., notes, created_at)`. `measurements.kind` is freeform (e.g. `waist`, `chest`, `biceps`); `unit` is freeform but expected to be UCUM-ish (`cm`, `mm`, …).
+Thin event tables. All carry `(id, ts, date, ..., notes, created_at)`. `weight_entries` also carries `source` — `'manual'` for hand-logged rows (the default), or a provider id like `'whoop'` for synced ones; the wearable sync mirrors the latest Whoop body weight as one `'whoop'` row per local day and skips a day that already has one. `measurements.kind` is freeform (e.g. `waist`, `chest`, `biceps`); `unit` is freeform but expected to be UCUM-ish (`cm`, `mm`, …).
 
 ### `goals`
 Singleton — `CHECK (id = 1)`. Seeded with a row of nulls by the first migration so `set_goals` is always an `UPDATE`. Each bounded macro stores two columns — `<macro>_min` and `<macro>_max` — so a goal can be a floor (only `_min`), a cap (only `_max`), or a target band (both). Bounded macros: `kcal, protein_g, carb_g, fat_g, fiber_g, sugar_g, sat_fat_g, sodium_mg, hydration_ml`. `weight_kg_target` stays a single number. `tracked_macros` is a JSON array (≤ 5 macro keys, excluding the always-shown kcal) of the rings rendered on Today; defaults to `["protein_g","carb_g","fat_g","sat_fat_g"]`.
@@ -92,7 +92,7 @@ Two-tier schema: **per-provider raw mirrors** preserve full fidelity; **provider
 - **`wearable_sleep`** — normalized sleep sessions: `(provider, provider_id, start, end, duration_s, efficiency_pct?, score?, light_s?, deep_s?, rem_s?, awake_s?, respiratory_rate?, hr_avg?, hr_min?, raw_ref)`. PK `(provider, provider_id)`.
 - **`wearable_activity`** — `(provider, provider_id, start, end, duration_s, type, raw_type, kcal?, distance_m?, elevation_gain_m?, hr_avg?, hr_max?, strain_or_load?, raw_ref)`. `type` is the canonical enum (see below). `raw_type` is preserved verbatim. PK `(provider, provider_id)`.
 - **`wearable_readiness`** — daily score: `(provider, date, score?, hrv_rmssd?, resting_hr?, spo2?, skin_temp_delta_c?, body_battery?, raw_ref)`. PK `(provider, date)`.
-- **`wearable_daily`** — daily totals: `(provider, date, steps?, kcal_active?, kcal_total?, distance_m?, floors?, resting_hr?, hr_avg?, hrv_rmssd_avg?, spo2_avg?, stand_minutes?, raw_ref)`. PK `(provider, date)`. Daily *averages* are computed *during sync*, not at read time.
+- **`wearable_daily`** — daily totals: `(provider, date, steps?, kcal_active?, kcal_total?, strain?, distance_m?, floors?, resting_hr?, hr_avg?, hrv_rmssd_avg?, spo2_avg?, stand_minutes?, raw_ref)`. PK `(provider, date)`. `strain` is Whoop day strain (0–21 scale); null for providers that don't report it. Daily *averages* are computed *during sync*, not at read time.
 - **`wearable_metric_minutes(provider, metric, ts, value)`** — optional minute-resolution timeseries. Only populated when a provider exposes minute-resolution data (Oura yes, Whoop no). PK `(provider, metric, ts)`.
 - **`wearable_activity_type_map(provider, raw_type, canonical)`** — extensible: per-`(provider, raw_type)` mapping, with `(provider='*', raw_type=<canonical>)` rows that act as identity entries. `set_activity_type_map` upserts here.
 

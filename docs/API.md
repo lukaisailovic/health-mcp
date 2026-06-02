@@ -138,8 +138,8 @@ GET    /api/hydration?date=&start=&end=&limit=
 POST   /api/hydration            # { ml, ts?, notes? }
 DELETE /api/hydration/:id
 
-GET    /api/weight?date=&start=&end=&limit=
-POST   /api/weight               # { kg, body_fat_pct?, ts?, notes? }
+GET    /api/weight?date=&start=&end=&limit=    # rows carry source: 'manual' | provider id (e.g. 'whoop')
+POST   /api/weight               # { kg, body_fat_pct?, ts?, notes? } — always source 'manual'
 DELETE /api/weight/:id
 
 GET    /api/measurements?date=&start=&end=&kind=&limit=
@@ -323,7 +323,7 @@ POST   /api/wearables/sync                    # { providers?, resources?, since?
 GET    /api/wearables/sleep?date=&start=&end=&providers=whoop,oura
 GET    /api/wearables/activity?start=&end=&type=&providers=
 GET    /api/wearables/readiness?date=&start=&end=&providers=
-GET    /api/wearables/daily?date=&start=&end=&providers=
+GET    /api/wearables/daily?date=&start=&end=&providers=   # rows include Whoop day strain
 
 PUT    /api/wearables/:provider/activity-type-map    # { raw_type, canonical }
 
@@ -334,6 +334,7 @@ GET    /api/whoop/body                        # latest body measurement (height,
 - `POST .../connect` returns a fully-formed OAuth start URL plus the signed `state` token. The dashboard `window.open`s it.
 - The callback (`GET /auth/wearable/callback`) lives at the app root, not under `/api`. It verifies the state, consumes a single-use nonce, exchanges the code, and writes `auth.json`.
 - `providers` query param is a comma-separated allow-list. When omitted, rows from all linked providers are returned with `provider` discriminator preserved.
+- A successful Whoop sync also mirrors the latest body weight into `weight_entries` (one `source='whoop'` row per local day, skipped if today already has one), so it surfaces in `/api/weight` and Trends — not only `/api/whoop/body`.
 
 For the per-provider raw shapes (full fidelity, Whoop-only today) use the MCP tools `whoop_recovery`, `whoop_cycles`, `whoop_sleep_raw`, `whoop_workouts_raw`, `whoop_profile`, `whoop_body_measurement`. Two have a REST mirror since the dashboard needs them: `whoop_recovery` (`/api/whoop/recovery`) and `whoop_body_measurement` (`/api/whoop/body`, the weight fallback on the Today page).
 

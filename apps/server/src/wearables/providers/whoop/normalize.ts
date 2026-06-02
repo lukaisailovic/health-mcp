@@ -124,6 +124,7 @@ type WhoopCycleRaw = {
   start: string;
   end?: string;
   score?: {
+    strain?: number;
     kilojoule?: number;
     average_heart_rate?: number;
   };
@@ -137,6 +138,7 @@ export const normalizeWhoopCycle = (r: WhoopCycleRaw) => {
     date,
     kcal_active: r.score?.kilojoule !== undefined ? r.score.kilojoule * KJ_TO_KCAL : null,
     hr_avg: r.score?.average_heart_rate ?? null,
+    strain: r.score?.strain ?? null,
     raw_provider_id: r.id,
   };
 };
