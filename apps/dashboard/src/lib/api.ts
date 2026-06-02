@@ -13,6 +13,7 @@ import type {
   LabPanelDetailDto,
   LabPanelDto,
   LabResultDto,
+  LabResultWithStatusDto,
   LatestBiomarkerRowDto,
   MealComponentInput,
   MealDto,
@@ -233,7 +234,7 @@ export const api = {
         out_of_range_only?: boolean;
         limit?: number;
       } = {},
-    ) => get<LabResultDto[]>(`/api/lab-results${qs(params)}`),
+    ) => get<LabResultWithStatusDto[]>(`/api/lab-results${qs(params)}`),
     logResult: (body: unknown) => post<LabResultDto>('/api/lab-results', body),
     deleteResult: (id: string) => del<{ id: string }>(`/api/lab-results/${encodeURIComponent(id)}`),
   },

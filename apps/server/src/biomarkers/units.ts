@@ -5,7 +5,9 @@ type Conversion = {
 
 type BiomarkerKey = string;
 
-const norm = (s: string): string => s.trim().toLowerCase();
+// Fold both micro signs (U+00B5 micro, U+03BC greek mu) to ASCII 'u' so lab feeds
+// reporting 'µmol/L'/'µIU/mL' match the table's 'umol/L'/'uIU/mL' entries.
+const norm = (s: string): string => s.trim().toLowerCase().replace(/[µμ]/g, 'u');
 
 const TABLE: Record<BiomarkerKey, Record<string, Record<string, Conversion>>> = {};
 
@@ -80,9 +82,31 @@ add('Estradiol', 'pg/mL', 'pmol/L', 3.671);
 // Albumin: 1 g/dL = 10 g/L
 for (const m of ['Albumin', 'Hemoglobin']) add(m, 'g/dL', 'g/L', 10);
 
+// MCHC / Total Protein concentration: 1 g/dL = 10 g/L
+for (const m of ['MCHC', 'Total Protein']) add(m, 'g/dL', 'g/L', 10);
+
+// Blood-count scale identities: per-litre vs per-microlitre cancel the 10^6 factor.
+add('RBC', '10*6/uL', '10*12/L', 1);
+add('WBC', '10*3/uL', '10*9/L', 1);
+add('Platelets', '10*3/uL', '10*9/L', 1);
+
+// TSH: 1 mIU/L = 1 µIU/mL.
+add('TSH', 'mIU/L', 'uIU/mL', 1);
+
+// Hematocrit: fraction vs percent.
+add('Hematocrit', 'L/L', '%', 100);
+
+// Zinc: 1 µmol/L = 6.538 µg/dL (Zn 65.38 g/mol).
+add('Zinc', 'ug/dL', 'umol/L', 1 / 6.538);
+
+// TIBC: iron-binding capacity, 1 µmol/L = 5.587 µg/dL (Fe 55.845 g/mol).
+add('TIBC', 'ug/dL', 'umol/L', 1 / 5.587);
+
 export type ConvertResult =
   | { ok: true; value: number; unit: string }
   | { ok: false; reason: 'unknown_biomarker' | 'unknown_unit_pair' };
+
+export const unitsEqual = (a: string, b: string): boolean => norm(a) === norm(b);
 
 export const convertUnit = (
   biomarkerName: string,

@@ -1,5 +1,5 @@
 import type { BiomarkerStatus } from '@health-mcp/shared';
-import { convertUnit } from '../biomarkers/units.js';
+import { convertUnit, unitsEqual } from '../biomarkers/units.js';
 import { cuid } from '../util/id.js';
 import { type Ctx, ServiceError } from './types.js';
 
@@ -350,7 +350,7 @@ export const listLabResults = (
     out_of_range_only?: boolean;
     limit?: number;
   } = {},
-): LabResult[] => {
+): Array<LabResult & { status: BiomarkerStatus }> => {
   const conds: string[] = [];
   const params: unknown[] = [];
   if (args.biomarker) {
@@ -375,13 +375,12 @@ export const listLabResults = (
   }
   const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
   params.push(args.limit ?? 200);
-  let rows = ctx.db
+  const rows = ctx.db
     .prepare(`SELECT lr.* FROM lab_results lr ${join} ${where} ORDER BY lr.taken_at DESC LIMIT ?`)
     .all(...params) as LabResult[];
-  if (args.out_of_range_only) {
-    rows = rows.filter((r) => statusForResult(ctx, r) === 'out_of_ref');
-  }
-  return rows;
+  const withStatus = rows.map((r) => ({ ...r, status: statusForResult(ctx, r) }));
+  if (args.out_of_range_only) return withStatus.filter((r) => r.status === 'out_of_ref');
+  return withStatus;
 };
 
 export const statusForResult = (ctx: Ctx, r: LabResult, b?: Biomarker): BiomarkerStatus => {
@@ -392,18 +391,36 @@ export const statusForResult = (ctx: Ctx, r: LabResult, b?: Biomarker): Biomarke
       | Biomarker
       | undefined);
   if (!biomarker) return 'unknown';
-  if (r.unit_ucum.toLowerCase() !== biomarker.default_unit_ucum.toLowerCase()) return 'unknown';
+
+  // Classify in the biomarker's default unit. When the result is reported in a
+  // different unit, convert through the hardcoded table; the lab's own ref range is
+  // in the foreign unit, so it can't be reused — fall back to the default range. If no
+  // safe conversion exists we refuse to classify rather than compare mismatched units.
+  let value = r.value_numeric;
+  let refLow = r.ref_low ?? biomarker.default_ref_low ?? Number.NEGATIVE_INFINITY;
+  let refHigh = r.ref_high ?? biomarker.default_ref_high ?? Number.POSITIVE_INFINITY;
+  if (!unitsEqual(r.unit_ucum, biomarker.default_unit_ucum)) {
+    const conv = convertUnit(
+      biomarker.name,
+      r.value_numeric,
+      r.unit_ucum,
+      biomarker.default_unit_ucum,
+    );
+    if (!conv.ok) return 'unknown';
+    value = conv.value;
+    refLow = biomarker.default_ref_low ?? Number.NEGATIVE_INFINITY;
+    refHigh = biomarker.default_ref_high ?? Number.POSITIVE_INFINITY;
+  }
+
   const hasOptimal = biomarker.optimal_low !== null || biomarker.optimal_high !== null;
   if (hasOptimal) {
     const lo = biomarker.optimal_low ?? Number.NEGATIVE_INFINITY;
     const hi = biomarker.optimal_high ?? Number.POSITIVE_INFINITY;
-    if (r.value_numeric >= lo && r.value_numeric <= hi) return 'optimal';
+    if (value >= lo && value <= hi) return 'optimal';
   }
-  const refLow = r.ref_low ?? biomarker.default_ref_low ?? Number.NEGATIVE_INFINITY;
-  const refHigh = r.ref_high ?? biomarker.default_ref_high ?? Number.POSITIVE_INFINITY;
   const hasRef = refLow !== Number.NEGATIVE_INFINITY || refHigh !== Number.POSITIVE_INFINITY;
   if (hasRef) {
-    if (r.value_numeric >= refLow && r.value_numeric <= refHigh) return 'in_ref';
+    if (value >= refLow && value <= refHigh) return 'in_ref';
     return 'out_of_ref';
   }
   return hasOptimal ? 'out_of_ref' : 'unknown';

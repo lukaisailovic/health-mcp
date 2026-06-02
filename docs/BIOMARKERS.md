@@ -32,15 +32,15 @@ Three ranges, walked in this order to decide a result's `status`:
 - `optimal` — has optimal range and value is inside it.
 - `in_ref` — has a reference range (snapshot or default) and value is inside it.
 - `out_of_ref` — has any range and value is outside.
-- `unknown` — non-numeric value, no ranges at all, or the stored unit doesn't match the biomarker's default unit (so range comparison would be meaningless).
+- `unknown` — non-numeric value, no ranges at all, or a stored unit that differs from the biomarker's default unit and has no entry in the conversion table (so range comparison would be meaningless).
 
 The status walk:
-1. If the result's `unit_ucum` doesn't match the biomarker's `default_unit_ucum` → `unknown` (the ranges live in the default unit; comparing across units would lie).
+1. If the result's `unit_ucum` differs from the biomarker's `default_unit_ucum`, convert the value into the default unit via the dual-unit table; the lab's snapshot range is in the foreign unit so it's dropped and the default range is used. If no safe conversion exists → `unknown` (comparing across units would lie).
 2. If the biomarker has an optimal range and value is inside → `optimal`.
-3. Otherwise, fall back to the lab snapshot range, then the default. If a range exists and value is inside → `in_ref`. If outside → `out_of_ref`.
+3. Otherwise, fall back to the lab snapshot range (matching-unit results only), then the default. If a range exists and value is inside → `in_ref`. If outside → `out_of_ref`.
 4. If neither optimal nor reference ranges exist → `unknown`. (If only an optimal range exists and the value falls outside it, status is `out_of_ref`.)
 
-`latest_biomarkers` returns one row per biomarker with `{ biomarker, result, status, delta_vs_prev }`.
+`statusForResult` is the single source of truth: `latest_biomarkers`, `biomarker_trend`, `list_lab_results`, and the panel detail all carry it, and the dashboard renders that status rather than reclassifying client-side. `latest_biomarkers` returns one row per biomarker with `{ biomarker, result, status, delta_vs_prev }`.
 
 ## Vocabulary, not a wire format
 
@@ -61,7 +61,7 @@ The wire format is plain SQL rows + Zod schemas. No FHIR resources cross the wal
 - `unit_ucum` is rewritten to the default
 - the original (e.g. `original: 5.1 mmol/L`) is appended to `notes`
 
-If `unit_ucum` differs but the pair is **not** in the table, value is stored as-supplied and `unit_mismatch` is added to `notes`. `statusForResult` returns `unknown` for these rows so `biomarker_trend` and `latest_biomarkers` never compare a mismatched-unit value against the default-unit ranges.
+If `unit_ucum` differs but the pair is **not** in the table, value is stored as-supplied and `unit_mismatch` is added to `notes`. For results already stored in a foreign unit (imported before the pair was in the table), `statusForResult` converts on read using the same table; only rows with no convertible pair stay `unknown`, so a mismatched-unit value is never compared against the default-unit ranges. Unit comparison and the table folds both micro signs (`µ` U+00B5, `μ` U+03BC) to ASCII `u`, so a lab feed reporting `µmol/L` matches the `umol/L` entry.
 
 Conversions wired today (bidirectional unless noted):
 

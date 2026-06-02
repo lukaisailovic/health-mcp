@@ -274,6 +274,10 @@ export type LabResultDto = {
   created_at: string;
 };
 
+// `/api/labs/results` enriches each row with its server-computed range status
+// (unit-aware) so the dashboard never reclassifies client-side.
+export type LabResultWithStatusDto = LabResultDto & { status: BiomarkerStatus };
+
 export type LabPanelDto = {
   id: string;
   name: string | null;

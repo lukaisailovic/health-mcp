@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { closeCtx, makeTestCtx } from '../test-utils.js';
+import { cuid } from '../util/id.js';
 import {
   biomarkerTrend,
   latestBiomarkers,
+  listLabResults,
   logLabPanel,
   logLabResult,
+  resolveBiomarker,
   searchBiomarker,
 } from './biomarkers.js';
 
@@ -13,6 +16,20 @@ beforeEach(() => {
   ctx = makeTestCtx();
 });
 afterEach(() => closeCtx(ctx));
+
+// Insert a result verbatim in its reported unit, bypassing the insert-time conversion —
+// this mirrors rows stored before the dual-unit table covered them.
+const rawInsert = (biomarkerName: string, value: number, unit: string, takenAt: string): void => {
+  const b = resolveBiomarker(ctx, biomarkerName);
+  ctx.db
+    .prepare(
+      `INSERT INTO lab_results (id, biomarker_id, panel_id, taken_at, value_numeric, value_text, unit_ucum)
+       VALUES (?, ?, NULL, ?, ?, NULL, ?)`,
+    )
+    .run(cuid(), b.id, takenAt, value, unit);
+};
+const latestStatus = (name: string): string | undefined =>
+  latestBiomarkers(ctx).find((r) => r.biomarker.name === name)?.status;
 
 describe('biomarkers', () => {
   it('seeds catalog and finds glucose by name', () => {
@@ -94,6 +111,28 @@ describe('biomarkers', () => {
     for (const row of latest) {
       expect(row.result).not.toHaveProperty('rn');
     }
+  });
+
+  it('classifies foreign-unit results by converting to the default unit', () => {
+    rawInsert('RBC', 4.9, '10*12/L', '2026-01-10T08:00:00Z'); // ≡ 4.9 10*6/uL, ref [4.2,5.9]
+    rawInsert('Creatinine', 94, 'µmol/L', '2026-01-10T08:00:00Z'); // = 1.06 mg/dL, ref [0.6,1.3]
+    rawInsert('TSH', 3.2, 'µIU/mL', '2026-01-10T08:00:00Z'); // = 3.2 mIU/L, ref [0.4,4.5]
+    rawInsert('Hematocrit', 0.435, 'L/L', '2026-01-10T08:00:00Z'); // = 43.5%, ref [38,50]
+    expect(latestStatus('RBC')).toBe('in_ref');
+    expect(latestStatus('Creatinine')).toBe('in_ref');
+    expect(latestStatus('TSH')).toBe('in_ref');
+    expect(latestStatus('Hematocrit')).toBe('in_ref');
+  });
+
+  it('reports unknown when no safe conversion exists for the unit pair', () => {
+    rawInsert('Lp(a)', 10.5, 'mg/dL', '2026-01-10T08:00:00Z'); // default nmol/L, no fixed factor
+    expect(latestStatus('Lp(a)')).toBe('unknown');
+  });
+
+  it('list_lab_results carries server-computed status per row', () => {
+    rawInsert('Creatinine', 94, 'µmol/L', '2026-01-10T08:00:00Z');
+    const rows = listLabResults(ctx, { biomarker: 'Creatinine' });
+    expect(rows[0]?.status).toBe('in_ref');
   });
 
   it('biomarker_trend returns time-ordered points', () => {

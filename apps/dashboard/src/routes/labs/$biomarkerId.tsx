@@ -5,7 +5,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { fmtDate, fmtNum } from '@/lib/format';
-import { STATUS_LABEL, STATUS_VARIANT, classifyValue } from '@/lib/labs';
+import { STATUS_LABEL, STATUS_VARIANT } from '@/lib/labs';
 import { Popover } from '@cloudflare/kumo';
 import { useQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
@@ -95,16 +95,7 @@ const BiomarkerDetail = () => {
     .sort((x, y) => y.taken_at.localeCompare(x.taken_at));
   const latest = sortedResults[0];
   const latestValue = latest?.value_numeric ?? null;
-  const status =
-    latestValue != null
-      ? classifyValue(
-          latestValue,
-          b.default_ref_low,
-          b.default_ref_high,
-          b.optimal_low,
-          b.optimal_high,
-        )
-      : 'unknown';
+  const status = latest?.status ?? 'unknown';
 
   const rangeLabel = (low: number | null, high: number | null): string => {
     if (low != null && high != null)
@@ -340,16 +331,7 @@ const BiomarkerDetail = () => {
               ) : (
                 <ul className="divide-y divide-kumo-line">
                   {sortedResults.map((r) => {
-                    const rowStatus =
-                      r.value_numeric != null
-                        ? classifyValue(
-                            r.value_numeric,
-                            r.ref_low ?? b.default_ref_low,
-                            r.ref_high ?? b.default_ref_high,
-                            b.optimal_low,
-                            b.optimal_high,
-                          )
-                        : 'unknown';
+                    const rowStatus = r.status;
                     return (
                       <li
                         key={r.id}

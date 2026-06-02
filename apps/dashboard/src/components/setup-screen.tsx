@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { setToken } from '@/lib/auth';
-import { Tooltip, TooltipProvider } from '@cloudflare/kumo';
+import { Popover, Tooltip, TooltipProvider } from '@cloudflare/kumo';
 import { ArrowRight, Eye, EyeOff, HelpCircle, KeyRound, ShieldCheck } from 'lucide-react';
 import { type FormEvent, useRef, useState } from 'react';
 
@@ -132,19 +132,34 @@ export const SetupScreen = ({ reason }: { reason: 'missing' | '401' }) => {
               <form onSubmit={handleSubmit} className="mt-7 space-y-2.5" noValidate>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="token">Access token</Label>
-                  <Tooltip
-                    content="The token you set as HEALTH_MCP_TOKEN when starting the server — check your terminal logs or .env file."
-                    render={
-                      <button
-                        type="button"
-                        aria-label="Where to find your token"
-                        className="inline-flex items-center gap-1 rounded text-xs text-kumo-subtle outline-none transition-colors hover:text-kumo-default focus-visible:ring-2 focus-visible:ring-kumo-focus"
-                      >
-                        <HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                        Where to find it
-                      </button>
-                    }
-                  />
+                  <Popover>
+                    <Popover.Trigger
+                      render={
+                        <button
+                          type="button"
+                          aria-label="Where to find your token"
+                          className="inline-flex items-center gap-1 rounded text-xs text-kumo-subtle outline-none transition-colors hover:text-kumo-default focus-visible:ring-2 focus-visible:ring-kumo-focus"
+                        >
+                          <HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                          Where to find it
+                        </button>
+                      }
+                    />
+                    <Popover.Content side="bottom" className="max-w-[260px]">
+                      <Popover.Title>Where to find your token</Popover.Title>
+                      <Popover.Description>
+                        It’s the value you set as{' '}
+                        <code className="rounded bg-kumo-control px-1 py-0.5 font-mono text-xs">
+                          HEALTH_MCP_TOKEN
+                        </code>{' '}
+                        when starting the server — check your terminal logs or{' '}
+                        <code className="rounded bg-kumo-control px-1 py-0.5 font-mono text-xs">
+                          .env
+                        </code>{' '}
+                        file.
+                      </Popover.Description>
+                    </Popover.Content>
+                  </Popover>
                 </div>
 
                 <div className="relative">
@@ -163,7 +178,7 @@ export const SetupScreen = ({ reason }: { reason: 'missing' | '401' }) => {
                       if (status === 'error') setStatus('idle');
                     }}
                     placeholder="Paste your token…"
-                    className="pr-10 font-mono"
+                    className="w-full pr-10 font-mono"
                     aria-invalid={status === 'error'}
                     aria-describedby={error ? 'token-error' : undefined}
                   />
