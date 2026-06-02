@@ -36,7 +36,7 @@
   "files": ["dist", "public", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsup",
-    "dev": "node --import tsx --watch src/index.ts",
+    "dev": "node --env-file-if-exists=../../.env --import tsx --watch src/index.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",

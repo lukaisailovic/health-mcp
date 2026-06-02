@@ -1,3 +1,5 @@
+import { toLocalDate } from '../../../util/tz.js';
+
 type WhoopSleepRaw = {
   id: string;
   start: string;
@@ -52,6 +54,7 @@ export const normalizeWhoopSleep = (r: WhoopSleepRaw) => {
 type WhoopRecoveryRaw = {
   cycle_id: string;
   sleep_id: string;
+  created_at: string;
   score?: {
     recovery_score?: number;
     hrv_rmssd_milli?: number;
@@ -61,10 +64,9 @@ type WhoopRecoveryRaw = {
   };
 };
 
-const cycleStartCache = new Map<string, string>();
-
 export const normalizeWhoopRecovery = (
   r: WhoopRecoveryRaw,
+  tz: string,
 ): {
   provider: string;
   date: string;
@@ -75,12 +77,9 @@ export const normalizeWhoopRecovery = (
   skin_temp_delta_c: number | null;
   raw_provider_id: string;
 } | null => {
-  // We don't have direct date here; use sleep_id as the row identity. Date keying happens on the
-  // upsert side once the cycle row provides the boundary. For now we use today as a fallback —
-  // callers typically sync recoveries after cycles so the cycle's date will already be present.
   return {
     provider: 'whoop',
-    date: new Date().toISOString().slice(0, 10),
+    date: toLocalDate(r.created_at, tz),
     score: r.score?.recovery_score ?? null,
     hrv_rmssd: r.score?.hrv_rmssd_milli ?? null,
     resting_hr: r.score?.resting_heart_rate ?? null,

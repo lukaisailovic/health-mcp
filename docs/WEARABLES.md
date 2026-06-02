@@ -164,6 +164,7 @@ Extending = `set_activity_type_map({ provider, raw_type, canonical })`. Zero cod
 - Rate limit: provider docs say 100/min / 10k/day. Client wraps fetch with a 90/min token bucket to stay clear.
 - Refresh tokens rotate per use — per-provider mutex on the auth-store prevents double-spend on concurrent 401s.
 - Normalization map (raw → normalized): see `apps/server/src/wearables/providers/whoop/normalize.ts`. Sleep stages from `stage_summary`, respiratory rate, efficiency; recovery → readiness (`score`, `hrv_rmssd`, `resting_hr`, `spo2`, `skin_temp_delta`); workouts → activity (sport name → canonical type, `strain` → `strain_or_load`, kj → kcal); cycles → daily (kj → kcal_active for that date).
+- Day bucketing: a recovery is dated by its own `created_at` (the wake-morning timestamp) in `HEALTH_MCP_TZ`, and `wearable_readiness` is keyed `(provider, date)` — so each recovery lands on the day you woke, not the day the sync ran. Sleep is read back by **wake day** (`end` in `HEALTH_MCP_TZ`), so last night's sleep shows under this morning's date.
 
 ## Oura specifics
 

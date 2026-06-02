@@ -391,6 +391,15 @@ export type WearableActivityDto = {
   raw_ref: string | null;
 };
 
+export type WhoopBodyDto = {
+  id: number;
+  height_m: number | null;
+  weight_kg: number | null;
+  max_hr: number | null;
+  raw_json: string;
+  updated_at: string;
+};
+
 export type ApiErrorDto = {
   code: string;
   message: string;
