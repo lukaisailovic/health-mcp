@@ -86,6 +86,7 @@ import {
   wearableSleep,
   wearablesListProviders,
   wearablesStatus,
+  whoopBodyMeasurement,
   whoopRecovery,
 } from '../services/wearables.js';
 import { decodeAndConsumeState, purgeExpiredNonces } from '../wearables/oauth-state.js';
@@ -432,6 +433,7 @@ export const mountRestRoutes = (app: Hono, ctx: WearableServiceCtx): void => {
       }),
     ),
   );
+  app.get('/api/whoop/body', (c) => wrap(c, () => whoopBodyMeasurement(ctx)));
 
   // OAuth callback — unauthenticated by design (third-party redirect).
   app.get('/auth/wearable/callback', async (c) => {

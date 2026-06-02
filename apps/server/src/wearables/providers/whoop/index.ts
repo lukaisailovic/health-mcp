@@ -92,6 +92,7 @@ export const createWhoopProvider = (opts: WhoopOptions): WearableProvider | null
             resource: res,
             cursor: args.cursors[res] ?? null,
             since: args.since,
+            tz: args.tz,
             refresh,
           });
           results.push(r);

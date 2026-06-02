@@ -31,6 +31,7 @@ type WhoopSleep = {
 type WhoopRecovery = {
   cycle_id: string;
   sleep_id: string;
+  created_at: string;
   score?: {
     recovery_score?: number;
     hrv_rmssd_milli?: number;
@@ -93,6 +94,7 @@ export type WhoopRunnerArgs = {
   resource: ResourceKind;
   cursor: string | null;
   since?: string;
+  tz: string;
   refresh: () => Promise<void>;
 };
 
@@ -118,6 +120,7 @@ export const runWhoopResource = async ({
   resource,
   cursor,
   since,
+  tz,
   refresh,
 }: WhoopRunnerArgs): Promise<SyncResult> => {
   const query = new URLSearchParams();
@@ -307,7 +310,7 @@ export const runWhoopResource = async ({
           score_state: r.score_state ?? null,
           raw_json: JSON.stringify(r),
         });
-        const norm = normalizeWhoopRecovery(r);
+        const norm = normalizeWhoopRecovery(r, tz);
         if (norm) normIns.run(norm);
       }
     });

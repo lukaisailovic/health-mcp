@@ -215,6 +215,10 @@ const Today = () => {
     queryKey: ['weight', date],
     queryFn: () => api.weight.list({ date, limit: 1 }),
   });
+  const whoopBody = useQuery({
+    queryKey: ['wearables', 'whoop-body'],
+    queryFn: () => api.wearables.whoopBody(),
+  });
 
   const deleteMeal = useMutation({
     mutationFn: (id: string) => api.meals.delete(id),
@@ -250,6 +254,8 @@ const Today = () => {
   const r = recovery.data?.[0];
   const sl = sleep.data?.[0];
   const w = weight.data?.[0];
+  const whoopWeightKg = whoopBody.data?.weight_kg ?? null;
+  const displayWeightKg = w?.kg ?? whoopWeightKg;
   const recoveryTone = scoreTone(r?.score, 67, 34);
   const sleepTone = scoreTone(sl?.score, 70, 50);
 
@@ -325,8 +331,14 @@ const Today = () => {
           <StatCard
             icon={Scale}
             label="weight"
-            value={w ? `${fmtNum(w.kg, 1)} kg` : '—'}
-            hint={w?.body_fat_pct != null ? `${fmtNum(w.body_fat_pct, 1)}% body fat` : 'no entry'}
+            value={displayWeightKg != null ? `${fmtNum(displayWeightKg, 1)} kg` : '—'}
+            hint={
+              w?.body_fat_pct != null
+                ? `${fmtNum(w.body_fat_pct, 1)}% body fat`
+                : !w && whoopWeightKg != null
+                  ? 'from Whoop'
+                  : 'no entry'
+            }
           />
           <Card className="transition-colors hover:bg-kumo-elevated">
             <div className="flex items-stretch justify-between gap-3 px-5 py-4">

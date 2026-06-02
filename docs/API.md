@@ -328,13 +328,16 @@ GET    /api/wearables/daily?date=&start=&end=&providers=
 PUT    /api/wearables/:provider/activity-type-map    # { raw_type, canonical }
 
 GET    /api/whoop/recovery?date=&start=&end=
+GET    /api/whoop/body                        # latest body measurement (height, weight, max HR)
 ```
 
 - `POST .../connect` returns a fully-formed OAuth start URL plus the signed `state` token. The dashboard `window.open`s it.
 - The callback (`GET /auth/wearable/callback`) lives at the app root, not under `/api`. It verifies the state, consumes a single-use nonce, exchanges the code, and writes `auth.json`.
 - `providers` query param is a comma-separated allow-list. When omitted, rows from all linked providers are returned with `provider` discriminator preserved.
 
-For the per-provider raw shapes (full fidelity, Whoop-only today) use the MCP tools `whoop_recovery`, `whoop_cycles`, `whoop_sleep_raw`, `whoop_workouts_raw`, `whoop_profile`, `whoop_body_measurement`. Only `whoop_recovery` has a REST mirror (`/api/whoop/recovery`) since the dashboard needs it.
+For the per-provider raw shapes (full fidelity, Whoop-only today) use the MCP tools `whoop_recovery`, `whoop_cycles`, `whoop_sleep_raw`, `whoop_workouts_raw`, `whoop_profile`, `whoop_body_measurement`. Two have a REST mirror since the dashboard needs them: `whoop_recovery` (`/api/whoop/recovery`) and `whoop_body_measurement` (`/api/whoop/body`, the weight fallback on the Today page).
+
+The `date` filter on `/api/wearables/sleep` and `/api/wearables/readiness` buckets by **wake day** in `HEALTH_MCP_TZ` — a sleep that starts the previous evening and a recovery scored on waking both land on the morning's date, matching how the provider's own app labels them.
 
 See [Wearables](./WEARABLES.md) for the OAuth flow, refresh-token rotation, and provider matrix.
 

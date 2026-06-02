@@ -122,5 +122,6 @@ export type SyncArgs = {
   resources?: ResourceKind[];
   since?: string;
   cursors: Record<string, string | null>;
+  tz: string;
   onAuthRefreshed?: (tokens: TokenSet) => Promise<void>;
 };

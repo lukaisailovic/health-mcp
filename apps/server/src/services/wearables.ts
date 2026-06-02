@@ -1,3 +1,4 @@
+import { isoDateRange } from '../util/tz.js';
 import type { AuthStore } from '../wearables/auth-store.js';
 import { encodeState } from '../wearables/oauth-state.js';
 import { getProvider, listProviders } from '../wearables/registry.js';
@@ -140,6 +141,7 @@ export const syncWearables = async (
       resources: args.resources,
       since: args.since,
       cursors,
+      tz: ctx.config.tz,
       onAuthRefreshed,
     });
     results.push(...r);
@@ -150,7 +152,26 @@ export const syncWearables = async (
 export const wearableSleep = (
   ctx: WearableServiceCtx,
   args: { date?: string; start?: string; end?: string; providers?: string[] } = {},
-) => queryNormalized(ctx, 'wearable_sleep', 'start', args);
+) => {
+  const conds: string[] = [];
+  const params: unknown[] = [];
+  if (args.date) {
+    const { startIso, endIso } = isoDateRange(args.date, ctx.config.tz);
+    conds.push('"end" >= ? AND "end" < ?');
+    params.push(startIso, endIso);
+  }
+  if (args.start) {
+    conds.push('start >= ?');
+    params.push(args.start);
+  }
+  if (args.end) {
+    conds.push('start <= ?');
+    params.push(args.end);
+  }
+  applyProviderFilter(conds, params, args.providers);
+  const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
+  return ctx.db.prepare(`SELECT * FROM wearable_sleep ${where} ORDER BY start DESC`).all(...params);
+};
 
 export const wearableActivity = (
   ctx: WearableServiceCtx,
@@ -220,31 +241,6 @@ const applyProviderFilter = (
   if (!providers?.length) return;
   conds.push(`provider IN (${providers.map(() => '?').join(',')})`);
   params.push(...providers);
-};
-
-const queryNormalized = (
-  ctx: WearableServiceCtx,
-  table: string,
-  startCol: string,
-  args: { date?: string; start?: string; end?: string; providers?: string[] },
-) => {
-  const conds: string[] = [];
-  const params: unknown[] = [];
-  if (args.date) {
-    conds.push(`${startCol} >= ? AND ${startCol} <= ?`);
-    params.push(`${args.date}T00:00:00Z`, `${args.date}T23:59:59Z`);
-  }
-  if (args.start) {
-    conds.push(`${startCol} >= ?`);
-    params.push(args.start);
-  }
-  if (args.end) {
-    conds.push(`${startCol} <= ?`);
-    params.push(args.end);
-  }
-  applyProviderFilter(conds, params, args.providers);
-  const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
-  return ctx.db.prepare(`SELECT * FROM ${table} ${where} ORDER BY ${startCol} DESC`).all(...params);
 };
 
 const queryByDateOrRange = (

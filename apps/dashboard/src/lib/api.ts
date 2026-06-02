@@ -27,6 +27,7 @@ import type {
   WearableSleepDto,
   WearableStatusDto,
   WeightEntryDto,
+  WhoopBodyDto,
 } from '@health-mcp/shared';
 import { clearToken, getToken } from './auth.js';
 
@@ -278,5 +279,6 @@ export const api = {
       get<WearableReadinessDto[]>(`/api/wearables/readiness${qs(params)}`),
     daily: (params: { date?: string; start?: string; end?: string; providers?: string } = {}) =>
       get<WearableDailyDto[]>(`/api/wearables/daily${qs(params)}`),
+    whoopBody: () => get<WhoopBodyDto | null>('/api/whoop/body'),
   },
 };
